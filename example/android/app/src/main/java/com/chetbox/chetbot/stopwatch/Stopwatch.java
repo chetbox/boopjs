@@ -91,6 +91,7 @@ public class Stopwatch extends AppCompatActivity {
 
         /* DEBUGGING */
 
+        ChetBot.get().screenRecord("chetwatch-auto");
         new Thread(new Runnable() {
             @Override
             public void run() {

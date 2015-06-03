@@ -2,6 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.chetbox.chetbot.stopwatch" >
 
+    <!-- only used by ChetBot -->
+    <!-- TODO: Make this only included in debug mode if required. -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"

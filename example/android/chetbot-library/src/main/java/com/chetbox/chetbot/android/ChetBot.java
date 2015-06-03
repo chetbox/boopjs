@@ -6,6 +6,10 @@ import android.util.ArrayMap;
 import android.util.Log;
 import android.view.View;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.InterruptedIOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -68,6 +72,35 @@ public class ChetBot {
 
     private static View getRootView(Activity activity) {
         return activity.getWindow().getDecorView().findViewById(android.R.id.content);
+    }
+
+    public void screenRecord(final String filename) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    final Process process = Runtime.getRuntime().exec(new String[]{"/system/bin/screenrecord", "/sdcard/" + filename + ".mp4"});
+
+                    InputStreamReader reader = new InputStreamReader(process.getInputStream());
+                    BufferedReader bufferedReader = new BufferedReader(reader);
+                    int numRead;
+                    char[] buffer = new char[5000];
+                    StringBuffer commandOutput = new StringBuffer();
+                    while ((numRead = bufferedReader.read(buffer)) > 0) {
+                        commandOutput.append(buffer, 0, numRead);
+                    }
+
+                    Thread.sleep(4000);
+                    process.destroy();
+
+                    bufferedReader.close();
+                    Log.d(TAG, commandOutput.toString());
+
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }).start();
     }
 
     public void tap(String text) {
