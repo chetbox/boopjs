@@ -9,7 +9,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import org.apache.commons.lang3.time.DurationFormatUtils;
+import com.chetbox.chetbot.android.ChetBot;
 
 
 public class Stopwatch extends AppCompatActivity {
@@ -45,6 +45,8 @@ public class Stopwatch extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        ChetBot.start(this);
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.layout_stopwatch);
 
@@ -86,6 +88,25 @@ public class Stopwatch extends AppCompatActivity {
 
         mRunning = false;
         mResetButton.callOnClick();
+
+        /* DEBUGGING */
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(4000);
+                    for (int i=1; i<=5; i++) {
+                        ChetBot.get().tap("start");
+                        Thread.sleep(i * 1000);
+                        ChetBot.get().tap("stop");
+                        Thread.sleep(1000);
+                        ChetBot.get().tap("reset");
+                        Thread.sleep(1000);
+                    }
+                } catch (InterruptedException e) {}
+            }
+        }).start();
     }
 
     @Override
