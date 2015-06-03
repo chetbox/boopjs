@@ -77,6 +77,10 @@ public class ChetBot extends NanoHTTPD {
     }
 
     private Object performAction(Command[] commands) throws IllegalArgumentException {
+        if (commands.length == 0) {
+            throw new IllegalArgumentException("No commands given");
+        }
+
         Activity activity = getActivity();
         Object result = getRootView(activity);
         for (Command cmd : commands) {
