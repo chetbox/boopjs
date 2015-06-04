@@ -26,4 +26,5 @@ dependencies {
     compile 'com.android.support:appcompat-v7:22.2.0'
     compile 'com.nanohttpd:nanohttpd:2.1.1'
     compile 'com.google.code.gson:gson:2.3.1'
+    compile 'com.google.guava:guava-collections:r03'
 }

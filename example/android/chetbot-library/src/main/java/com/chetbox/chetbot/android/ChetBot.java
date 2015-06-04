@@ -13,11 +13,15 @@ import com.google.gson.Gson;
 import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.Map;
 
 import fi.iki.elonen.NanoHTTPD;
+
+import static com.chetbox.chetbot.android.ViewUtils.*;
+
+import static com.google.common.collect.Iterables.*;
+import static com.google.common.collect.Lists.*;
 
 public class ChetBot extends NanoHTTPD {
 
@@ -57,7 +61,6 @@ public class ChetBot extends NanoHTTPD {
                 return new NanoHTTPD.Response(Response.Status.OK, MIME_PLAINTEXT, "beep boop bleep\n");
             case POST:
                 try {
-                    String command = session.getUri().substring(1);
                     Map<String, String> files = session.getParms();
                     session.parseBody(files);
                     Log.v(TAG, "params: " + session.getParms());
@@ -82,17 +85,20 @@ public class ChetBot extends NanoHTTPD {
         }
 
         Activity activity = getActivity();
-        Object result = getRootView(activity);
+        Iterable<?> results = newArrayList(getRootView(activity));
         for (Command cmd : commands) {
             switch (cmd.getName()) {
                 case VIEW:
-                    result = findView(cmd.getArgs(), (View) result);
+                    results = concat(transform((Collection<View>) results, new SubViews(cmd.getArgs()[0])));
                     break;
                 case TEXT:
-                    result = ((TextView) result).getText().toString();
+                    if (!isEmpty(results)) {
+                        TextView tv = ((TextView) get(results, 0));
+                        results = newArrayList(tv.getText().toString());
+                    }
                     break;
                 case TAP:
-                    final View view = (View) result;
+                    final View view = (View) get(results, 0);
                     activity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -104,6 +110,8 @@ public class ChetBot extends NanoHTTPD {
                     throw new IllegalArgumentException("Invalid command: " + cmd);
             }
         }
+
+        Object result = get(results, 0);
         if (result.getClass() == String.class
                 || result.getClass() == Integer.class
                 || result.getClass() == Long.class
@@ -122,16 +130,14 @@ public class ChetBot extends NanoHTTPD {
         }
     }
 
-    public static ChetBot get() {
-        return sInstance;
-    }
-
     private Activity getActivity(){
         try {
             Class activityThreadClass = Class.forName("android.app.ActivityThread");
             Object activityThread = activityThreadClass.getMethod("currentActivityThread").invoke(null);
             Field activitiesField = activityThreadClass.getDeclaredField("mActivities");
             activitiesField.setAccessible(true);
+            // TODO: handle API < 19
+            // (ArrayMap is new for API 19)
             ArrayMap activities = (ArrayMap) activitiesField.get(activityThread);
             for (Object activityRecord : activities.values()) {
                 Class activityRecordClass = activityRecord.getClass();
@@ -158,16 +164,4 @@ public class ChetBot extends NanoHTTPD {
         // checks.
     }
 
-    private static View getRootView(Activity activity) {
-        return activity.getWindow().getDecorView().findViewById(android.R.id.content);
-    }
-
-    private static View findView(String[] args, View view) {
-        final ArrayList<View> matchingViews = new ArrayList<View>();
-        view.findViewsWithText(matchingViews, args[0], View.FIND_VIEWS_WITH_TEXT);
-        if (matchingViews.size() == 0) {
-            throw new RuntimeException("View not found: " + args[0]);
-        }
-        return matchingViews.get(0);
-    }
 }

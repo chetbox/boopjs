@@ -1,8 +1,5 @@
 package com.chetbox.chetbot.android;
 
-import com.google.gson.annotations.SerializedName;
-
-import java.util.Locale;
 
 public class Command {
 

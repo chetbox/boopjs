@@ -7,7 +7,7 @@ import time
 NAME = 'name'
 ARGS = 'args'
 
-host = 'http://192.168.0.21:8897'
+host = 'http://localhost:8897'
 
 class View:
 
@@ -28,7 +28,6 @@ class View:
     def __add(self, cmd, *args):
        self.__commands.append({NAME: cmd,
                                ARGS: args})
-       return self
 
     def __execute(self):
         r = requests.post(host, params={'commands':json.dumps(self.__commands)})
