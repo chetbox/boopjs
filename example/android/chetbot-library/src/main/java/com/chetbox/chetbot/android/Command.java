@@ -8,9 +8,14 @@ public class Command {
         VIEW,
         COUNT,
         EXISTS,
+        LEFTMOST,
+        RIGHTMOST,
+        TOPMOST,
+        BOTTOMMOST,
 
         // Data
         TEXT,
+        LOCATION,
 
         // Interaction
         TAP

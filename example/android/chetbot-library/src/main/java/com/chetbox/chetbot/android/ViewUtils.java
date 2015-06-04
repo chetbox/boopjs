@@ -5,6 +5,7 @@ import android.content.Context;
 import android.view.View;
 
 import com.google.common.base.Function;
+import com.google.common.collect.Ordering;
 
 import java.util.ArrayList;
 
@@ -13,6 +14,14 @@ import static com.google.common.collect.Lists.*;
 
 
 public class ViewUtils {
+
+    public static Iterable<View> asViews(Iterable<?> views) {
+        return (Iterable<View>) views;
+    }
+
+    public static View firstView(Iterable<?> views) {
+        return (View) get(views, 0);
+    }
 
     public static View getRootView(Activity activity) {
         return activity.getWindow().getDecorView().findViewById(android.R.id.content);
@@ -56,6 +65,26 @@ public class ViewUtils {
                     && ((SubViews) that).mText == this.mText);
         }
     }
+
+    public static int[] location(View v) {
+        int[] location = new int[2];
+        v.getLocationInWindow(location);
+        return location;
+    }
+
+    public static Ordering<View> horizontalOrdering = new Ordering<View>() {
+        @Override
+        public int compare(View a, View b) {
+            return location(a)[0] - location(b)[0];
+        }
+    };
+
+    public static Ordering<View> verticalOrdering = new Ordering<View>() {
+        @Override
+        public int compare(View a, View b) {
+            return location(a)[1] - location(b)[1];
+        }
+    };
 
     private static int getIdentifier(String idStr, Context context) {
         int id = context.getResources().getIdentifier(idStr, "id", context.getPackageName());

@@ -13,7 +13,6 @@ import com.google.gson.Gson;
 import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.Field;
-import java.util.Collection;
 import java.util.Map;
 
 import fi.iki.elonen.NanoHTTPD;
@@ -82,18 +81,28 @@ public class ChetBot extends NanoHTTPD {
     private Iterable<?> performAction(Command cmd, Activity activity, Iterable<?> lastResults) throws IllegalArgumentException {
         switch (cmd.getName()) {
             case VIEW:
-                return concat(transform((Collection<View>) lastResults, new SubViews(cmd.getText(), cmd.getType(), cmd.getId())));
+                return concat(transform(asViews(lastResults), new SubViews(cmd.getText(), cmd.getType(), cmd.getId())));
             case COUNT:
                 return newArrayList(size(lastResults));
             case EXISTS:
                 return newArrayList( !isEmpty(lastResults) );
             case TEXT:
                 if (!isEmpty(lastResults)) {
-                    TextView tv = ((TextView) get(lastResults, 0));
+                    TextView tv = ((TextView) firstView(lastResults));
                     return newArrayList( tv.getText().toString() );
                 }
+            case LOCATION:
+                return newArrayList( location(firstView(lastResults)) );
+            case LEFTMOST:
+                return newArrayList( horizontalOrdering.min(asViews(lastResults)) );
+            case RIGHTMOST:
+                return newArrayList( horizontalOrdering.max(asViews(lastResults)) );
+            case TOPMOST:
+                return newArrayList( verticalOrdering.min(asViews(lastResults)) );
+            case BOTTOMMOST:
+                return newArrayList( verticalOrdering.max(asViews(lastResults)) );
             case TAP:
-                final View view = (View) get(lastResults, 0);
+                final View view = firstView(lastResults);
                 activity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -123,7 +132,14 @@ public class ChetBot extends NanoHTTPD {
                 || result instanceof Long
                 || result instanceof Float
                 || result instanceof Double
-                || result instanceof Boolean) {
+                || result instanceof Boolean
+                || result instanceof String[]
+                || result instanceof int[]
+                || result instanceof float[]
+                || result instanceof float[]
+                || result instanceof long[]
+                || result instanceof double[]
+                || result instanceof boolean[]) {
 
             return result;
         } else {

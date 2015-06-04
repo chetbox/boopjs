@@ -24,8 +24,28 @@ class View:
         self.__add('EXISTS')
         return self.__execute()
 
+    def leftmost(self):
+        self.__add('LEFTMOST')
+        return self
+
+    def rightmost(self):
+        self.__add('RIGHTMOST')
+        return self
+
+    def topmost(self):
+        self.__add('TOPMOST')
+        return self
+
+    def bottommost(self):
+        self.__add('BOTTOMMOST')
+        return self
+
     def text(self):
         self.__add('TEXT')
+        return self.__execute()
+
+    def location(self):
+        self.__add('LOCATION')
         return self.__execute()
 
     def tap(self):
@@ -50,8 +70,7 @@ if __name__ == '__main__':
 
     __('reset').tap()
 
-    assert(__(id='minutes').text() == '00')
-    assert(__(id='seconds').text() == '00')
+    assert(__('00').leftmost().location()[0] < __('00').rightmost().location()[0])
     assert(__(id='milliseconds').text() == '000')
 
     __('start').tap()
