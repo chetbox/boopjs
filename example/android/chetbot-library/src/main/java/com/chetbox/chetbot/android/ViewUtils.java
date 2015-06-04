@@ -24,6 +24,7 @@ public class ViewUtils {
         @Override
         public Iterable<View> apply(View input) {
             final ArrayList<View> matchingViews = new ArrayList<>();
+            // TODO: make substrings optional (this allows substrings)
             input.findViewsWithText(matchingViews, mText, View.FIND_VIEWS_WITH_TEXT);
             return matchingViews;
         }

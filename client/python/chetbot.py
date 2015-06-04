@@ -16,6 +16,10 @@ class View:
         if text or type or id:
             self.__add('VIEW', text, type, id)
 
+    def count(self):
+        self.__add('COUNT')
+        return self.__execute()
+
     def text(self):
         self.__add('TEXT')
         return self.__execute()

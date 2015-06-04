@@ -91,10 +91,13 @@ public class ChetBot extends NanoHTTPD {
                 case VIEW:
                     results = concat(transform((Collection<View>) results, new SubViews(cmd.getArgs()[0])));
                     break;
+                case COUNT:
+                    results = newArrayList( size(results) );
+                    break;
                 case TEXT:
                     if (!isEmpty(results)) {
                         TextView tv = ((TextView) get(results, 0));
-                        results = newArrayList(tv.getText().toString());
+                        results = newArrayList( tv.getText().toString() );
                     }
                     break;
                 case TAP:

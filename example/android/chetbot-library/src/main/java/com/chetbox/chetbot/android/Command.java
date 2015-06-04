@@ -6,6 +6,7 @@ public class Command {
     public enum Name {
         // Traversing
         VIEW,
+        COUNT,
 
         // Data
         TEXT,
