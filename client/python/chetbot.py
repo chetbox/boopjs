@@ -43,7 +43,16 @@ __ = View
 wait = time.sleep
 
 if __name__ == '__main__':
+
+    __('reset').tap()
+
+    assert(__(id='minutes').text() == '00')
+    assert(__(id='seconds').text() == '00')
+    assert(__(id='milliseconds').text() == '000')
+
     __('start').tap()
-    wait(1)
+    wait(2)
     __('stop').tap()
-    print __('mins').text()
+
+    assert(__(id='minutes').text() == '00')
+    assert(__(id='seconds').text() == '02')

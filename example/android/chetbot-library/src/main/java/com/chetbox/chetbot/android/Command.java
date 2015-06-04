@@ -24,8 +24,16 @@ public class Command {
         return name;
     }
 
-    public String[] getArgs() {
-        return args;
+    public String getText() {
+        return args.length > 0 ? args[0] : null;
+    }
+
+    public String getType() {
+        return args.length > 1 ? args[1] : null;
+    }
+
+    public String getId() {
+        return args.length > 2 ? args[2] : null;
     }
 
     @Override

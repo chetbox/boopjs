@@ -89,7 +89,7 @@ public class ChetBot extends NanoHTTPD {
         for (Command cmd : commands) {
             switch (cmd.getName()) {
                 case VIEW:
-                    results = concat(transform((Collection<View>) results, new SubViews(cmd.getArgs()[0])));
+                    results = concat(transform((Collection<View>) results, new SubViews(cmd.getText(), cmd.getType(), cmd.getId())));
                     break;
                 case COUNT:
                     results = newArrayList( size(results) );
@@ -114,12 +114,12 @@ public class ChetBot extends NanoHTTPD {
             }
         }
 
-        Object result = get(results, 0);
-        if (result.getClass() == String.class
-                || result.getClass() == Integer.class
-                || result.getClass() == Long.class
-                || result.getClass() == Float.class
-                || result.getClass() == Double.class) {
+        Object result = isEmpty(results) ? null : get(results, 0);
+        if (result instanceof String
+                || result instanceof Integer
+                || result instanceof Long
+                || result instanceof Float
+                || result instanceof Double) {
 
             return result;
         } else {
