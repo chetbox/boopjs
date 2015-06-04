@@ -133,6 +133,7 @@ public class ChetBot extends NanoHTTPD {
         }
     }
 
+    // based on https://androidreclib.wordpress.com/2014/11/22/getting-the-current-activity/
     private Activity getActivity(){
         try {
             Class activityThreadClass = Class.forName("android.app.ActivityThread");
