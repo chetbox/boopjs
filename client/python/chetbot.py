@@ -7,7 +7,7 @@ import time
 NAME = 'name'
 ARGS = 'args'
 
-host = 'http://localhost:8897'
+host = 'http://192.168.0.21:8897'
 
 class View:
 
@@ -18,6 +18,10 @@ class View:
 
     def count(self):
         self.__add('COUNT')
+        return self.__execute()
+
+    def exists(self):
+        self.__add('EXISTS')
         return self.__execute()
 
     def text(self):
@@ -56,3 +60,7 @@ if __name__ == '__main__':
 
     assert(__(id='minutes').text() == '00')
     assert(__(id='seconds').text() == '02')
+
+    assert(__('reset').count() == 1)
+    assert(__('start').exists())
+    assert(not(__('stop').exists()))

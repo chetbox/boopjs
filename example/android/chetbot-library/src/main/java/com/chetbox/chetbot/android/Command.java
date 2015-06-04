@@ -7,6 +7,7 @@ public class Command {
         // Traversing
         VIEW,
         COUNT,
+        EXISTS,
 
         // Data
         TEXT,

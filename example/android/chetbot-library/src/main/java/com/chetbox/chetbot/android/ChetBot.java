@@ -92,7 +92,10 @@ public class ChetBot extends NanoHTTPD {
                     results = concat(transform((Collection<View>) results, new SubViews(cmd.getText(), cmd.getType(), cmd.getId())));
                     break;
                 case COUNT:
-                    results = newArrayList( size(results) );
+                    results = newArrayList(size(results));
+                    break;
+                case EXISTS:
+                    results = newArrayList( !isEmpty(results) );
                     break;
                 case TEXT:
                     if (!isEmpty(results)) {
@@ -119,7 +122,8 @@ public class ChetBot extends NanoHTTPD {
                 || result instanceof Integer
                 || result instanceof Long
                 || result instanceof Float
-                || result instanceof Double) {
+                || result instanceof Double
+                || result instanceof Boolean) {
 
             return result;
         } else {
