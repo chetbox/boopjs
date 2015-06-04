@@ -79,6 +79,33 @@ public class ChetBot extends NanoHTTPD {
         }
     }
 
+    private Iterable<?> performAction(Command cmd, Activity activity, Iterable<?> lastResults) throws IllegalArgumentException {
+        switch (cmd.getName()) {
+            case VIEW:
+                return concat(transform((Collection<View>) lastResults, new SubViews(cmd.getText(), cmd.getType(), cmd.getId())));
+            case COUNT:
+                return newArrayList(size(lastResults));
+            case EXISTS:
+                return newArrayList( !isEmpty(lastResults) );
+            case TEXT:
+                if (!isEmpty(lastResults)) {
+                    TextView tv = ((TextView) get(lastResults, 0));
+                    return newArrayList( tv.getText().toString() );
+                }
+            case TAP:
+                final View view = (View) get(lastResults, 0);
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        view.callOnClick();
+                    }
+                });
+                return lastResults;
+            default:
+                throw new IllegalArgumentException("Invalid command: " + cmd);
+        }
+    }
+
     private Object performAction(Command[] commands) throws IllegalArgumentException {
         if (commands.length == 0) {
             throw new IllegalArgumentException("No commands given");
@@ -87,34 +114,7 @@ public class ChetBot extends NanoHTTPD {
         Activity activity = getActivity();
         Iterable<?> results = newArrayList(getRootView(activity));
         for (Command cmd : commands) {
-            switch (cmd.getName()) {
-                case VIEW:
-                    results = concat(transform((Collection<View>) results, new SubViews(cmd.getText(), cmd.getType(), cmd.getId())));
-                    break;
-                case COUNT:
-                    results = newArrayList(size(results));
-                    break;
-                case EXISTS:
-                    results = newArrayList( !isEmpty(results) );
-                    break;
-                case TEXT:
-                    if (!isEmpty(results)) {
-                        TextView tv = ((TextView) get(results, 0));
-                        results = newArrayList( tv.getText().toString() );
-                    }
-                    break;
-                case TAP:
-                    final View view = (View) get(results, 0);
-                    activity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            view.callOnClick();
-                        }
-                    });
-                    break;
-                default:
-                    throw new IllegalArgumentException("Invalid command: " + cmd);
-            }
+            results = performAction(cmd, activity, results);
         }
 
         Object result = isEmpty(results) ? null : get(results, 0);
