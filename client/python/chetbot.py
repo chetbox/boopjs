@@ -83,7 +83,7 @@ if __name__ == '__main__':
 
     __('reset').tap()
 
-    assert(__('00').leftmost().location()[0] < __('00').rightmost().location()[0])
+    assert(__('00').closest_to('mins').location()[0] < __('00').closest_to('secs').location())
     assert(__(id='milliseconds').text() == '000')
 
     __('start').tap()
