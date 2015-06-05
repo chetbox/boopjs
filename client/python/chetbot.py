@@ -14,7 +14,11 @@ class View:
     def __init__(self, text=None, type=None, id=None):
         self.__commands = []
         if text or type or id:
-            self.__add('VIEW', text, type, id)
+            self.view(text, type, id)
+
+    def view(self, text=None, type=None, id=None):
+        self.__add('VIEW', text, type, id)
+        return self
 
     def count(self):
         self.__add('COUNT')
