@@ -13,6 +13,7 @@ import com.google.gson.Gson;
 import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.Field;
+import java.util.Iterator;
 import java.util.Map;
 
 import fi.iki.elonen.NanoHTTPD;
@@ -93,6 +94,10 @@ public class ChetBot extends NanoHTTPD {
                 }
             case LOCATION:
                 return newArrayList( location(firstView(lastResults)) );
+            case CENTER:
+                return newArrayList( location(firstView(lastResults)) );
+            case SIZE:
+                return newArrayList( size(firstView(lastResults)) );
             case LEFTMOST:
                 return newArrayList( horizontalOrdering.min(asViews(lastResults)) );
             case RIGHTMOST:
@@ -101,6 +106,10 @@ public class ChetBot extends NanoHTTPD {
                 return newArrayList( verticalOrdering.min(asViews(lastResults)) );
             case BOTTOMMOST:
                 return newArrayList( verticalOrdering.max(asViews(lastResults)) );
+            case CLOSEST_TO: {
+                View target = firstView(new ViewUtils.SubViews(cmd.getText(), cmd.getType(), cmd.getId()).apply(getRootView(getActivity())));
+                return newArrayList( new EuclidianDistanceOrdering(center(target)).min(asViews(lastResults)) );
+            }
             case TAP:
                 final View view = firstView(lastResults);
                 activity.runOnUiThread(new Runnable() {

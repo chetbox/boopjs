@@ -12,10 +12,13 @@ public class Command {
         RIGHTMOST,
         TOPMOST,
         BOTTOMMOST,
+        CLOSEST_TO,
 
         // Data
         TEXT,
         LOCATION,
+        CENTER,
+        SIZE,
 
         // Interaction
         TAP

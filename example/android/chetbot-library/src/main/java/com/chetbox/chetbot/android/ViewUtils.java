@@ -72,6 +72,17 @@ public class ViewUtils {
         return location;
     }
 
+    public static int[] size(View v) {
+        return new int[]{v.getWidth(), v.getHeight()};
+    }
+
+    public static int[] center(View v) {
+        int[] location = location(v),
+              size = size(v);
+        return new int[]{location[0] + size[0]/2,
+                         location[1] + size[1]/2};
+    }
+
     public static Ordering<View> horizontalOrdering = new Ordering<View>() {
         @Override
         public int compare(View a, View b) {
@@ -85,6 +96,26 @@ public class ViewUtils {
             return location(a)[1] - location(b)[1];
         }
     };
+
+    public static class EuclidianDistanceOrdering extends Ordering<View> {
+
+        private final int[] mTarget;
+
+        public EuclidianDistanceOrdering(int[] target) {
+            mTarget = target;
+        }
+
+        @Override
+        public int compare(View a, View b) {
+            int[] centerA = center(a),
+                  centerB = center(b);
+            int dxA = centerA[0] - mTarget[0],
+                dyA = centerA[1] - mTarget[1],
+                dxB = centerB[0] - mTarget[0],
+                dyB = centerB[1] - mTarget[1];
+            return (dxA * dxA + dyA * dyA) - (dxB * dxB + dyB * dyB);
+        }
+    }
 
     private static int getIdentifier(String idStr, Context context) {
         int id = context.getResources().getIdentifier(idStr, "id", context.getPackageName());

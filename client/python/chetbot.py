@@ -40,12 +40,25 @@ class View:
         self.__add('BOTTOMMOST')
         return self
 
+    def closest_to(self, text=None, type=None, id=None):
+        '''TODO: allow a view selector as an argument'''
+        self.__add('CLOSEST_TO', text, type, id)
+        return self
+
     def text(self):
         self.__add('TEXT')
         return self.__execute()
 
     def location(self):
         self.__add('LOCATION')
+        return self.__execute()
+
+    def size(self):
+        self.__add('SIZE')
+        return self.__execute()
+
+    def center(self):
+        self.__add('CENTER')
         return self.__execute()
 
     def tap(self):
