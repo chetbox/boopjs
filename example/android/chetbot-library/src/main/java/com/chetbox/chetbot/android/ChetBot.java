@@ -83,8 +83,17 @@ public class ChetBot extends NanoHTTPD {
         switch (cmd.getName()) {
             case VIEW:
                 return concat(transform(asViews(lastResults), new SubViews(cmd.getText(), cmd.getType(), cmd.getId())));
+            case ID: {
+                View v = firstView(lastResults);
+                String idStr = v.getResources().getResourceName(v.getId());
+                idStr = idStr.substring(idStr.lastIndexOf("/") + 1);
+                return newArrayList( idStr );
+            }
+            case TYPE: {
+                return newArrayList( firstView(lastResults).getClass().getSimpleName() );
+            }
             case COUNT:
-                return newArrayList(size(lastResults));
+                return newArrayList( size(lastResults) );
             case EXISTS:
                 return newArrayList( !isEmpty(lastResults) );
             case TEXT:
@@ -108,9 +117,9 @@ public class ChetBot extends NanoHTTPD {
                 return newArrayList( verticalOrdering.max(asViews(lastResults)) );
             case CLOSEST_TO: {
                 View target = firstView(new ViewUtils.SubViews(cmd.getText(), cmd.getType(), cmd.getId()).apply(getRootView(getActivity())));
-                return newArrayList( new EuclidianDistanceOrdering(center(target)).min(asViews(lastResults)) );
+                return newArrayList(new EuclidianDistanceOrdering(center(target)).min(asViews(lastResults)));
             }
-            case TAP:
+            case TAP: {
                 final View view = firstView(lastResults);
                 activity.runOnUiThread(new Runnable() {
                     @Override
@@ -119,6 +128,7 @@ public class ChetBot extends NanoHTTPD {
                     }
                 });
                 return lastResults;
+            }
             default:
                 throw new IllegalArgumentException("Invalid command: " + cmd);
         }

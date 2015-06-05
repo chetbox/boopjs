@@ -19,6 +19,8 @@ public class Command {
         LOCATION,
         CENTER,
         SIZE,
+        ID,
+        TYPE,
 
         // Interaction
         TAP

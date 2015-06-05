@@ -20,6 +20,14 @@ class View:
         self.__add('VIEW', text, type, id)
         return self
 
+    def id(self):
+        self.__add('ID')
+        return self.__execute()
+
+    def type(self):
+        self.__add('TYPE')
+        return self.__execute()
+
     def count(self):
         self.__add('COUNT')
         return self.__execute()
