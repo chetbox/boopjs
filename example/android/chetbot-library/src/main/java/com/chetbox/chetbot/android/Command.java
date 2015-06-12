@@ -13,6 +13,7 @@ public class Command {
         TOPMOST,
         BOTTOMMOST,
         CLOSEST_TO,
+        FURTHEST_FROM,
 
         // Data
         TEXT,

@@ -79,10 +79,14 @@ public class ChetBot extends NanoHTTPD {
         }
     }
 
+    private static SubViews subViewsSelector(Command cmd) {
+        return new SubViews(cmd.getText(), cmd.getType(), cmd.getId());
+    }
+
     private Iterable<?> performAction(Command cmd, Activity activity, Iterable<?> lastResults) throws IllegalArgumentException {
         switch (cmd.getName()) {
             case VIEW:
-                return concat(transform(asViews(lastResults), new SubViews(cmd.getText(), cmd.getType(), cmd.getId())));
+                return concat(transform(asViews(lastResults), subViewsSelector(cmd)));
             case ID: {
                 View v = firstView(lastResults);
                 String idStr = v.getResources().getResourceName(v.getId());
@@ -116,8 +120,12 @@ public class ChetBot extends NanoHTTPD {
             case BOTTOMMOST:
                 return newArrayList( verticalOrdering.max(asViews(lastResults)) );
             case CLOSEST_TO: {
-                View target = firstView(new ViewUtils.SubViews(cmd.getText(), cmd.getType(), cmd.getId()).apply(getRootView(getActivity())));
+                View target = firstView(subViewsSelector(cmd).apply(getRootView(getActivity())));
                 return newArrayList(new EuclidianDistanceOrdering(center(target)).min(asViews(lastResults)));
+            }
+            case FURTHEST_FROM: {
+                View target = firstView(subViewsSelector(cmd).apply(getRootView(getActivity())));
+                return newArrayList(new EuclidianDistanceOrdering(center(target)).max(asViews(lastResults)));
             }
             case TAP: {
                 final View view = firstView(lastResults);

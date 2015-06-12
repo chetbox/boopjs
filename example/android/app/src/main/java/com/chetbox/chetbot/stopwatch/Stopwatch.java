@@ -39,7 +39,9 @@ public class Stopwatch extends AppCompatActivity {
     };
 
     private long elapsedMillis() {
-        long elapsedNanos = mPreviousElapsed + (mRunning ? System.nanoTime() : mStoppedAt) - mStartedAt;
+        long elapsedNanos = mPreviousElapsed
+                + (mRunning ? System.nanoTime() : mStoppedAt)
+                - mStartedAt;
         return elapsedNanos / 1000000;
     }
 
