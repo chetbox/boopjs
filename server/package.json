@@ -1,0 +1,22 @@
+{
+  "name": "chetbot-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chetbox/chetbot.git"
+  },
+  "author": "",
+  "license": "proprietary",
+  "bugs": {
+    "url": "https://github.com/chetbox/chetbot/issues"
+  },
+  "homepage": "https://github.com/chetbox/chetbot#readme",
+  "dependencies": {
+    "ws": "^0.7.2"
+  }
+}
