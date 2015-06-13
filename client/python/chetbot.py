@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-import requests
+from websocket import WebSocket
+from uuid import uuid4
 import json
 import time
 
@@ -15,10 +16,14 @@ You must specify at least one of:
     type - The class name of the view
     id - The Android ID given to the view'''
 
-    host = 'localhost'
+    device = 'my_magic_device_1234567890'
 
     def __init__(self, text=None, type=None, id=None):
         self.__commands = []
+
+        self.__ws = WebSocket()
+        self.__ws.connect('ws://ec2-54-77-127-243.eu-west-1.compute.amazonaws.com')
+
         if text or type or id:
             self.view(text, type, id)
 
@@ -109,10 +114,16 @@ True if any views are selected, False otherwise'''
                                ARGS: args})
 
     def __execute(self):
-        r = requests.post('http://' + View.host + ':8897', params={'commands':json.dumps(self.__commands)})
-        if r.status_code != 200:
-            raise Exception(r.content)
-        return json.loads(r.content)
+        msg = {
+            'request':  str(uuid4()),
+            'device':   View.device,
+            'commands': self.__commands
+        }
+        self.__ws.send(json.dumps(msg))
+        response = json.loads(self.__ws.recv())
+        if response.has_key('error'):
+            raise Exception(response['error'])
+        return response['result']
 
 __ = View
 wait = time.sleep

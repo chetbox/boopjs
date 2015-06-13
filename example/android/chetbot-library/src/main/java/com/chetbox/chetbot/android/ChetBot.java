@@ -7,8 +7,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
-import com.google.gson.Gson;
-
 import java.lang.reflect.Field;
 
 import static com.chetbox.chetbot.android.ViewUtils.*;

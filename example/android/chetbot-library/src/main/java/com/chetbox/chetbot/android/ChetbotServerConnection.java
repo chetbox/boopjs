@@ -3,6 +3,7 @@ package com.chetbox.chetbot.android;
 import android.util.Log;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
@@ -16,25 +17,42 @@ public class ChetbotServerConnection extends WebSocketClient {
     }
 
     public static class Message {
+        private String request;
         private String device;
         private Command[] commands;
 
         public Command[] getCommands() {
             return commands.clone();
         }
+
+        public String getRequestId() {
+            return request;
+        }
     }
 
-    public static class Result {
+    private static class Result {
+        private String request;
         private Object result;
 
-        public Result(Object result) {
+        public Result(String request, Object result) {
+            this.request = request;
             this.result = result;
+        }
+    }
+
+    private static class Error {
+        private String request;
+        private String error;
+
+        public Error(String request, String message) {
+            this.request = request;
+            this.error = message;
         }
     }
 
     private static final String TAG = ChetbotServerConnection.class.getSimpleName();
 
-    private static Gson sGson = new Gson();
+    private static Gson sGson = new GsonBuilder().serializeNulls().create();
 
     private final MessageHandler mMessageHandler;
 
@@ -58,8 +76,14 @@ public class ChetbotServerConnection extends WebSocketClient {
     public void onMessage(String messageStr) {
         Log.v(TAG, "Message received: " + messageStr);
         Message message = sGson.fromJson(messageStr, Message.class);
-        Object result = mMessageHandler.onMessage(message.getCommands());
-        send(sGson.toJson(new Result(result)));
+        try {
+            Object result = mMessageHandler.onMessage(message.getCommands());
+            Log.v(TAG, "result: " + sGson.toJson(new Result(message.getRequestId(), result)));
+            send(sGson.toJson(new Result(message.getRequestId(), result)));
+        } catch (Exception e) {
+            Log.v(TAG, "error: " + sGson.toJson(new Error(message.getRequestId(), e.getMessage())));
+            send(sGson.toJson(new Error(message.getRequestId(), e.getMessage())));
+        }
     }
 
     @Override
