@@ -16,11 +16,11 @@ server.on('connection', function (client) {
       devices[message.args[0]] = client;
 
     } else if(message.device) {
-      console.log('commands: ' + message.commands);
+      console.log('commands: ' + JSON.stringify(message.commands, null, 2));
       devices[message.device].send(JSON.stringify(message));
 
     } else {
-      console.log('dunno what to do with: ' + message);
+      console.log('dunno what to do with: ' + messageStr);
     }
   });
 });
