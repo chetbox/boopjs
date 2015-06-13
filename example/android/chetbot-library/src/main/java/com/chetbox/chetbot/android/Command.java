@@ -24,13 +24,19 @@ public class Command {
         TYPE,
 
         // Interaction
-        TAP
+        TAP,
+
+        // Server API
+        REGISTER_DEVICE
     }
 
     private Name name;
     private String[] args;
 
-    private Command() {};
+    public Command(Name name, String... args) {
+        this.name = name;
+        this.args = args;
+    };
 
     public Name getName() {
         return name;

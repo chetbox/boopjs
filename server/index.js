@@ -13,13 +13,13 @@ server.on('connection', function (client) {
 
     switch (message.command) {
 
-      case 'register_device':
+      case 'REGISTER_DEVICE':
         var device_id = message.args[0];
         console.log('new device: ' + device_id);
         devices[device_id] = client;
         break;
 
-      case 'tap':
+      case 'TAP':
         console.log('tap: ' + message.args);
         devices[message.device].send(JSON.stringify(message));
         break;

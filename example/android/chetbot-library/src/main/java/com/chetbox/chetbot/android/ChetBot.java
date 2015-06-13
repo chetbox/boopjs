@@ -13,7 +13,6 @@ import com.google.gson.Gson;
 import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.Field;
-import java.util.Iterator;
 import java.util.Map;
 
 import fi.iki.elonen.NanoHTTPD;
@@ -23,16 +22,16 @@ import static com.chetbox.chetbot.android.ViewUtils.*;
 import static com.google.common.collect.Iterables.*;
 import static com.google.common.collect.Lists.*;
 
-public class ChetBot extends NanoHTTPD {
+public class Chetbot extends NanoHTTPD {
 
-    private static final String TAG = ChetBot.class.getSimpleName();
+    private static final String TAG = Chetbot.class.getSimpleName();
     private static final Gson sGson = new Gson();
 
-    private static ChetBot sInstance = null;
+    private static Chetbot sInstance = null;
 
     private final String mPackageName;
 
-    private ChetBot(Context context) {
+    private Chetbot(Context context) {
         super(8897);
         mPackageName = context.getPackageName();
 
@@ -176,7 +175,7 @@ public class ChetBot extends NanoHTTPD {
 
     public static void start(Context context) {
         if (sInstance == null) {
-            sInstance = new ChetBot(context);
+            sInstance = new Chetbot(context);
         }
     }
 

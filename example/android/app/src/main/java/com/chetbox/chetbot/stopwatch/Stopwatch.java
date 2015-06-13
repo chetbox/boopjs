@@ -9,7 +9,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.chetbox.chetbot.android.ChetBot;
+import com.chetbox.chetbot.android.Chetbot;
 
 
 public class Stopwatch extends AppCompatActivity {
@@ -47,7 +47,7 @@ public class Stopwatch extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        ChetBot.start(this);
+        Chetbot.start(this);
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.layout_stopwatch);
