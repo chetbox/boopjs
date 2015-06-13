@@ -11,12 +11,36 @@ import java.net.URI;
 
 public class ChetbotServerConnection extends WebSocketClient {
 
+    public interface MessageHandler {
+        Object onMessage(Command[] message) throws IllegalArgumentException;
+    }
+
+    public static class Message {
+        private String device;
+        private Command[] commands;
+
+        public Command[] getCommands() {
+            return commands.clone();
+        }
+    }
+
+    public static class Result {
+        private Object result;
+
+        public Result(Object result) {
+            this.result = result;
+        }
+    }
+
     private static final String TAG = ChetbotServerConnection.class.getSimpleName();
 
     private static Gson sGson = new Gson();
 
-    public ChetbotServerConnection() {
-        super(URI.create("ws://lec2-54-77-127-243.eu-west-1.compute.amazonaws.com"));
+    private final MessageHandler mMessageHandler;
+
+    public ChetbotServerConnection(MessageHandler messageHandler) {
+        super(URI.create("ws://ec2-54-77-127-243.eu-west-1.compute.amazonaws.com"));
+        mMessageHandler = messageHandler;
     }
 
     @Override
@@ -31,8 +55,11 @@ public class ChetbotServerConnection extends WebSocketClient {
     }
 
     @Override
-    public void onMessage(String message) {
-        Log.v(TAG, "Message received: " + message);
+    public void onMessage(String messageStr) {
+        Log.v(TAG, "Message received: " + messageStr);
+        Message message = sGson.fromJson(messageStr, Message.class);
+        Object result = mMessageHandler.onMessage(message.getCommands());
+        send(sGson.toJson(new Result(result)));
     }
 
     @Override

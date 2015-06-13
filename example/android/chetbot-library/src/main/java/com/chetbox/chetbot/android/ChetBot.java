@@ -1,7 +1,6 @@
 package com.chetbox.chetbot.android;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
 import android.util.ArrayMap;
 import android.util.Log;
@@ -10,72 +9,28 @@ import android.widget.TextView;
 
 import com.google.gson.Gson;
 
-import java.io.IOException;
-import java.io.StringReader;
 import java.lang.reflect.Field;
-import java.util.Map;
-
-import fi.iki.elonen.NanoHTTPD;
 
 import static com.chetbox.chetbot.android.ViewUtils.*;
 
 import static com.google.common.collect.Iterables.*;
 import static com.google.common.collect.Lists.*;
 
-public class Chetbot extends NanoHTTPD {
+public class Chetbot implements ChetbotServerConnection.MessageHandler {
 
     private static final String TAG = Chetbot.class.getSimpleName();
-    private static final Gson sGson = new Gson();
 
     private static Chetbot sInstance = null;
 
     private final String mPackageName;
+    private final ChetbotServerConnection mServerConnection;
 
     private Chetbot(Context context) {
-        super(8897);
         mPackageName = context.getPackageName();
 
-        // Start Webserver
-        try {
-            start();
-        } catch (IOException e) {
-            new AlertDialog.Builder(context)
-                    .setTitle("ChetBot error")
-                    .setMessage("ChetBot failed to start:\n" + e)
-                    .setNeutralButton("Okay", null)
-                    .create()
-                    .show();
-        }
-    }
-
-    /*
-     * Web Server
-     */
-
-    @Override
-    public NanoHTTPD.Response serve(NanoHTTPD.IHTTPSession session) {
-        Log.d(TAG, session.getMethod() + " " + session.getUri());
-        switch (session.getMethod()) {
-            case GET:
-                return new NanoHTTPD.Response(Response.Status.OK, MIME_PLAINTEXT, "beep boop bleep\n");
-            case POST:
-                try {
-                    Map<String, String> files = session.getParms();
-                    session.parseBody(files);
-                    Log.v(TAG, "params: " + session.getParms());
-                    if (!files.containsKey("commands")) {
-                        throw new IllegalArgumentException("Missing key: commands");
-                    }
-                    Command[] commands = sGson.fromJson(new StringReader(files.get("commands")), Command[].class);
-                    Object result = performAction(commands);
-                    return new NanoHTTPD.Response(Response.Status.OK, "application/json", sGson.toJson(result));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    return new NanoHTTPD.Response(Response.Status.INTERNAL_ERROR, MIME_PLAINTEXT, e.getClass().getSimpleName() + ": " + e.getMessage());
-                }
-            default:
-                return new NanoHTTPD.Response(Response.Status.NOT_FOUND, MIME_PLAINTEXT, "Nothing to see here\n");
-        }
+        // Connect to Chetbot server
+        mServerConnection = new ChetbotServerConnection(this);
+        mServerConnection.connect();
     }
 
     private static SubViews subViewsSelector(Command cmd) {
@@ -141,7 +96,7 @@ public class Chetbot extends NanoHTTPD {
         }
     }
 
-    private Object performAction(Command[] commands) throws IllegalArgumentException {
+    public Object onMessage(Command[] commands) throws IllegalArgumentException {
         if (commands.length == 0) {
             throw new IllegalArgumentException("No commands given");
         }

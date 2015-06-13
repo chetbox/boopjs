@@ -27,6 +27,7 @@ public class Command {
         TAP,
 
         // Server API
+        RESULT,
         REGISTER_DEVICE
     }
 
