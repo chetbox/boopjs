@@ -6,31 +6,23 @@ var server = new WebSocketServer({ port: PORT });
 var devices = {};
  
 server.on('connection', function (client) {
-  client.on('message', function (_message) {
-    console.log(_message);
+  client.on('message', function (messageStr) {
+    console.log(messageStr);
 
-    var message = JSON.parse(_message);
+    var message = JSON.parse(messageStr);
 
-    switch (message.name) {
+    if (message.name == 'REGISTER_DEVICE') {
+      console.log('new device: ' + message.args[0]);
+      devices[message.args[0]] = client;
 
-      case 'REGISTER_DEVICE':
-        var device_id = message.args[0];
-        console.log('new device: ' + device_id);
-        devices[device_id] = client;
-        break;
+    } else if(message.device) {
+      console.log('commands: ' + message.commands);
+      devices[message.device].send(JSON.stringify(message));
 
-      case 'TAP':
-        console.log('tap: ' + message.args);
-        devices[message.device].send(JSON.stringify(message));
-        break;
-
-      default:
-        console.log('dunno what to do with: ' + message.name);
-        break;
+    } else {
+      console.log('dunno what to do with: ' + message);
     }
   });
- 
-  client.send('something');
 });
 
 console.log('Started server on port ' + PORT);
