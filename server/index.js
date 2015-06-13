@@ -11,7 +11,7 @@ server.on('connection', function (client) {
 
     var message = JSON.parse(_message);
 
-    switch (message.command) {
+    switch (message.name) {
 
       case 'REGISTER_DEVICE':
         var device_id = message.args[0];
@@ -25,7 +25,7 @@ server.on('connection', function (client) {
         break;
 
       default:
-        console.log('dunno what to do with: ' + message.command);
+        console.log('dunno what to do with: ' + message.name);
         break;
     }
   });
