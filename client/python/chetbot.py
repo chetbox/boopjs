@@ -8,6 +8,10 @@ import time
 NAME = 'name'
 ARGS = 'args'
 
+# TODO: reconnect if disconnected
+__ws = WebSocket()
+__ws.connect('ws://ec2-54-77-127-243.eu-west-1.compute.amazonaws.com')
+
 class View:
     '''Select and interact with views based on their appearance
 
@@ -20,9 +24,6 @@ You must specify at least one of:
 
     def __init__(self, text=None, type=None, id=None):
         self.__commands = []
-
-        self.__ws = WebSocket()
-        self.__ws.connect('ws://ec2-54-77-127-243.eu-west-1.compute.amazonaws.com')
 
         if text or type or id:
             self.view(text, type, id)
@@ -119,7 +120,7 @@ True if any views are selected, False otherwise'''
             'device':   View.device,
             'commands': self.__commands
         }
-        self.__ws.send(json.dumps(msg))
+        __ws.send(json.dumps(msg))
         response = json.loads(self.__ws.recv())
         if response.has_key('error'):
             raise Exception(response['error'])
