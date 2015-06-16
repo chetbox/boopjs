@@ -51,28 +51,22 @@ function __(text_or_options) {
 
     function view() {}
 
-    view.view = function(text_or_options) {
-        var args;
-        if (typeof(text_or_options) === 'string') {
-            args = [text_or_options, null, null];
-        } else if (typeof(text_or_options) === 'object' && !!text_or_options) {
-            args = [text_or_options.text, text_or_options.type, text_or_options.id];
-        } else {
-            console.error('Invalid argument', text_or_options);
+    var selectors_cmds = ['view', 'leftmost', 'rightmost', 'topmost', 'bottommost', 'closest_to', 'further_from'];
+    selectors_cmds.forEach(function(cmd) {
+        view[cmd] = function() {
+            _add(cmd.toUpperCase(), [].slice.call(arguments));
+            return view;
         }
-        _add('VIEW', args);
-        return view;
-    }
-    view.tap = function(handler) {
-        _add('TAP');
-        _execute(handler);
-        return view;
-    }
-    view.text = function(handler) {
-        _add('TEXT');
-        _execute(handler);
-        return view;
-    }
+    });
+
+    var action_cmds = ['tap', 'text', 'id', 'type', 'count', 'exists', 'location', 'center', 'size'];
+    action_cmds.forEach(function(cmd) {
+        view[cmd] = function() {
+            _add(cmd.toUpperCase(), [].slice.call(arguments, 1));
+            _execute(arguments[0]);
+            return view;
+        }
+    });
 
     view.view(text_or_options);
 
