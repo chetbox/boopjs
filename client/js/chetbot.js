@@ -5,6 +5,11 @@
 var chetbot_device = 'my_magic_device_1234567890';
 var _ws = new ReconnectingWebSocket('ws://ec2-54-77-127-243.eu-west-1.compute.amazonaws.com');
 
+/* Heartbeat to prevent device timing out */
+var device_iframe = document.querySelector('iframe');
+setInterval(function() { device_iframe.contentWindow.postMessage('heartbeat', '*'); },
+            60 * 1000);
+
 function __(text_or_options) {
 
     var _commands = [];
