@@ -42,7 +42,7 @@ function __(text_or_options) {
             _ws.onmessage = unhandled_data;
             var resp = JSON.parse(e.data);
             if (resp.error) {
-                console.log(resp.error);
+                console.error(resp.error);
             } else {
                 result_handler(resp.result);
             }

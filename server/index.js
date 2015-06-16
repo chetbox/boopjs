@@ -1,35 +1,10 @@
-var WebSocketServer = require('ws').Server;
+var app = require('./http_server').app;
+var websocket = require('./websocket_server');
 
-var PORT = process.env.PORT || 8001;
-var server = new WebSocketServer({ port: PORT });
+var port = process.env.PORT || 8001;
 
-var devices = {};
-var requires_response = {};
- 
-server.on('connection', function (client) {
-  client.on('message', function (messageStr) {
-    console.log('\n' + messageStr);
+websocket.add_routes(app);
 
-    var message = JSON.parse(messageStr);
-
-    if (message.name == 'REGISTER_DEVICE') {
-      console.log('new device: ' + message.args[0]);
-      devices[message.args[0]] = client;
-
-    } else if (message.request && message.device && message.commands) {
-      console.log('commands: ' + JSON.stringify(message.commands));
-      requires_response[message.request] = client;
-      devices[message.device].send(messageStr);
-
-    } else if (message.request && ('result' in message || message['error'])) {
-      console.log('result: ' + message.result || message.error);
-      requires_response[message.request].send(messageStr);
-      delete requires_response[message.request];
-
-    } else {
-      console.log('dunno what to do with: ' + messageStr);
-    }
-  });
+app.listen(port, function() {
+    console.log((new Date()) + ' Server is listening on port ' + port);
 });
-
-console.log('Started server on port ' + PORT);
