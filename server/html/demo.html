@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style type="text/css">
+        * {
+            font-family: sans-serif;
+        }
+
+        body {
+            padding-top: 1em;
+            background-color: #1a1a1a;
+            text-align: center;
+        }
+        
+        p, h1, h2, h3, h4 {
+            color: #eee;
+        }
+        </style>
+    </head>
+    <body data-session-id="{{session.id}}">
+        <iframe src="https://appetize.io/embed/z8460qxgdyrfe8c2ag1z6bqyw0?device=nexus5&amp;scale=75&amp;autoplay=true&amp;orientation=portrait&amp;deviceColor=black&amp;xdocMsg=true&amp;params=%7B%22chetbot.session%22%3A%22{{session.id}}%22%7D" width="300px" height="597px" frameborder="0" scrolling="no"></iframe>
+    </body>
+    <script src="js/reconnecting-websocket.min.js"></script>
+    <script src="js/chetbot.js"></script>
+</html>

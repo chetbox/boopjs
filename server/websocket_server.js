@@ -11,8 +11,8 @@ function add_routes(app) {
 
       var message = JSON.parse(messageStr);
 
-      if (message.name == 'REGISTER_DEVICE') {
-        console.log('new device: ' + message.args[0]);
+      if (message.name == 'REGISTER_DEVICE_SESSION') {
+        console.log('new device session: ' + message.args[0]);
         devices[message.args[0]] = ws;
 
       } else if (message.request && message.device && message.commands) {

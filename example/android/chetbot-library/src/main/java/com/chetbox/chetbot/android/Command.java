@@ -25,10 +25,11 @@ public class Command {
 
         // Interaction
         TAP,
+        BACK,
 
         // Server API
         RESULT,
-        REGISTER_DEVICE
+        REGISTER_DEVICE_SESSION
     }
 
     private Name name;

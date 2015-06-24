@@ -2,7 +2,7 @@
  * Copyright 2015 - Chetan Padia
 **/
 
-var chetbot_device = 'my_magic_device_1234567890';
+var _chetbot_session = document.getElementsByTagName('body')[0].getAttributeNode("data-session-id").value;
 var _ws = new ReconnectingWebSocket('ws://ec2-54-77-127-243.eu-west-1.compute.amazonaws.com');
 
 /* Heartbeat to prevent device timing out */
@@ -32,7 +32,7 @@ function __(text_or_options) {
     result_handler = result_handler || _log_result;
     var msg = {
       'request':  'UUID_GOES_HERE', // TODO
-      'device':   chetbot_device,
+      'device':   _chetbot_session,
       'commands': _commands
     }
     _ws.send(JSON.stringify(msg));
@@ -57,7 +57,7 @@ function __(text_or_options) {
     }
   });
 
-  var action_cmds = ['tap', 'text', 'id', 'type', 'count', 'exists', 'location', 'center', 'size'];
+  var action_cmds = ['tap', 'back', 'text', 'id', 'type', 'count', 'exists', 'location', 'center', 'size'];
   action_cmds.forEach(function(cmd) {
     view[cmd] = function() {
       _add(cmd.toUpperCase(), [].slice.call(arguments, 1));

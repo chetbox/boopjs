@@ -54,17 +54,19 @@ public class ChetbotServerConnection extends WebSocketClient {
 
     private static Gson sGson = new GsonBuilder().serializeNulls().create();
 
+    private final String mSessionId;
     private final MessageHandler mMessageHandler;
 
-    public ChetbotServerConnection(MessageHandler messageHandler) {
+    public ChetbotServerConnection(String sessionId, MessageHandler messageHandler) {
         super(URI.create("ws://ec2-54-77-127-243.eu-west-1.compute.amazonaws.com"));
+        mSessionId = sessionId;
         mMessageHandler = messageHandler;
     }
 
     @Override
     public void onOpen(ServerHandshake handshakeData) {
         Log.d(TAG, "HTTP " + handshakeData.getHttpStatus() + ": " + handshakeData.getHttpStatusMessage());
-        send(sGson.toJson(new Command(Command.Name.REGISTER_DEVICE, "my_magic_device_1234567890")));
+        send(sGson.toJson(new Command(Command.Name.REGISTER_DEVICE_SESSION, mSessionId)));
     }
 
     @Override

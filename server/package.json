@@ -18,6 +18,8 @@
   "homepage": "https://github.com/chetbox/chetbot#readme",
   "dependencies": {
     "express": "^4.12.4",
-    "express-ws": "^0.2.6"
+    "express-ws": "^0.2.6",
+    "mu2express": "0.0.1",
+    "uuid": "^2.0.1"
   }
 }

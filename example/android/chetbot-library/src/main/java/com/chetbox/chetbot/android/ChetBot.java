@@ -2,10 +2,12 @@ package com.chetbox.chetbot.android;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.util.ArrayMap;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.lang.reflect.Field;
 
@@ -21,14 +23,22 @@ public class Chetbot implements ChetbotServerConnection.MessageHandler {
     private static Chetbot sInstance = null;
 
     private final String mPackageName;
+    private final String mSessionId;
     private final ChetbotServerConnection mServerConnection;
 
-    private Chetbot(Context context) {
-        mPackageName = context.getPackageName();
+    private Chetbot(Activity activity) {
+        mPackageName = activity.getPackageName();
+        mSessionId = activity.getIntent().getStringExtra("chetbot.session");
 
         // Connect to Chetbot server
-        mServerConnection = new ChetbotServerConnection(this);
-        mServerConnection.connect();
+        if (mSessionId != null) {
+            Log.d(TAG, "Starting ChetBot (" + mSessionId + ")");
+            Toast.makeText(activity, "Starting ChetBot", Toast.LENGTH_SHORT).show(); // TODO: remove
+            mServerConnection = new ChetbotServerConnection(mSessionId, this);
+            mServerConnection.connect();
+        } else {
+            mServerConnection = null;
+        }
     }
 
     private static SubViews subViewsSelector(Command cmd) {
@@ -89,6 +99,8 @@ public class Chetbot implements ChetbotServerConnection.MessageHandler {
                 });
                 return lastResults;
             }
+            case BACK:
+                activity.onBackPressed();
             default:
                 throw new IllegalArgumentException("Invalid command: " + cmd);
         }
@@ -126,9 +138,9 @@ public class Chetbot implements ChetbotServerConnection.MessageHandler {
         }
     }
 
-    public static void start(Context context) {
+    public static void start(Activity activity) {
         if (sInstance == null) {
-            sInstance = new Chetbot(context);
+            sInstance = new Chetbot(activity);
         }
     }
 
