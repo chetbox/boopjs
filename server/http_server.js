@@ -1,12 +1,12 @@
 var express = require('express');
 var app = express();
-var mu2Express = require("mu2Express");
+var mu2express = require('mu2express');
 var uuid = require('uuid');
 
 
 // Mustache setup
 
-app.engine('html', mu2Express.engine);
+app.engine('html', mu2express.engine);
 app.set('view engine', 'html');
 app.set('views', __dirname + '/html');
 
