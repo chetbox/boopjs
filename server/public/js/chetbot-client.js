@@ -31,7 +31,6 @@ function __(text_or_options) {
   function _execute(result_handler) {
     result_handler = result_handler || _log_result;
     var msg = {
-      'request':  'UUID_GOES_HERE', // TODO
       'device':   chetbot_session,
       'commands': _commands
     }

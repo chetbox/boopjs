@@ -4,6 +4,8 @@ function run(editor) {
         {loc: true}
     );
     script.body.forEach(function(expr) {
-        console.log(escodegen.generate(expr));
+        var expr_str = escodegen.generate(expr);
+        console.log(expr_str);
+        eval(expr_str);
     });
 }
