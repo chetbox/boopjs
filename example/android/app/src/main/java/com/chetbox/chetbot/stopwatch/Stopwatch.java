@@ -65,7 +65,7 @@ public class Stopwatch extends AppCompatActivity {
                 mRunning = !mRunning;
                 if (mRunning) {
                     // timer started
-                    mPreviousElapsed = mStoppedAt - mStartedAt;
+                    mPreviousElapsed += mStoppedAt - mStartedAt;
                     mStartedAt = System.nanoTime();
                     mStartStopButton.setText(R.string.stop);
                     mHandler.post(mUpdateTimerTextTask);
