@@ -45,7 +45,7 @@ public class Chetbot implements ChetbotServerConnection.MessageHandler {
         return new SubViews(cmd.getText(), cmd.getType(), cmd.getId());
     }
 
-    private Iterable<?> performAction(Command cmd, Activity activity, Iterable<?> lastResults) throws IllegalArgumentException {
+    private Iterable<?> performAction(Command cmd, final Activity activity, Iterable<?> lastResults) throws IllegalArgumentException {
         switch (cmd.getName()) {
             case VIEW:
                 return concat(transform(asViews(lastResults), subViewsSelector(cmd)));
@@ -100,7 +100,13 @@ public class Chetbot implements ChetbotServerConnection.MessageHandler {
                 return lastResults;
             }
             case BACK:
-                activity.onBackPressed();
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        activity.onBackPressed();
+                    }
+                });
+                return lastResults;
             default:
                 throw new IllegalArgumentException("Invalid command: " + cmd);
         }

@@ -9,8 +9,8 @@ NAME = 'name'
 ARGS = 'args'
 
 # TODO: reconnect if disconnected
-__ws = WebSocket()
-__ws.connect('ws://ec2-54-77-127-243.eu-west-1.compute.amazonaws.com')
+_ws = WebSocket()
+_ws.connect('ws://ec2-54-77-127-243.eu-west-1.compute.amazonaws.com')
 
 class View:
     '''Select and interact with views based on their appearance
@@ -20,7 +20,7 @@ You must specify at least one of:
     type - The class name of the view
     id - The Android ID given to the view'''
 
-    device = 'my_magic_device_1234567890'
+    session = 'UNKNOWN DEVICE'
 
     def __init__(self, text=None, type=None, id=None):
         self.__commands = []
@@ -110,18 +110,24 @@ True if any views are selected, False otherwise'''
         self.__execute()
         return self
 
+    def back(self):
+        self.__add('BACK')
+        self.__execute()
+        return self
+
     def __add(self, cmd, *args):
        self.__commands.append({NAME: cmd,
                                ARGS: args})
 
     def __execute(self):
+        global _ws
         msg = {
             'request':  str(uuid4()),
-            'device':   View.device,
+            'device':   View.session,
             'commands': self.__commands
         }
-        __ws.send(json.dumps(msg))
-        response = json.loads(self.__ws.recv())
+        _ws.send(json.dumps(msg))
+        response = json.loads(_ws.recv())
         if response.has_key('error'):
             raise Exception(response['error'])
         return response['result']
