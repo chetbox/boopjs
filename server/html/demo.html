@@ -2,24 +2,89 @@
 <html>
     <head>
         <style type="text/css">
-        * {
-            font-family: sans-serif;
-        }
-
         body {
-            padding-top: 1em;
             background-color: #1a1a1a;
             text-align: center;
         }
-        
-        p, h1, h2, h3, h4 {
+
+        body > * {
+            text-align: left;
+        }
+
+        a, p, h1, h2, h3, h4 {
+            font-family: sans-serif;
             color: #eee;
+        }
+
+        a {
+            text-decoration: none;
+            text-transform: uppercase;
+        }
+
+        #content {
+            margin: 2em;
+            display: inline-block;
+        }
+
+        #device {
+            width: 300px;
+            height: 597px;
+        }
+
+        #editor-container {
+            display: inline-block;
+        }
+
+        #controls, #margin {
+            margin: 0 25px;
+        }
+
+        #controls {
+            height: 30px;
+            margin-bottom: 17px;
+            display: table;
+        }
+
+        #controls > * {
+            display: table-cell;
+            vertical-align: middle;
+        }
+
+        #editor {
+            width: 450px;
+            height: 500px;
+            margin-bottom: 25px;
+            margin-left: 25px;
         }
         </style>
     </head>
     <body data-session-id="{{session.id}}">
-        <iframe src="https://appetize.io/embed/z8460qxgdyrfe8c2ag1z6bqyw0?device=nexus5&amp;scale=75&amp;autoplay=true&amp;orientation=portrait&amp;deviceColor=black&amp;xdocMsg=true&amp;params=%7B%22chetbot.session%22%3A%22{{session.id}}%22%7D" width="300px" height="597px" frameborder="0" scrolling="no"></iframe>
+        <div id="content">
+            <iframe id="device" src="https://appetize.io/embed/z8460qxgdyrfe8c2ag1z6bqyw0?device=nexus5&amp;scale=75&amp;autoplay=true&amp;orientation=portrait&amp;deviceColor=black&amp;xdocMsg=true&amp;params=%7B%22chetbot.session%22%3A%22{{session.id}}%22%7D" frameborder="0" scrolling="no"></iframe>
+            <div id="editor-container">
+                <div id="controls">
+                    <a href="javascript:run(editor);">Run</a>
+                </div>
+                <div id="editor">{{demo.stopwatch}}</div>
+            </div>
+        </div>
     </body>
+
+    <!-- JavaScript API -->
     <script src="js/reconnecting-websocket.min.js"></script>
-    <script src="js/chetbot.js"></script>
+    <script src="js/chetbot-client.js"></script>
+
+    <!-- code editor -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.1.9/ace.js" charset="utf-8"></script>
+    <script>
+        var editor = ace.edit('editor');
+        editor.setTheme('ace/theme/idle_fingers');
+        editor.getSession().setMode('ace/mode/javascript');
+    </script>
+
+    <!-- test runner -->
+    <script src="js/esprima.min.js" charset="utf-8"></script>
+    <script src="js/escodegen.min.js" charset="utf-8"></script>
+    <script src="js/chetbot-test-runner.js"></script>
+
 </html>
