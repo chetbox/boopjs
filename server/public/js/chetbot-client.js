@@ -2,7 +2,7 @@
  * Copyright 2015 - Chetan Padia
 **/
 
-var _chetbot_session = document.getElementsByTagName('body')[0].getAttributeNode("data-session-id").value;
+var chetbot_session = null;
 var _ws = new ReconnectingWebSocket('ws://ec2-54-77-127-243.eu-west-1.compute.amazonaws.com');
 
 /* Heartbeat to prevent device timing out */
@@ -32,7 +32,7 @@ function __(text_or_options) {
     result_handler = result_handler || _log_result;
     var msg = {
       'request':  'UUID_GOES_HERE', // TODO
-      'device':   _chetbot_session,
+      'device':   chetbot_session,
       'commands': _commands
     }
     _ws.send(JSON.stringify(msg));

@@ -73,6 +73,10 @@
     <!-- JavaScript API -->
     <script src="js/reconnecting-websocket.min.js"></script>
     <script src="js/chetbot-client.js"></script>
+    <script>
+        // chetbot-client session ID
+        chetbot_session = document.getElementsByTagName('body')[0].getAttributeNode("data-session-id").value;
+    </script>
 
     <!-- code editor -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.1.9/ace.js" charset="utf-8"></script>
