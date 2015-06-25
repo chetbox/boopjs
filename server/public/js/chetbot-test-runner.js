@@ -7,7 +7,7 @@ function run(editor) {
     script.body
         .reduce(function(previous_promise, command) {
             return previous_promise.then(function() {
-                return eval(escodegen.generate(command))
+                return Q(eval(escodegen.generate(command)))
                     .then(function(result) {
                         console.log(result);
                     });
