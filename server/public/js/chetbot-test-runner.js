@@ -1,4 +1,7 @@
 function run(editor) {
+
+    editor.setReadOnly(true);
+
     var script = esprima.parse(
         editor.getSession().getDocument().getValue(),
         {loc: true}
@@ -13,6 +16,9 @@ function run(editor) {
                     });
             });
         }, Q(null))
+        .finally(function() {
+            editor.setReadOnly(false);
+        })
         .fail(function(e) {
             console.error(e);
         });
