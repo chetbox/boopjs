@@ -9,7 +9,7 @@ function run(editor) {
             return previous_promise.then(function() {
                 return Q(eval(escodegen.generate(command)))
                     .then(function(result) {
-                        console.log(result);
+                        // do something with the result here
                     });
             });
         }, Q(null))

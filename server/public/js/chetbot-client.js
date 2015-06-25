@@ -41,6 +41,7 @@ function __(text_or_options) {
       if (resp.error) {
         deferred_result.reject(new Error(resp.error));
       } else {
+        console.log(resp.result);
         deferred_result.resolve(resp.result);
       }
     }
