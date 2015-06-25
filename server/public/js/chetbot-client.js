@@ -70,4 +70,10 @@ function __(text_or_options) {
   return view;
 }
 
+function wait(seconds) {
+    var deferred = Q.defer();
+    setTimeout(deferred.resolve, seconds * 1000);
+    return deferred.promise;
+}
 window.__ = __;
+window.wait = wait;
