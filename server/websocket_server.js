@@ -15,9 +15,9 @@ function add_routes(app) {
         console.log('new device session: ' + message.args[0]);
         devices[message.args[0]] = ws;
 
-      } else if (message.request && message.device && message.commands) {
-        console.log('commands: ' + JSON.stringify(message.commands));
-        requires_response[message.request] = ws;
+      } else if (message.device && message.commands) {
+        console.log('commands (' + message.device + '): ' + JSON.stringify(message.commands));
+        requires_response[message.device] = ws;
         var device = devices[message.device];
         if (device) {
           device.send(messageStr);
@@ -28,10 +28,10 @@ function add_routes(app) {
           }));
         }
 
-      } else if (message.request && ('result' in message || message['error'])) {
-        console.log('result: ' + message.result || message.error);
-        requires_response[message.request].send(messageStr);
-        delete requires_response[message.request];
+      } else if (message.device && ('result' in message || 'error' in message)) {
+        console.log('result (' + message.device + '): ' + (message.result || message.error));
+        requires_response[message.device].send(messageStr);
+        delete requires_response[message.device];
 
       } else {
         console.log('dunno what to do with: ' + messageStr);

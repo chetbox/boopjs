@@ -17,7 +17,6 @@ public class ChetbotServerConnection extends WebSocketClient {
     }
 
     public static class Message {
-        private String request;
         private String device;
         private Command[] commands;
 
@@ -25,27 +24,27 @@ public class ChetbotServerConnection extends WebSocketClient {
             return commands.clone();
         }
 
-        public String getRequestId() {
-            return request;
+        public String getDevice() {
+            return device;
         }
     }
 
     private static class Result {
-        private String request;
+        private String device;
         private Object result;
 
-        public Result(String request, Object result) {
-            this.request = request;
+        public Result(String device, Object result) {
+            this.device = device;
             this.result = result;
         }
     }
 
     private static class Error {
-        private String request;
+        private String device;
         private String error;
 
-        public Error(String request, String message) {
-            this.request = request;
+        public Error(String device, String message) {
+            this.device = device;
             this.error = message;
         }
     }
@@ -80,11 +79,11 @@ public class ChetbotServerConnection extends WebSocketClient {
         Message message = sGson.fromJson(messageStr, Message.class);
         try {
             Object result = mMessageHandler.onMessage(message.getCommands());
-            Log.v(TAG, "result: " + sGson.toJson(new Result(message.getRequestId(), result)));
-            send(sGson.toJson(new Result(message.getRequestId(), result)));
+            Log.v(TAG, "result: " + sGson.toJson(new Result(message.getDevice(), result)));
+            send(sGson.toJson(new Result(message.getDevice(), result)));
         } catch (Exception e) {
-            Log.v(TAG, "error: " + sGson.toJson(new Error(message.getRequestId(), e.getMessage())));
-            send(sGson.toJson(new Error(message.getRequestId(), e.getMessage())));
+            Log.v(TAG, "error: " + sGson.toJson(new Error(message.getDevice(), e.getMessage())));
+            send(sGson.toJson(new Error(message.getDevice(), e.getMessage())));
         }
     }
 

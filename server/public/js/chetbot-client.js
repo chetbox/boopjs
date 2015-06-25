@@ -2,7 +2,7 @@
  * Copyright 2015 - Chetan Padia
 **/
 
-var _chetbot_session = document.getElementsByTagName('body')[0].getAttributeNode("data-session-id").value;
+var chetbot_session = null;
 var _ws = new ReconnectingWebSocket('ws://ec2-54-77-127-243.eu-west-1.compute.amazonaws.com');
 
 /* Heartbeat to prevent device timing out */
@@ -28,23 +28,24 @@ function __(text_or_options) {
             args: args || []});
   }
 
-  function _execute(result_handler) {
-    result_handler = result_handler || _log_result;
+  function _execute() {
     var msg = {
-      'request':  'UUID_GOES_HERE', // TODO
-      'device':   _chetbot_session,
+      'device':   chetbot_session,
       'commands': _commands
     }
+    var deferred_result = Q.defer();
     _ws.send(JSON.stringify(msg));
     _ws.onmessage = function(e) {
       _ws.onmessage = unhandled_data;
       var resp = JSON.parse(e.data);
       if (resp.error) {
-        console.error(resp.error);
+        deferred_result.reject(new Error(resp.error));
       } else {
-        result_handler(resp.result);
+        console.log(resp.result);
+        deferred_result.resolve(resp.result);
       }
     }
+    return deferred_result.promise;
   }
 
   function view() {}
@@ -61,8 +62,7 @@ function __(text_or_options) {
   action_cmds.forEach(function(cmd) {
     view[cmd] = function() {
       _add(cmd.toUpperCase(), [].slice.call(arguments, 1));
-      _execute(arguments[0]);
-      return view;
+      return _execute();
     }
   });
 
@@ -71,4 +71,10 @@ function __(text_or_options) {
   return view;
 }
 
+function wait(seconds) {
+    var deferred = Q.defer();
+    setTimeout(deferred.resolve, seconds * 1000);
+    return deferred.promise;
+}
 window.__ = __;
+window.wait = wait;

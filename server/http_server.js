@@ -1,3 +1,4 @@
+var fs = require('fs');
 var express = require('express');
 var app = express();
 var mu2express = require('mu2express');
@@ -24,6 +25,11 @@ app.get('/demo', function(req, res) {
     locals: {
       session: {
         id: uuid.v4()
+      },
+      demo: {
+        stopwatch: function() {
+          return fs.readFileSync(__dirname + '/demos/stopwatch.js');
+        }
       }
     }
   });
