@@ -3,9 +3,17 @@ function run(editor) {
         editor.getSession().getDocument().getValue(),
         {loc: true}
     );
-    script.body.forEach(function(expr) {
-        var expr_str = escodegen.generate(expr);
-        console.log(expr_str);
-        eval(expr_str);
-    });
+
+    script.body
+        .reduce(function(previous_promise, command) {
+            return previous_promise.then(function() {
+                return eval(escodegen.generate(command))
+                    .then(function(result) {
+                        console.log(result);
+                    });
+            });
+        }, Q(null))
+        .fail(function(e) {
+            console.error(e);
+        });
 }

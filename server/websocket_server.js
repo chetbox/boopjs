@@ -29,7 +29,7 @@ function add_routes(app) {
         }
 
       } else if (message.device && ('result' in message || 'error' in message)) {
-        console.log('result (' + message.device + '): ' + message.result || message.error);
+        console.log('result (' + message.device + '): ' + (message.result || message.error));
         requires_response[message.device].send(messageStr);
         delete requires_response[message.device];
 

@@ -28,22 +28,23 @@ function __(text_or_options) {
             args: args || []});
   }
 
-  function _execute(result_handler) {
-    result_handler = result_handler || _log_result;
+  function _execute() {
     var msg = {
       'device':   chetbot_session,
       'commands': _commands
     }
+    var deferred_result = Q.defer();
     _ws.send(JSON.stringify(msg));
     _ws.onmessage = function(e) {
       _ws.onmessage = unhandled_data;
       var resp = JSON.parse(e.data);
       if (resp.error) {
-        console.error(resp.error);
+        deferred_result.reject(new Error(resp.error));
       } else {
-        result_handler(resp.result);
+        deferred_result.resolve(resp.result);
       }
     }
+    return deferred_result.promise;
   }
 
   function view() {}
@@ -60,8 +61,7 @@ function __(text_or_options) {
   action_cmds.forEach(function(cmd) {
     view[cmd] = function() {
       _add(cmd.toUpperCase(), [].slice.call(arguments, 1));
-      _execute(arguments[0]);
-      return view;
+      return _execute();
     }
   });
 
