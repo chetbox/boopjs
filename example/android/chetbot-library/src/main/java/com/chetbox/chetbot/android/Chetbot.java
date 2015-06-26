@@ -73,6 +73,8 @@ public class Chetbot implements ChetbotServerConnection.MessageHandler {
                 return newArrayList( location(firstView(lastResults)) );
             case SIZE:
                 return newArrayList( size(firstView(lastResults)) );
+            case SCREENSHOT:
+                return newArrayList( base64Encode(screenshotPNG(activity)) );
             case LEFTMOST:
                 return newArrayList( horizontalOrdering.min(asViews(lastResults)) );
             case RIGHTMOST:

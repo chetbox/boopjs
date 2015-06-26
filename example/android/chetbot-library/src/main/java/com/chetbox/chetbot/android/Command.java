@@ -22,6 +22,7 @@ public class Command {
         SIZE,
         ID,
         TYPE,
+        SCREENSHOT,
 
         // Interaction
         TAP,

@@ -120,6 +120,10 @@ True if any views are selected, False otherwise'''
         self.__execute()
         return self
 
+    def screenshot(self):
+        self.__add('SCREENSHOT')
+        return self.__execute()
+
     def __add(self, cmd, *args):
        self.__commands.append({NAME: cmd,
                                ARGS: args})

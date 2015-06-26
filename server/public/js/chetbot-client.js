@@ -58,7 +58,7 @@ function __(text_or_options) {
     }
   });
 
-  var action_cmds = ['tap', 'back', 'home', 'text', 'id', 'type', 'count', 'exists', 'location', 'center', 'size'];
+  var action_cmds = ['tap', 'back', 'home', 'screenshot', 'text', 'id', 'type', 'count', 'exists', 'location', 'center', 'size'];
   action_cmds.forEach(function(cmd) {
     view[cmd] = function() {
       _add(cmd.toUpperCase(), [].slice.call(arguments, 1));

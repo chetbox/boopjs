@@ -2,11 +2,16 @@ package com.chetbox.chetbot.android;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.util.Base64;
 import android.view.View;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Ordering;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 import static com.google.common.collect.Iterables.*;
@@ -123,6 +128,28 @@ public class ViewUtils {
             throw new RuntimeException("No view with ID \"" + idStr + "\" found in package (" + context.getPackageName() + ")");
         }
         return id;
+    }
+
+    public static String base64Encode(byte[] data) {
+        try {
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            outputStream.write(Base64.encode(data, Base64.DEFAULT));
+            return outputStream
+                    .toString("UTF-8")
+                    .replaceAll("[\r\n]", "");
+        } catch (IOException e) {
+            throw new RuntimeException("This should never happen!", e);
+        }
+    }
+
+    public static byte[] screenshotPNG(Activity activity) {
+        View rootView = getRootView(activity);
+        rootView.destroyDrawingCache();
+        rootView.setDrawingCacheEnabled(true);
+        Bitmap bitmap = rootView.getDrawingCache();
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 0, outputStream);
+        return outputStream.toByteArray();
     }
 
 }
