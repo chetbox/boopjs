@@ -26,6 +26,7 @@ public class Command {
         // Interaction
         TAP,
         BACK,
+        HOME,
 
         // Server API
         RESULT,

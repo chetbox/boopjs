@@ -115,6 +115,11 @@ True if any views are selected, False otherwise'''
         self.__execute()
         return self
 
+    def home(self):
+        self.__add('HOME')
+        self.__execute()
+        return self
+
     def __add(self, cmd, *args):
        self.__commands.append({NAME: cmd,
                                ARGS: args})

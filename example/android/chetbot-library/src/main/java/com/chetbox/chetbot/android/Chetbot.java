@@ -107,6 +107,13 @@ public class Chetbot implements ChetbotServerConnection.MessageHandler {
                     }
                 });
                 return lastResults;
+            case HOME: {
+                Intent homeIntent = new Intent(Intent.ACTION_MAIN);
+                homeIntent.addCategory(Intent.CATEGORY_HOME);
+                homeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                activity.startActivity(homeIntent);
+                return lastResults;
+            }
             default:
                 throw new IllegalArgumentException("Invalid command: " + cmd);
         }
