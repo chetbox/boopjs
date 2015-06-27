@@ -6,67 +6,136 @@
         body {
             background-color: #1a1a1a;
             text-align: center;
+            font-family: sans-serif;
+            color: #ddd;
         }
 
         body > * {
             text-align: left;
         }
 
-        a, p, h1, h2, h3, h4 {
-            font-family: sans-serif;
-            color: #eee;
-        }
-
         a {
+            color: #ddd;
             text-decoration: none;
             text-transform: uppercase;
         }
 
+        #header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 170px;
+            padding: 0 2em;
+            background-color: green;
+            color: #4CAF50;
+        }
+
+        /* TODO: branding! */
+        #header h1 {
+          margin-top: 30px;
+          font-size: 20px;
+          text-transform: uppercase;
+          color: #222;
+          display: none;
+        }
+
         #content {
-            margin: 2em;
-            display: inline-block;
+            position: relative;
+            width: 100%;
+            min-height: 100%;
         }
 
         #device {
+            position: fixed;
+            top: 70px;
+            left: 20px;
             width: 300px;
             height: 597px;
         }
 
-        #editor-container {
-            display: inline-block;
-        }
-
-        #controls, #margin {
-            margin: 0 25px;
-        }
-
         #controls {
-            height: 30px;
-            margin-bottom: 17px;
-            display: table;
+            position: fixed;
+            top: 86px;
+            left: 340px;
+            right: 20px;
+            padding: 20px;
+            background-color: #222;
+            overflow-y: auto;
         }
 
         #controls > * {
+            font-size: 16px;
             display: table-cell;
             vertical-align: middle;
         }
 
-        #editor {
-            width: 450px;
-            height: 500px;
-            margin-bottom: 25px;
-            margin-left: 25px;
+        #editor, #console {
+            position: fixed;
+            top: 144px;
+            left: 340px;
+            right: 20px;
+            bottom: 0;
+        }
+
+        #console {
+          font-size: 12px;
+          background-color: #111;
+          font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+          color: white;
+          padding-top: 0.5em;
+        }
+
+        #console > * {
+          margin: 0 1em;
+        }
+
+        #console ol {
+            list-style: none;
+            padding: 0;
+        }
+
+        #console ol > li {
+            margin: 0;
+        }
+
+        #console p {
+          font-weight: bold;
+          margin-top: 1em;
+          margin-bottom: 1em;
+        }
+
+        #console .success {
+            color: #A5D6A7;
+        }
+
+        #console .error {
+            color: #EF9A9A;
+        }
+
+        #editor-container.editing #console {
+          display: none;
+        }
+
+        #editor-container:not(.editing) #editor {
+          display: none;
         }
         </style>
     </head>
     <body data-session-id="{{session.id}}">
+        <div id="header">
+          <h1>ChetBot</h1>
+        </div>
         <div id="content">
             <iframe id="device" src="https://appetize.io/embed/z8460qxgdyrfe8c2ag1z6bqyw0?device=nexus5&amp;scale=75&amp;autoplay=true&amp;orientation=portrait&amp;deviceColor=black&amp;xdocMsg=true&amp;params=%7B%22chetbot.session%22%3A%22{{session.id}}%22%7D" frameborder="0" scrolling="no"></iframe>
-            <div id="editor-container">
+            <div id="editor-container" class="editing">
                 <div id="controls">
-                    <a href="javascript:run(editor);">Run</a>
+                    <a href="javascript:run(editor);" title="Run test">&#9654;</a>
                 </div>
                 <div id="editor">{{demo.stopwatch}}</div>
+                <div id="console">
+                  <ol></ol>
+                </div>
             </div>
         </div>
     </body>
@@ -89,6 +158,7 @@
     </script>
 
     <!-- test runner -->
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
     <script src="js/esprima.min.js" charset="utf-8"></script>
     <script src="js/escodegen.min.js" charset="utf-8"></script>
     <script src="js/chetbot-test-runner.js"></script>
