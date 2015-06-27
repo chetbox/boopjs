@@ -71,6 +71,17 @@
             display: table-cell;
             vertical-align: middle;
             line-height: 1.0;
+            margin-right: 1em;
+        }
+
+        #controls a {
+          display: none;
+        }
+
+        #editor-container:not(.editing) #controls a.back,
+        #editor-container:not(.running) #controls a.run,
+        #editor-container.running #controls a.stop {
+          display: inline-block;
         }
 
         #editor, #console {
@@ -155,7 +166,11 @@
             <iframe id="device" src="https://appetize.io/embed/z8460qxgdyrfe8c2ag1z6bqyw0?device=nexus5&amp;scale=75&amp;autoplay=true&amp;orientation=portrait&amp;deviceColor=black&amp;xdocMsg=true&amp;params=%7B%22chetbot.session%22%3A%22{{session.id}}%22%7D" frameborder="0" scrolling="no"></iframe>
             <div id="editor-container" class="editing">
                 <div id="controls">
-                    <a href="javascript:run(editor);" title="Run test">&#9654;</a>
+                    <a class="back" href="javascript:showEditor();" title="Back to editor">&#8592;</a>
+                    <a class="run" href="javascript:run(editor);" title="Run test">&#9654;</a>
+                    <!-- TODO: implement stop()
+                    <a class="stop" href="javascript:stop();" title="Stop test">&#9632;</a>
+                    -->
                 </div>
                 <div id="editor">{{demo.stopwatch}}</div>
                 <div id="console">

@@ -4,10 +4,13 @@ var editorContainerEl = $('#editor-container');
 function onTestStart(editor) {
   editor.setReadOnly(true);
   consoleEl.empty();
-  editorContainerEl.removeClass('editing');
+  editorContainerEl
+    .addClass('running')
+    .removeClass('editing');
 }
 
 function onTestStop(editor) {
+  editorContainerEl.removeClass('running');
   editor.setReadOnly(false);
 }
 
@@ -70,4 +73,12 @@ function run(editor) {
       );
       console.error(e);
     });
+}
+
+function showEditor() {
+  editorContainerEl.addClass('editing');
+}
+
+function stop() {
+  // TODO
 }
