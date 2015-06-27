@@ -1,5 +1,6 @@
 package com.chetbox.chetbot.android;
 
+import android.graphics.Bitmap;
 import android.util.Log;
 
 import com.google.gson.Gson;
@@ -9,6 +10,8 @@ import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
 import java.net.URI;
+
+import static com.chetbox.chetbot.android.ViewUtils.*;
 
 public class ChetbotServerConnection extends WebSocketClient {
 
@@ -31,10 +34,12 @@ public class ChetbotServerConnection extends WebSocketClient {
 
     private static class Result {
         private String device;
+        private String type;
         private Object result;
 
-        public Result(String device, Object result) {
+        public Result(String device, String type, Object result) {
             this.device = device;
+            this.type = type;
             this.result = result;
         }
     }
@@ -79,10 +84,10 @@ public class ChetbotServerConnection extends WebSocketClient {
         Message message = sGson.fromJson(messageStr, Message.class);
         try {
             Object result = mMessageHandler.onMessage(message.getCommands());
-            Log.v(TAG, "result: " + sGson.toJson(new Result(message.getDevice(), result)));
-            send(sGson.toJson(new Result(message.getDevice(), result)));
+            send(sGson.toJson(makeResult(message.getDevice(), result)));
         } catch (Exception e) {
-            Log.v(TAG, "error: " + sGson.toJson(new Error(message.getDevice(), e.getMessage())));
+            Log.e(TAG, "error: " + sGson.toJson(new Error(message.getDevice(), e.getMessage())));
+            e.printStackTrace();
             send(sGson.toJson(new Error(message.getDevice(), e.getMessage())));
         }
     }
@@ -91,4 +96,32 @@ public class ChetbotServerConnection extends WebSocketClient {
     public void onError(Exception e) {
         e.printStackTrace();
     }
+
+    public static boolean isSupportedResultType(Object o) {
+        return o == null
+                || o instanceof String
+                || o instanceof Integer
+                || o instanceof Long
+                || o instanceof Float
+                || o instanceof Double
+                || o instanceof Boolean
+                || o instanceof String[]
+                || o instanceof int[]
+                || o instanceof long[]
+                || o instanceof float[]
+                || o instanceof double[]
+                || o instanceof boolean[]
+                || o instanceof Bitmap;
+    }
+
+    private static Result makeResult(String device, Object data) {
+        String type = (data != null)
+            ? data.getClass().getSimpleName().toUpperCase()
+            : "NULL";
+        if (data instanceof Bitmap) {
+            data = base64Encode(toPNG((Bitmap) data));
+        }
+        return new Result(device, type, data);
+    }
+
 }

@@ -1,7 +1,6 @@
 package com.chetbox.chetbot.android;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.util.ArrayMap;
 import android.util.Log;
@@ -74,7 +73,7 @@ public class Chetbot implements ChetbotServerConnection.MessageHandler {
             case SIZE:
                 return newArrayList( size(firstView(lastResults)) );
             case SCREENSHOT:
-                return newArrayList( base64Encode(screenshotPNG(activity)) );
+                return newArrayList( screenshot(activity) );
             case LEFTMOST:
                 return newArrayList( horizontalOrdering.min(asViews(lastResults)) );
             case RIGHTMOST:
@@ -133,20 +132,7 @@ public class Chetbot implements ChetbotServerConnection.MessageHandler {
         }
 
         Object result = isEmpty(results) ? null : get(results, 0);
-        if (result instanceof String
-                || result instanceof Integer
-                || result instanceof Long
-                || result instanceof Float
-                || result instanceof Double
-                || result instanceof Boolean
-                || result instanceof String[]
-                || result instanceof int[]
-                || result instanceof float[]
-                || result instanceof float[]
-                || result instanceof long[]
-                || result instanceof double[]
-                || result instanceof boolean[]) {
-
+        if (ChetbotServerConnection.isSupportedResultType(result)) {
             return result;
         } else {
             return null;

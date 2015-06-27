@@ -38,11 +38,11 @@ function __(text_or_options) {
     _ws.onmessage = function(e) {
       _ws.onmessage = unhandled_data;
       var resp = JSON.parse(e.data);
-      if (resp.error) {
+      if ('error' in resp) {
         deferred_result.reject(new Error(resp.error));
       } else {
         console.log(resp.result);
-        deferred_result.resolve(resp.result);
+        deferred_result.resolve(resp);
       }
     }
     return deferred_result.promise;

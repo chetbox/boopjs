@@ -1,15 +1,33 @@
-var consoleEl = $('#console');
-var consoleOutputEl = $('#console > ol');
+var consoleEl = $('#console > ol');
 var editorContainerEl = $('#editor-container');
 
 function onTestStart(editor) {
   editor.setReadOnly(true);
-  consoleOutputEl.empty();
+  consoleEl.empty();
   editorContainerEl.removeClass('editing');
 }
 
 function onTestStop(editor) {
   editor.setReadOnly(false);
+}
+
+function resultHTML(response) {
+  if (!response) {
+    return $('<li>')
+      .addClass('result')
+      .addClass('none');
+  }
+  var el = $('<li>')
+    .addClass('result')
+    .addClass(response.type.toLowerCase());
+  if (response.type === 'NULL') {
+    // don't show anything
+  } else if (response.type === 'BITMAP') {
+    el.css('background-image', 'url(data:image/png;base64,' + response.result + ')');
+  } else {
+    el.text(JSON.stringify(response.result));
+  }
+  return el;
 }
 
 function run(editor) {
@@ -24,27 +42,28 @@ function run(editor) {
     .reduce(function(previous_promise, command) {
       return previous_promise.then(function() {
         var commandStr = escodegen.generate(command);
-        consoleOutputEl.append(
+        consoleEl.append(
           $('<li>').text(commandStr)
         );
         return Q(eval(commandStr))
-          .then(function(result) {
-            consoleOutputEl.children().last().addClass('success');
+          .then(function(response) {
+            consoleEl.children().last().addClass('success');
+            consoleEl.append(resultHTML(response));
           });
       });
     }, Q(null))
     .then(function() {
       consoleEl.append(
-        $('<p>').addClass('success').text('Test passed.')
+        $('<li>').addClass('final-result').addClass('success').text('Test passed.')
       );
     })
     .finally(function() {
       onTestStop(editor);
     })
     .fail(function(e) {
-      consoleOutputEl.children().last().addClass('error');
+      consoleEl.children().last().addClass('error');
       consoleEl.append(
-        $('<p>').addClass('error').text('Test failed.')
+        $('<li>').addClass('final-result').addClass('error').text(e)
       );
       console.error(e);
     });

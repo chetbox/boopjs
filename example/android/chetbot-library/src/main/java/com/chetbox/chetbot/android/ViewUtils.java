@@ -142,11 +142,14 @@ public class ViewUtils {
         }
     }
 
-    public static byte[] screenshotPNG(Activity activity) {
+    public static Bitmap screenshot(Activity activity) {
         View rootView = getRootView(activity);
         rootView.destroyDrawingCache();
         rootView.setDrawingCacheEnabled(true);
-        Bitmap bitmap = rootView.getDrawingCache();
+        return rootView.getDrawingCache();
+    }
+
+    public static byte[] toPNG(Bitmap bitmap) {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG, 0, outputStream);
         return outputStream.toByteArray();
