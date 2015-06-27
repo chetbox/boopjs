@@ -103,11 +103,6 @@
             margin: 0;
         }
 
-        #console li.result {
-          margin-bottom: 1em;
-          display: inline-block;
-        }
-
         #console li.result::before {
           content: '\21AA';
           margin-right: 1em;
@@ -122,11 +117,16 @@
         #console li.result.bitmap {
           width: 300px;
           height: 300px;
-          background-color: white; /* TODO: get background colour from app! */
           background-size: contain;
           background-repeat: no-repeat;
           background-position: center center;
-          margin: 0.5em;
+          margin-top: 0.5em;
+          cursor: pointer;
+        }
+
+        #console li.result {
+          margin-bottom: 1em;
+          display: inline-block;
         }
 
         #console .success {

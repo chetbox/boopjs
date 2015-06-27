@@ -143,10 +143,15 @@ public class ViewUtils {
     }
 
     public static Bitmap screenshot(Activity activity) {
-        View rootView = getRootView(activity);
-        rootView.destroyDrawingCache();
-        rootView.setDrawingCacheEnabled(true);
-        return rootView.getDrawingCache();
+        View decorView = activity.getWindow().getDecorView();
+        decorView.destroyDrawingCache();
+        decorView.setDrawingCacheEnabled(true);
+        try {
+            Bitmap screenshot = decorView.getDrawingCache();
+            return screenshot.copy(screenshot.getConfig(), false);
+        } finally {
+            decorView.setDrawingCacheEnabled(false);
+        }
     }
 
     public static byte[] toPNG(Bitmap bitmap) {
