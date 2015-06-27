@@ -39,7 +39,7 @@ function __(text_or_options) {
       _ws.onmessage = unhandled_data;
       var resp = JSON.parse(e.data);
       if ('error' in resp) {
-        deferred_result.reject(new Error(resp.error));
+        deferred_result.reject(resp.error);
       } else {
         console.log(resp.result);
         deferred_result.resolve(resp);
@@ -50,7 +50,17 @@ function __(text_or_options) {
 
   function view() {}
 
-  var selectors_cmds = ['view', 'leftmost', 'rightmost', 'topmost', 'bottommost', 'closest_to', 'further_from'];
+  view.view = function(args) {
+    if (typeof(args) === 'object') {
+      args = [args.text, args.type, args.id];
+    } else if (typeof(args) === 'string') {
+      args = [args];
+    }
+    _add('VIEW', args)
+    return view;
+  }
+
+  var selectors_cmds = ['leftmost', 'rightmost', 'topmost', 'bottommost', 'closest_to', 'further_from'];
   selectors_cmds.forEach(function(cmd) {
     view[cmd] = function() {
       _add(cmd.toUpperCase(), [].slice.call(arguments));
@@ -77,8 +87,38 @@ function wait(seconds) {
     return deferred.promise;
 }
 
+function unpack_result(r) {
+  return (typeof(r) === 'object' && 'result' in r) ? r.result : r;
+}
+
+function assert(promise, message) {
+  return Q(promise).then(function(val) {
+    val = unpack_result(val);
+    message = message || JSON.stringify(val) + ' is not truthy.';
+    if (!val) {
+      throw new Error('Assestion failed: ' + message);
+    }
+  });
+}
+
+function assert_equals(promise_a, promise_b, message) {
+  return Q.spread([Q(promise_a), Q(promise_b)], function(a, b) {
+    a = unpack_result(a);
+    b = unpack_result(b);
+    message = message || JSON.stringify(a) + ' does not equal ' + JSON.stringify(b) + '.';
+    if (a !== b) {
+      throw new Error('Assestion failed: ' + message);
+    }
+  });
+}
+
+function not(promise) {
+  return Q(promise).then(function(val) {
+    return !unpack_result(val);
+  });
+}
+
 window.__ = __;
-window.wait = wait;
 window.back = __().back;
 window.home = __().home;
 window.screenshot = __().screenshot;
