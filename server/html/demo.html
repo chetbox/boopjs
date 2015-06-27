@@ -4,10 +4,10 @@
         <title>ChetBot demo</title>
         <style type="text/css">
         body {
-            background-color: #1a1a1a;
+            background-color: #ccc;
             text-align: center;
             font-family: sans-serif;
-            color: #ddd;
+            color: #111;
         }
 
         body > * {
@@ -25,10 +25,11 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 170px;
+            height: 144px;
             padding: 0 2em;
             background-color: green;
             color: #4CAF50;
+            box-shadow: 0 0 4px rgba(0,0,0,0.5);;
         }
 
         /* TODO: branding! */
@@ -49,19 +50,21 @@
         #device {
             position: fixed;
             top: 70px;
-            left: 20px;
+            left: 40px;
             width: 300px;
             height: 597px;
         }
 
         #controls {
             position: fixed;
-            top: 86px;
-            left: 340px;
-            right: 20px;
+            top: 85px;
+            left: 380px;
+            right: 40px;
             padding: 20px;
             background-color: #222;
             overflow-y: auto;
+            z-index: 2;
+            box-shadow: 0 0 4px rgba(0,0,0,0.5);
         }
 
         #controls > * {
@@ -73,9 +76,10 @@
         #editor, #console {
             position: fixed;
             top: 144px;
-            left: 340px;
-            right: 20px;
-            bottom: 0;
+            left: 380px;
+            right: 40px;
+            bottom: 40px;
+            box-shadow: 0 0 4px rgba(0,0,0,0.5);;
         }
 
         #console {
