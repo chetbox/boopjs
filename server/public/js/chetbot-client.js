@@ -79,3 +79,6 @@ function wait(seconds) {
 
 window.__ = __;
 window.wait = wait;
+window.back = __().back;
+window.home = __().home;
+window.screenshot = __().screenshot;

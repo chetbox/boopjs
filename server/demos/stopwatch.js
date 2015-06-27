@@ -8,10 +8,13 @@ __('00').closest_to('secs').id();
 
 // Reset the timer
 __('reset').tap();
+screenshot();
 
 // Tap the start button
 __('start').tap();
+screenshot();
 
 // Stop after 3 seconds
 wait(3);
 __('stop').tap();
+screenshot();
