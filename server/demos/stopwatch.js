@@ -2,19 +2,21 @@
  * Stopwatch automation demo
  */
 
-
 // Gets the ID of the text view denoting seconds
 __('00').closest_to('secs').id();
 
 // Reset the timer
 __('reset').tap();
-screenshot();
 
 // Tap the start button
 __('start').tap();
-screenshot();
 
 // Stop after 3 seconds
 wait(3);
 __('stop').tap();
+
+// Take a screenshot
 screenshot();
+
+// Check that 3 seconds have been counted
+assert_equals('03', __({id: 'seconds'}).text());
