@@ -1,10 +1,10 @@
-var consoleContainerEl = $('#console');
-var consoleEl = $('#console > ol');
+var testReportContainerEl = $('#test-report');
+var testReportEl = $('#test-report > ol');
 var editorContainerEl = $('#editor-container');
 
 function onTestStart(editor) {
   editor.setReadOnly(true);
-  consoleEl.empty();
+  testReportEl.empty();
   editorContainerEl
     .addClass('running')
     .removeClass('editing');
@@ -15,9 +15,9 @@ function onTestStop(editor) {
   editor.setReadOnly(false);
 }
 
-function scrollConsoleToBottom() {
-  var offset = consoleContainerEl.prop('scrollHeight') - consoleContainerEl.height();
-  consoleContainerEl.scrollTop(Math.max(0, offset));
+function scrolltestReportToBottom() {
+  var offset = testReportContainerEl.prop('scrollHeight') - testReportContainerEl.height();
+  testReportContainerEl.scrollTop(Math.max(0, offset));
 }
 
 function resultHTML(response) {
@@ -61,34 +61,34 @@ function run(editor) {
     .reduce(function(previous_promise, command) {
       return previous_promise.then(function() {
         var commandStr = escodegen.generate(command);
-        consoleEl.append(
+        testReportEl.append(
           $('<li>').text(commandStr)
         );
-        scrollConsoleToBottom();
+        scrolltestReportToBottom();
         return Q(eval(commandStr))
           .then(function(response) {
-            consoleEl.children().last().addClass('success');
-            consoleEl.append(resultHTML(response));
-            scrollConsoleToBottom();
+            testReportEl.children().last().addClass('success');
+            testReportEl.append(resultHTML(response));
+            scrolltestReportToBottom();
           });
       });
     }, Q(null))
     .then(function() {
-      consoleEl.append(
+      testReportEl.append(
         $('<li>').addClass('final-result').addClass('success').text('Test passed.')
       );
-      scrollConsoleToBottom();
+      scrolltestReportToBottom();
     })
     .finally(function() {
       onTestStop(editor);
     })
     .fail(function(e) {
-      consoleEl.children().last().addClass('error');
-      consoleEl.append(
+      testReportEl.children().last().addClass('error');
+      testReportEl.append(
         $('<li>').addClass('final-result').addClass('error').text(e)
       );
-      scrollConsoleToBottom();
-      console.error(e);
+      scrolltestReportToBottom();
+      testReport.error(e);
     });
 }
 

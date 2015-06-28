@@ -86,7 +86,7 @@
           display: inline-block;
         }
 
-        #editor, #console {
+        #editor, #test-report {
             position: fixed;
             top: 144px;
             left: 380px;
@@ -105,59 +105,59 @@
           border-top: 2px outset #25282c;
         }
 
-        #console {
+        #test-report {
           font-size: 12px;
-          background-color: #111;
+          background-color: #CFD8DC;
           font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
-          color: white;
+          color: rgba(0,0,0,0.87);
           padding-top: 0.5em;
           overflow: auto;
         }
 
-        #console > * {
+        #test-report > * {
           margin: 0 1em;
         }
 
-        #console ol {
+        #test-report ol {
             list-style: none;
             padding: 0;
         }
 
-        #console ol > li {
+        #test-report ol > li {
             margin: 0;
         }
 
-        #console li.result::before {
+        #test-report li.result::before {
           content: '\21AA';
           margin-right: 1em;
         }
 
-        #console li.final-result {
+        #test-report li.final-result {
           font-weight: bold;
           margin-top: 1em;
           margin-bottom: 1em;
         }
 
-        #console li.result.bitmap img {
+        #test-report li.result.bitmap img {
           height: 300px;
           margin-top: 0.5em;
-          border: 1px solid #ccc;
+          border: none;
         }
 
-        #console li.result {
+        #test-report li.result {
           margin-bottom: 1em;
           display: inline-block;
         }
 
-        #console .success {
-            color: #A5D6A7;
+        #test-report .success {
+            color: #43A047;
         }
 
-        #console .error {
-            color: #EF9A9A;
+        #test-report .error {
+            color: #D32F2F;
         }
 
-        #editor-container.editing #console {
+        #editor-container.editing #test-report {
           display: none;
         }
 
@@ -181,7 +181,7 @@
                     -->
                 </div>
                 <div id="editor">{{demo.stopwatch}}</div>
-                <div id="console">
+                <div id="test-report">
                   <ol></ol>
                 </div>
             </div>
