@@ -32,10 +32,17 @@ function resultHTML(response) {
   if (response.type === 'NULL') {
     // don't show anything
   } else if (response.type === 'BITMAP') {
-    el.css('background-image', 'url(data:image/png;base64,' + response.result + ')')
-      .click(function() {
-        window.open('data:image/png;base64,' + response.result);
-      });
+    el.append(
+      $('<a>')
+        .attr({
+          target: '_blank',
+          href: 'data:image/png;base64,' + response.result
+        })
+        .append(
+          $('<img>')
+            .attr('src', 'data:image/png;base64,' + response.result)
+        )
+    );
   } else {
     el.text(JSON.stringify(response.result));
   }
