@@ -1,3 +1,4 @@
+var consoleContainerEl = $('#console');
 var consoleEl = $('#console > ol');
 var editorContainerEl = $('#editor-container');
 
@@ -12,6 +13,11 @@ function onTestStart(editor) {
 function onTestStop(editor) {
   editorContainerEl.removeClass('running');
   editor.setReadOnly(false);
+}
+
+function scrollConsoleToBottom() {
+  var offset = consoleContainerEl.prop('scrollHeight') - consoleContainerEl.height();
+  consoleContainerEl.scrollTop(Math.max(0, offset));
 }
 
 function resultHTML(response) {
@@ -51,10 +57,12 @@ function run(editor) {
         consoleEl.append(
           $('<li>').text(commandStr)
         );
+        scrollConsoleToBottom();
         return Q(eval(commandStr))
           .then(function(response) {
             consoleEl.children().last().addClass('success');
             consoleEl.append(resultHTML(response));
+            scrollConsoleToBottom();
           });
       });
     }, Q(null))
@@ -62,6 +70,7 @@ function run(editor) {
       consoleEl.append(
         $('<li>').addClass('final-result').addClass('success').text('Test passed.')
       );
+      scrollConsoleToBottom();
     })
     .finally(function() {
       onTestStop(editor);
@@ -71,6 +80,7 @@ function run(editor) {
       consoleEl.append(
         $('<li>').addClass('final-result').addClass('error').text(e)
       );
+      scrollConsoleToBottom();
       console.error(e);
     });
 }
