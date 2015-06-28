@@ -7,7 +7,7 @@
             background-color: #f9f9f9;
             text-align: center;
             font-family: sans-serif;
-            color: #111;
+            color: rgba(0,0,0,0.87);
         }
 
         body > * {
@@ -15,7 +15,7 @@
         }
 
         a {
-            color: #ddd;
+            color: rgba(0,0,0,0.87);
             text-decoration: none;
             text-transform: uppercase;
         }
@@ -26,17 +26,18 @@
             left: 0;
             right: 0;
             height: 144px;
-            padding: 0 2em;
-            background-color: #00BCD4;
+            background-color: #0097A7;
             box-shadow: 0 2px 5px rgba(0,0,0,0.5);;
         }
 
         /* TODO: branding! */
         #header h1 {
-          margin-top: 30px;
+          position: relative;
+          left: 380px;
+          margin: 2em 0;
           font-size: 20px;
           text-transform: uppercase;
-          color: #222;
+          color: rgba(255,255,255,0.87);
           display: none;
         }
 
@@ -60,10 +61,11 @@
             left: 380px;
             right: 40px;
             padding: 20px;
-            background-color: #222;
+            background-color: #80DEEA;
             overflow-y: auto;
             z-index: 2;
             box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            height: 16px;
         }
 
         #controls > * {
@@ -91,6 +93,16 @@
             right: 40px;
             bottom: 40px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.5);;
+        }
+
+        #editor {
+          border-top: 2px outset #1D1F21;
+          background-color: #1D1F21; /* Make it look better while the editor loads */
+        }
+
+        #editor .ace_gutter {
+          top: -2px;
+          border-top: 2px outset #25282c;
         }
 
         #console {
@@ -193,7 +205,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.1.9/ace.js" charset="utf-8"></script>
     <script>
         var editor = ace.edit('editor');
-        editor.setTheme('ace/theme/idle_fingers');
+        editor.setTheme('ace/theme/tomorrow_night');
         editor.getSession().setMode('ace/mode/javascript');
     </script>
 
