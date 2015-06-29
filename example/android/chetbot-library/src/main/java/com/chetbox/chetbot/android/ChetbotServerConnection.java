@@ -13,7 +13,9 @@ import java.net.URI;
 
 import static com.chetbox.chetbot.android.ViewUtils.*;
 
-public class ChetbotServerConnection extends WebSocketClient {
+public class ChetbotServerConnection {
+
+    private static final String TAG = ChetbotServerConnection.class.getSimpleName();
 
     public interface MessageHandler {
         Object onMessage(Command[] message) throws IllegalArgumentException;
@@ -31,7 +33,6 @@ public class ChetbotServerConnection extends WebSocketClient {
             return device;
         }
     }
-
     private static class Result {
         private String device;
         private String type;
@@ -43,7 +44,6 @@ public class ChetbotServerConnection extends WebSocketClient {
             this.result = result;
         }
     }
-
     private static class Error {
         private String device;
         private String error;
@@ -54,7 +54,26 @@ public class ChetbotServerConnection extends WebSocketClient {
         }
     }
 
-    private static final String TAG = ChetbotServerConnection.class.getSimpleName();
+
+    private Runnable sReconnectWebsocket = new Runnable() {
+        private static final long RECONNECT_AFTER_MS = 2000;
+
+        @Override
+        public void run() {
+            if (mServerConnection != null) {
+                mServerConnection.close();
+            }
+            try {
+                Thread.sleep(RECONNECT_AFTER_MS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            Log.d(TAG, "Reconnecting to ChetBot server...");
+            mServerConnection = new ServerConnectionImpl();
+            mServerConnection.connect();
+        }
+    };
+    private Thread mReconnectThread = null;
 
     private static Gson sGson = new GsonBuilder().serializeNulls().create();
 
@@ -62,39 +81,10 @@ public class ChetbotServerConnection extends WebSocketClient {
     private final MessageHandler mMessageHandler;
 
     public ChetbotServerConnection(String sessionId, MessageHandler messageHandler) {
-        super(URI.create("ws://ec2-54-77-127-243.eu-west-1.compute.amazonaws.com"));
         mSessionId = sessionId;
         mMessageHandler = messageHandler;
-    }
-
-    @Override
-    public void onOpen(ServerHandshake handshakeData) {
-        Log.d(TAG, "HTTP " + handshakeData.getHttpStatus() + ": " + handshakeData.getHttpStatusMessage());
-        send(sGson.toJson(new Command(Command.Name.REGISTER_DEVICE_SESSION, mSessionId)));
-    }
-
-    @Override
-    public void onClose(int code, String reason, boolean remote) {
-        Log.d(TAG, "Connection closed (" + reason + ")");
-    }
-
-    @Override
-    public void onMessage(String messageStr) {
-        Log.v(TAG, "Message received: " + messageStr);
-        Message message = sGson.fromJson(messageStr, Message.class);
-        try {
-            Object result = mMessageHandler.onMessage(message.getCommands());
-            send(sGson.toJson(makeResult(message.getDevice(), result)));
-        } catch (Exception e) {
-            Log.e(TAG, "error: " + sGson.toJson(new Error(message.getDevice(), e.getMessage())));
-            e.printStackTrace();
-            send(sGson.toJson(new Error(message.getDevice(), e.getMessage())));
-        }
-    }
-
-    @Override
-    public void onError(Exception e) {
-        e.printStackTrace();
+        mServerConnection = new ServerConnectionImpl();
+        mServerConnection.connect();
     }
 
     public static boolean isSupportedResultType(Object o) {
@@ -123,5 +113,54 @@ public class ChetbotServerConnection extends WebSocketClient {
         }
         return new Result(device, type, data);
     }
+
+    private class ServerConnectionImpl extends WebSocketClient {
+
+        public ServerConnectionImpl() {
+            super(URI.create("ws://ec2-54-77-127-243.eu-west-1.compute.amazonaws.com"));
+        }
+
+        @Override
+        public void onOpen(ServerHandshake handshakeData) {
+            Log.d(TAG, "HTTP " + handshakeData.getHttpStatus() + ": " + handshakeData.getHttpStatusMessage());
+            send(sGson.toJson(new Command(Command.Name.REGISTER_DEVICE_SESSION, mSessionId)));
+        }
+
+        @Override
+        public void onMessage(String messageStr) {
+            Log.v(TAG, "Message received: " + messageStr);
+            Message message = sGson.fromJson(messageStr, Message.class);
+            try {
+                Object result = mMessageHandler.onMessage(message.getCommands());
+                send(sGson.toJson(makeResult(message.getDevice(), result)));
+            } catch (Exception e) {
+                Log.e(TAG, "error: " + sGson.toJson(new Error(message.getDevice(), e.getMessage())));
+                e.printStackTrace();
+                send(sGson.toJson(new Error(message.getDevice(), e.getMessage())));
+            }
+        }
+
+        @Override
+        public void onClose(int code, String reason, boolean remote) {
+            Log.d(TAG, "Connection closed");
+            reconnectLater();
+        }
+
+        @Override
+        public void onError(Exception e) {
+            Log.d(TAG, "Disconnected (" + e + ")");
+            reconnectLater();
+        }
+
+        private void reconnectLater() {
+            if (mReconnectThread == null || !mReconnectThread.isAlive()) {
+                mServerConnection = null;
+                mReconnectThread = new Thread(sReconnectWebsocket);
+                mReconnectThread.start();
+            }
+        }
+
+    }
+    private ServerConnectionImpl mServerConnection = null;
 
 }

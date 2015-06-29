@@ -23,7 +23,7 @@ public class Chetbot implements ChetbotServerConnection.MessageHandler {
 
     private final String mPackageName;
     private final String mSessionId;
-    private final ChetbotServerConnection mServerConnection;
+    private ChetbotServerConnection mServerConnection = null;
 
     private Chetbot(Activity activity) {
         mPackageName = activity.getPackageName();
@@ -34,9 +34,6 @@ public class Chetbot implements ChetbotServerConnection.MessageHandler {
             Log.d(TAG, "Starting ChetBot (" + mSessionId + ")");
             Toast.makeText(activity, "Starting ChetBot", Toast.LENGTH_SHORT).show(); // TODO: remove
             mServerConnection = new ChetbotServerConnection(mSessionId, this);
-            mServerConnection.connect();
-        } else {
-            mServerConnection = null;
         }
     }
 
