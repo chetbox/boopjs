@@ -28,19 +28,10 @@ public class Command {
         TAP,
         BACK,
         HOME,
-
-        // Server API
-        RESULT,
-        REGISTER_DEVICE_SESSION
     }
 
     private Name name;
     private String[] args;
-
-    public Command(Name name, String... args) {
-        this.name = name;
-        this.args = args;
-    };
 
     public Name getName() {
         return name;

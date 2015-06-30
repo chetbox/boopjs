@@ -17,6 +17,8 @@ public class ChetbotServerConnection {
 
     private static final String TAG = ChetbotServerConnection.class.getSimpleName();
 
+    private static final String SERVER_URI = "ws://ec2-54-77-127-243.eu-west-1.compute.amazonaws.com/api/device";
+
     public interface MessageHandler {
         Object onMessage(Command[] message) throws IllegalArgumentException;
     }
@@ -53,7 +55,6 @@ public class ChetbotServerConnection {
             this.error = message;
         }
     }
-
 
     private Runnable sReconnectWebsocket = new Runnable() {
         private static final long RECONNECT_AFTER_MS = 2000;
@@ -117,13 +118,13 @@ public class ChetbotServerConnection {
     private class ServerConnectionImpl extends WebSocketClient {
 
         public ServerConnectionImpl() {
-            super(URI.create("ws://ec2-54-77-127-243.eu-west-1.compute.amazonaws.com"));
+            super(URI.create(SERVER_URI));
         }
 
         @Override
         public void onOpen(ServerHandshake handshakeData) {
             Log.d(TAG, "HTTP " + handshakeData.getHttpStatus() + ": " + handshakeData.getHttpStatusMessage());
-            send(sGson.toJson(new Command(Command.Name.REGISTER_DEVICE_SESSION, mSessionId)));
+            sendAsJson(new DeviceRegistration(mSessionId));
         }
 
         @Override
@@ -132,11 +133,11 @@ public class ChetbotServerConnection {
             Message message = sGson.fromJson(messageStr, Message.class);
             try {
                 Object result = mMessageHandler.onMessage(message.getCommands());
-                send(sGson.toJson(makeResult(message.getDevice(), result)));
+                sendAsJson(makeResult(message.getDevice(), result));
             } catch (Exception e) {
                 Log.e(TAG, "error: " + sGson.toJson(new Error(message.getDevice(), e.getMessage())));
                 e.printStackTrace();
-                send(sGson.toJson(new Error(message.getDevice(), e.getMessage())));
+                sendAsJson(new Error(message.getDevice(), e.getMessage()));
             }
         }
 
@@ -150,6 +151,10 @@ public class ChetbotServerConnection {
         public void onError(Exception e) {
             Log.d(TAG, "Disconnected (" + e + ")");
             reconnectLater();
+        }
+        
+        private void sendAsJson(Object data) {
+            send(sGson.toJson(data));
         }
 
         private void reconnectLater() {

@@ -4,29 +4,40 @@ function add_routes(app) {
 
   var devices = {};
   var requires_response = {};
-  
-  app.ws('/', function(ws, req) {
-    ws.on('message', function(messageStr) {
-      console.log('\n' + messageStr);
 
+  app.ws('/api/client', function(ws, req) {
+    ws.on('message', function(messageStr) {
       var message = JSON.parse(messageStr);
 
-      if (message.name == 'REGISTER_DEVICE_SESSION') {
-        console.log('new device session: ' + message.args[0]);
-        devices[message.args[0]] = ws;
+      if (!message.device) {
+        var error_msg = 'Target device not specified';
+        console.error(error_msg + '\n  ' + messageStr);
+        ws.send(JSON.stringify({error: error_msg}));
+        return;
+      }
 
-      } else if (message.device && message.commands) {
-        console.log('commands (' + message.device + '): ' + JSON.stringify(message.commands));
-        requires_response[message.device] = ws;
-        var device = devices[message.device];
-        if (device) {
-          device.send(messageStr);
-        } else {
-          console.error('Device not found: ' + message.device);
-          ws.send(JSON.stringify({
-            error: 'Device not found: ' + message.device
-          }));
-        }
+      console.log('commands (' + message.device + '): ' + JSON.stringify(message.commands));
+      requires_response[message.device] = ws;
+      var device = devices[message.device];
+      if (device) {
+        device.send(messageStr);
+      } else {
+        console.error('Device not found: ' + message.device);
+        ws.send(JSON.stringify({
+          error: 'Device not found: ' + message.device
+        }));
+      }
+
+    })
+  });
+
+  app.ws('/api/device', function(ws, req) {
+    ws.on('message', function(messageStr) {
+      var message = JSON.parse(messageStr);
+
+      if (message.register_device) {
+        console.log('new device registered: ' + message.register_device);
+        devices[message.register_device] = ws;
 
       } else if (message.device && ('result' in message || 'error' in message)) {
         console.log('result (' + message.device + '): ' + (message.result || message.error));
@@ -37,6 +48,7 @@ function add_routes(app) {
         console.log('dunno what to do with: ' + messageStr);
       }
     });
+    // TODO: remove device from 'devices' when connection closed
   });
 
 }
