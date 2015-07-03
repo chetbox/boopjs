@@ -1,0 +1,7 @@
+{
+  "github-oauth": {
+    "clientID": "GITHUB_CLIENT_ID",
+    "clientSecret": "GITHUB_CLIENT_SECRET",
+    "callbackURL": "http://SERVER_ADDRESS/auth/github/callback"
+  }
+}

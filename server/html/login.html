@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>ChetBot login</title>
+    <link rel="icon" href="/favicon.ico">
+    <style type="text/css">
+      html {
+        font-family: sans-serif;
+        background-color: #f9f9f9;
+        color: rgba(0,0,0,0.87);
+        text-align: center;
+      }
+      body > * {
+        display: block;
+        margin: 1em auto;
+      }
+      #main-logo {
+        width: 8em;
+      }
+      a.login {
+        max-width: 10em;
+        padding: 1em;
+        background-position: 12px center;
+        background-repeat: no-repeat;
+        color: rgba(255,255,255,0.87);
+        background-color: rgba(0,0,0,0.87);
+        text-decoration: none;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+      }
+      a.github {
+        padding-left: 52px;
+        background-image: url(/images/GitHub-Mark-32px.png);
+      }
+      p {
+        display: block;
+        margin: auto;
+        font-size: 0.8em;
+        max-width: 20em;
+      }
+    </style>
+  </head>
+  <body>
+    <img id="main-logo" src="/images/bot.png" title="ChetBot"/>
+    <a class="login github" href="/auth/github">Login with GitHub</a>
+    <p>Signing in with GitHub is for authentication purposes only. We will not have access to you code repositorires.</p>
+  </body>
+</html>
