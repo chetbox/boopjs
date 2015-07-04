@@ -81,6 +81,18 @@
           display: none;
         }
 
+        #controls .status {
+          float: right;
+          font-size: 0.67em;
+          padding-top: 0.33em;
+          transition: opacity 400ms ease-out;
+          opacity: 0;
+        }
+
+        body.saving #controls .status {
+          opacity: 1;
+        }
+
         #editor-container:not(.editing) #controls a.back,
         #editor-container.editing:not(.running) #controls a.run,
         #editor-container.running #controls a.stop {
@@ -180,6 +192,7 @@
                     <!-- TODO: implement stop()
                     <a class="stop" href="javascript:stop();" title="Stop test">&#9632;</a>
                     -->
+                    <span class="saved status">Saving...</span>
                 </div>
                 <div id="editor">{{code}}</div>
                 <div id="test-report">

@@ -12,7 +12,13 @@ function save(editor) {
     $.ajax(window.location.pathname + '/code', {
       method: 'PUT',
       mimeType: 'text/javascript',
-      data: code
+      data: code,
+      beforeSend: function() {
+        $('body').addClass('saving');
+      },
+      complete: function() {
+        $('body').removeClass('saving');
+      }
     });
   }, SAVE_AFTER_MS);
 }
