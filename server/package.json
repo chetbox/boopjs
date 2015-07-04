@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/chetbox/chetbot#readme",
   "dependencies": {
+    "body": "^5.1.0",
     "config": "^1.14.0",
     "dynasty": "^0.1.4",
     "express": "^4.12.4",
