@@ -18,12 +18,14 @@
   "homepage": "https://github.com/chetbox/chetbot#readme",
   "dependencies": {
     "config": "^1.14.0",
+    "dynasty": "^0.1.4",
     "express": "^4.12.4",
     "express-session": "^1.11.3",
     "express-ws": "^0.2.6",
     "mu2express": "0.0.1",
     "passport": "^0.2.2",
     "passport-github2": "^0.1.9",
+    "underscore": "^1.8.3",
     "uuid": "^2.0.1"
   }
 }

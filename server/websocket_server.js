@@ -1,34 +1,37 @@
 function add_routes(app) {
 
   var expressWs = require('express-ws')(app);
+  var auth = require('./auth');
 
   var devices = {};
   var requires_response = {};
 
   app.ws('/api/client', function(ws, req) {
-    ws.on('message', function(messageStr) {
-      var message = JSON.parse(messageStr);
+    ws.on('message',
+      auth.login_required,
+      function(messageStr) {
+        var message = JSON.parse(messageStr);
 
-      if (!message.device) {
-        var error_msg = 'Target device not specified';
-        console.error(error_msg + '\n  ' + messageStr);
-        ws.send(JSON.stringify({error: error_msg}));
-        return;
+        if (!message.device) {
+          var error_msg = 'Target device not specified';
+          console.error(error_msg + '\n  ' + messageStr);
+          ws.send(JSON.stringify({error: error_msg}));
+          return;
+        }
+
+        console.log('commands (' + message.device + '): ' + JSON.stringify(message.commands));
+        requires_response[message.device] = ws;
+        var device = devices[message.device];
+        if (device) {
+          device.send(messageStr);
+        } else {
+          console.error('Device not found: ' + message.device);
+          ws.send(JSON.stringify({
+            error: 'Device not found: ' + message.device
+          }));
+        }
       }
-
-      console.log('commands (' + message.device + '): ' + JSON.stringify(message.commands));
-      requires_response[message.device] = ws;
-      var device = devices[message.device];
-      if (device) {
-        device.send(messageStr);
-      } else {
-        console.error('Device not found: ' + message.device);
-        ws.send(JSON.stringify({
-          error: 'Device not found: ' + message.device
-        }));
-      }
-
-    })
+    )
   });
 
   app.ws('/api/device', function(ws, req) {

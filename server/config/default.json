@@ -3,5 +3,10 @@
     "clientID": "GITHUB_CLIENT_ID",
     "clientSecret": "GITHUB_CLIENT_SECRET",
     "callbackURL": "http://SERVER_ADDRESS/auth/github/callback"
+  },
+  "dynamodb": {
+    "accessKeyId": "DYNAMODB_ACCESS_KEY_ID",
+    "secretAccessKey": "DYNAMODB_SECRET_ACCESS_KEY",
+    "region": "us-west-1"
   }
 }

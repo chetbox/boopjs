@@ -2,25 +2,36 @@ var passport = require('passport');
 var expressSession = require('express-session');
 var GitHubStrategy = require('passport-github2').Strategy;
 var config = require('config');
+var db = require('./db');
+var _ = require('underscore');
 
 passport.serializeUser(function(user, done) {
-  // TODO: send req.user.id instead of req.user
-  done(null, user);
+  done(null, user.id);
 });
 
-passport.deserializeUser(function(user, done) {
-  // TODO: get user object from id (not user) passed as first arg
-  done(null, user);
+passport.deserializeUser(function(user_id, done) {
+  db.users().find(user_id)
+    .then(function(user) { done(null, user); })
+    .catch(done);
 });
 
 passport.use(new GitHubStrategy(
   config.get('github-oauth'),
-  function(accessToken, refreshToken, profile, done) {
-    // TODO: persist user
-    // User.findOrCreate({ github_id: profile.id }, function (err, user) {
-    //  return done(err, user);
-    // });
-    return done(null, profile);
+  function(accessToken, refreshToken, user, done) {
+    console.log('User authenticated: ' + user.username);
+    var serializable_user = _.extend(
+      _.pick(user, 'id', 'username', 'displayName', 'profileUrl', 'provider'),
+      {
+        avatarUrl: user._json.avatar_url,
+        emails: user.emails.map(function(i) { return i.value; })
+      }
+    );
+
+    db.users().insert(serializable_user)
+      .then(function() {
+        done(null, serializable_user);
+      })
+      .catch(done);
   }
 ));
 
@@ -43,7 +54,6 @@ function setup(app) {
     }
   );
 
-  // TODO: implement login page
   app.get('/login', function(req, res) {
     res.render('login');
   });
