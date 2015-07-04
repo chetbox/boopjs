@@ -2,8 +2,9 @@ var passport = require('passport');
 var expressSession = require('express-session');
 var GitHubStrategy = require('passport-github2').Strategy;
 var config = require('config');
-var db = require('./db');
 var _ = require('underscore');
+
+var db = require('./db');
 
 passport.serializeUser(function(user, done) {
   done(null, user.id);
