@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{username}} - ChetBot</title>
+    <link rel="icon" href="/favicon.ico">
+    <style type="text/css">
+      #avatar {
+        width: 50px;
+        border-radius: 25px;
+      }
+    </style>
+  </head>
+  <body>
+    <img id="avatar" src="{{avatarUrl}}" title="{{displayName}} ({{username}})"/>
+    <h2>{{displayName}} ({{username}})</h2>
+    <a target="_blank" href="{{profileUrl}}" title="{{displayName}} on GitHub">{{username}} on GitHub</a>
+    <h3>Email addresses</h3>
+    <ul>
+      {{#emails}}
+      <li>{{.}}</li> <!-- TODO: this is blank, fix it! -->
+      {{/emails}}
+    </ul>
+  </body>
+</html>
