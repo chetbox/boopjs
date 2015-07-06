@@ -50,6 +50,8 @@ function resultHTML(response) {
 }
 
 function run(editor) {
+  ga('send', 'event', 'button', 'click', 'run');
+
   onTestStart(editor);
 
   var script = esprima.parse(
@@ -74,6 +76,7 @@ function run(editor) {
       });
     }, Q(null))
     .then(function() {
+      ga('send', 'event', 'test-result', 'passed');
       testReportEl.append(
         $('<li>').addClass('final-result').addClass('success').text('Test passed.')
       );
@@ -83,19 +86,22 @@ function run(editor) {
       onTestStop(editor);
     })
     .fail(function(e) {
+      ga('send', 'event', 'test-result', 'failed', '' + e.toString());
       testReportEl.children().last().addClass('error');
       testReportEl.append(
         $('<li>').addClass('final-result').addClass('error').text(e)
       );
       scrolltestReportToBottom();
-      testReport.error(e);
+      console.error(e);
     });
 }
 
 function showEditor() {
+  ga('send', 'event', 'button', 'click', 'show-editor');
   editorContainerEl.addClass('editing');
 }
 
 function stop() {
+  ga('send', 'event', 'button', 'click', 'stop');
   // TODO
 }
