@@ -19,7 +19,15 @@
         a {
             color: rgba(0,0,0,0.87);
             text-decoration: none;
-            text-transform: uppercase;
+        }
+
+        a > .hint {
+            display: inline-block;
+            font-size: 0.8em;
+            color: rgba(0,0,0,0.5);
+            margin: 0 1em;
+            position: relative;
+            top: -0.1em
         }
 
         #header {
@@ -190,7 +198,7 @@
             <div id="editor-container" class="editing">
                 <div id="controls">
                     <a class="back" href="javascript:showEditor();" title="Back to editor">&#8592;</a>
-                    <a class="run" href="javascript:run(editor);" title="Run test">&#9654;</a>
+                    <a class="run" href="javascript:run(editor);" title="Run test">&#9654;<span class="hint">&#8592; Press me</span></a>
                     <!-- TODO: implement stop()
                     <a class="stop" href="javascript:stop();" title="Stop test">&#9632;</a>
                     -->
