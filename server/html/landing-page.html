@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>ChetBot - Android and iOS UI automation for humans</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="/css/landing-page.css" rel="stylesheet">
+
+    <!-- Custom Fonts -->
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic,700italic" rel="stylesheet" type="text/css">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <style type="text/css">
+        code {
+            padding: 2em;
+            border: none;
+            position: relative;
+            top: 3em;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-default navbar-fixed-top topnav" role="navigation">
+        <div class="container topnav">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand topnav" href="#top">ChetBot</a>
+            </div>
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="#features">Features</a>
+                    </li>
+                    <li>
+                        <a href="/docs/Automation%20API%20reference%20v0.4.2.pdf" target="_blank">Documentation</a>
+                    </li>
+                    <li>
+                        <a target="_blank" href="https://twitter.com/chetbox">@chetbox</a>
+                    </li>
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </div>
+        <!-- /.container -->
+    </nav>
+
+
+    <!-- Header -->
+    <a name="about"></a>
+    <div class="intro-header">
+        <div class="container">
+
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="intro-message">
+                        <h1>Meet ChetBot</h1>
+                        <h3>A user-driven approach to UI automation and testing<br>for Android and iOS</h3>
+                        <hr class="intro-divider">
+        <iframe width="560" height="315" src="https://www.youtube.com/embed/3C7xNKL2wLA?controls=2" frameborder="0" allowfullscreen></iframe>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <!-- /.container -->
+
+    </div>
+    <!-- /.intro-header -->
+
+    <div class="banner bg-primary" style="background: none #337ab7;">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6">
+                    <h2>Sign up for early access</h2>
+                </div>
+                <div id="mc_embed_signup" class="col-lg-6">
+                    <form action="//chetbox.us11.list-manage.com/subscribe/post?u=58d85b483ebd1268a502c9291&amp;id=230f6d849e" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate input-group form-group-lg" target="_blank" novalidate>
+                        <input type="email" value="" name="EMAIL" class="required email form-control" id="mce-EMAIL" placeholder="Email address" style="display: inline; width: auto;">
+                        <div style="position: absolute; left: -5000px;"><input type="text" name="b_58d85b483ebd1268a502c9291_230f6d849e" tabindex="-1" value=""></div>
+                        <input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" class="button btn btn-default form-control" style="display: inline; width: auto;">
+                    </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page Content -->
+
+	<a  name="features"></a>
+    <div class="content-section-a">
+
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-5 col-sm-6">
+                    <hr class="section-heading-spacer">
+                    <div class="clearfix"></div>
+                    <h2 class="section-heading">Describe your tests <i>visually</i></h2>
+                    <p class="lead">Your tests shouldn't need to know how your app is constructed. They should describe the user experience, leaving developers free to build and refactor as they see fit.</p>
+                    <p class="lead">The default client is a Python library, but you can use any language of your choice using a simple wrapper.</p>
+                </div>
+                <div class="col-lg-5 col-lg-offset-2 col-sm-6">
+                    <pre class="img-responsive">
+
+from chetbot import __
+
+__('Username').tap()
+keyboard.type_text('alice')
+
+__('Password').tap()
+keyboard.type_text('ilovebob')
+
+keyboard.dismiss()
+
+__(class='CheckBox').closest_to('Notifications').tap()
+
+__('Sign in').tap()
+                    </pre>
+                </div>
+            </div>
+
+        </div>
+        <!-- /.container -->
+
+    </div>
+    <!-- /.content-section-a -->
+
+    <div class="content-section-b">
+
+        <div class="container">
+
+            <div class="row">
+                <div class="col-lg-5 col-lg-offset-1 col-sm-push-6  col-sm-6">
+                    <hr class="section-heading-spacer">
+                    <div class="clearfix"></div>
+                    <h2 class="section-heading">Contiuous Integration made simple</h2>
+                    <p class="lead">Run tests in the cloud when you commit code, effortlessly. ChetBot gives you a one-line integration into your existing CI system and notifies you of any failures immediately.</p>
+                </div>
+                <div class="col-lg-5 col-sm-pull-6  col-sm-6">
+                    <img class="img-responsive" src="/images/devices.jpg" alt="">
+                </div>
+            </div>
+
+        </div>
+        <!-- /.container -->
+
+    </div>
+    <!-- /.content-section-b -->
+
+    <div class="content-section-a">
+
+        <div class="container">
+
+            <div class="row">
+                <div class="col-lg-5 col-sm-6">
+                    <hr class="section-heading-spacer">
+                    <div class="clearfix"></div>
+                    <h2 class="section-heading">Test reports that matter</h2>
+                    <p class="lead">Test reports tell you how to reproduce the problem, give you the logs that matter and video of the test that failed: All the information you need for bug tracking.</p>
+                </div>
+                <div class="col-lg-5 col-lg-offset-2 col-sm-6">
+                    <img class="img-responsive" src="/images/test-report.png" alt="">
+                </div>
+            </div>
+
+        </div>
+        <!-- /.container -->
+
+    </div>
+    <!-- /.content-section-a -->
+
+	<a  name="contact"></a>
+    <div class="banner" style="background: none #337ab7;">
+
+        <div class="container">
+
+            <div class="row">
+                <div class="col-lg-6">
+                    <h2>Sign up for early access</h2>
+                </div>
+                <div id="mc_embed_signup" class="col-lg-6">
+                    <form action="//chetbox.us11.list-manage.com/subscribe/post?u=58d85b483ebd1268a502c9291&amp;id=230f6d849e" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate input-group form-group-lg" target="_blank" novalidate>
+                        <input type="email" value="" name="EMAIL" class="required email form-control" id="mce-EMAIL" placeholder="Email address" style="display: inline; width: auto;">
+                        <div style="position: absolute; left: -5000px;"><input type="text" name="b_58d85b483ebd1268a502c9291_230f6d849e" tabindex="-1" value=""></div>
+                        <input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" class="button btn btn-default form-control" style="display: inline; width: auto;">
+                    </form>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <!-- /.container -->
+
+    </div>
+    <!-- /.banner -->
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <ul class="list-inline">
+                        <li>
+                            <a href="#top">Back to top</a>
+                        </li>
+                        <li class="footer-menu-divider">&sdot;</li>
+                        <li>
+                            <a href="#features">Features</a>
+                        </li>
+                        <li class="footer-menu-divider">&sdot;</li>
+                        <li>
+                            <a href="/docs/Automation%20API%20reference%20v0.4.2.pdf" target="_blank">Documentation</a>
+                        </li>
+                        <li class="footer-menu-divider">&sdot;</li>
+                        <li>
+                            <a target="_blank" href="https://twitter.com/chetbox">@chetbox</a>
+                        </li>
+                    </ul>
+                    <p class="copyright text-muted small">Copyright &copy; Chetbox ltd 2015. All Rights Reserved</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+    <!-- Google Analytics -->
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-61569356-3', 'auto');
+      ga('send', 'pageview');
+    </script>
+
+</body>
+
+</html>

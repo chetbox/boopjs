@@ -38,7 +38,7 @@ auth.setup(app);
 app.use(express.static(__dirname + '/public'));
 
 app.get('/', function(req, res) {
-  res.send('beep boop beep');
+  res.render('landing-page');
 });
 
 app.get('/demo', function(req, res) {
