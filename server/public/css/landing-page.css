@@ -25,6 +25,10 @@ h6 {
     font-size: 14px;
 }
 
+.navbar {
+    box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+}
+
 .lead {
     font-size: 18px;
     font-weight: 400;
