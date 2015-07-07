@@ -3,6 +3,7 @@ exports.add_routes = function(app) {
   var textBody = require('body');
   var uuid = require('uuid');
 
+  var db = require('./db');
   var auth = require('./auth');
 
   function extract_text_body(req, res, next) {
@@ -16,13 +17,43 @@ exports.add_routes = function(app) {
     });
   }
 
+  function fail_on_error(res) {
+    return function(e) {
+      console.error(e.stack);
+      res.status(500).send(e.toString());
+    }
+  }
+
+  app.post('/edit',
+    auth.login_required,
+    // TODO: check that user is allowed to create another test for this app
+    function(req, res) {
+      var new_test_id = uuid.v4();
+      db.code()
+      .insert({
+        id: new_test_id,
+        platform: 'android',
+        content: '// Write your test here\n\n'
+        // TODO: add user to 'can_edit' list
+        // TODO: add app(etize?) identifier
+      })
+      .then(function() {
+        res.redirect('/edit/' + new_test_id);
+      })
+      .catch(fail_on_error(res));
+    }
+  );
+
   app.get('/edit/:id',
     auth.login_required,
-    // TODO: check that text exists
     // TODO: check that user can access this test
     function(req, res) {
-      db.code().find(req.params.id)
+      db.code()
+      .find(req.params.id)
       .then(function(code) {
+        if (!code) {
+          return res.sendStatus(404);
+        }
         res.render('edit', { locals: {
           device: {
             id: uuid.v4(),
@@ -33,29 +64,23 @@ exports.add_routes = function(app) {
           code: code.content
         }});
       })
-      .catch(function(e) {
-        console.error(e.stack);
-        res.status(500).send(e.toString());
-      });
+      .catch(fail_on_error(res));
     }
   );
 
   app.get('/edit/:id/code',
     auth.login_required, // TODO: return forbidden if no access
     function(req, res) {
-      db.code().find(req.params.id)
+      db.code()
+      .find(req.params.id)
       .then(function(code) {
-        if (code) {
-          res.set('Content-Type', 'text/javascript');
-          res.status(200).send(code.content);
-        } else {
-          res.sendStatus(404);
+        if (!code) {
+          return res.sendStatus(404);
         }
+        res.set('Content-Type', 'text/javascript');
+        res.status(200).send(code.content);
       })
-      .catch(function(e) {
-        console.error(e.stack);
-        res.status(500).send(e.toString());
-      })
+      .catch(fail_on_error(res));
     }
   );
 
@@ -71,10 +96,7 @@ exports.add_routes = function(app) {
       .then(function() {
         res.sendStatus(200);
       })
-      .catch(function(e) {
-        console.error(e.stack);
-        res.status(500).send(e.toString());
-      });
+      .catch(fail_on_error(res));
     }
   );
 
