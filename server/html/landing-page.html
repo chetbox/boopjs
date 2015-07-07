@@ -133,13 +133,10 @@
                     <hr class="section-heading-spacer">
                     <div class="clearfix"></div>
                     <h2 class="section-heading">Describe your tests <i>visually</i></h2>
-                    <p class="lead">Your tests shouldn't need to know how your app is constructed. They should describe the user experience, leaving developers free to build and refactor as they see fit.</p>
-                    <p class="lead">The default client is a Python library, but you can use any language of your choice using a simple wrapper.</p>
+                    <p class="lead">Your tests shouldn't need to know how your app is constructed. They describe the user experience, leaving developers free to build and refactor as they see fit.</p>
                 </div>
                 <div class="col-lg-5 col-lg-offset-2 col-sm-6">
                     <pre class="img-responsive">
-
-from chetbot import __
 
 __('Username').tap()
 keyboard.type_text('alice')
@@ -149,7 +146,7 @@ keyboard.type_text('ilovebob')
 
 keyboard.dismiss()
 
-__(class='CheckBox').closest_to('Notifications').tap()
+__({class: 'CheckBox'}).closest_to('Notifications').tap()
 
 __('Sign in').tap()
                     </pre>
