@@ -3,6 +3,7 @@ var expressSession = require('express-session');
 var GitHubStrategy = require('passport-github2').Strategy;
 var config = require('config');
 var _ = require('underscore');
+var flash = require('connect-flash');
 
 var db = require('./db');
 
@@ -41,13 +42,14 @@ function login_required(req, res, next) {
   if (req.isAuthenticated()) {
     return next();
   }
-  res.redirect('/auth/github');
+  res.redirect('/auth/github?redirect=' + encodeURIComponent(req.url));
 }
 
 function setup(app) {
   app.use(expressSession({secret: 'f7417279-09ce-4ee9-9476-cd7d49668137'}));
   app.use(passport.initialize());
   app.use(passport.session());
+  app.use(flash());
 
   app.get('/account',
     login_required,
@@ -61,18 +63,17 @@ function setup(app) {
   });
 
   app.get('/auth/github',
-    passport.authenticate('github', { scope: [ 'user:email' ] }),
-    function(req, res) {
-      // The request will be redirected to GitHub for authentication, so this
-      // function will not be called.
-    }
+    function(req, res, next) {
+      req.flash('redirect', req.query.redirect);
+      next();
+    },
+    passport.authenticate('github', {scope: ['user:email']})
   );
 
   app.get('/auth/github/callback',
     passport.authenticate('github', {failureRedirect: '/login'}),
-    function(req, res) {
-      // TODO: redirect to correct URL after sign in
-      res.redirect('/demo');
+    function (req, res) {
+      res.redirect(_.last(req.flash('redirect')) || '/demo');
     }
   );
 
