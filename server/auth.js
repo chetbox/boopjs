@@ -20,6 +20,7 @@ passport.use(new GitHubStrategy(
   config.get('github-oauth'),
   function(accessToken, refreshToken, user, done) {
     console.log('User authenticated: ' + user.username);
+    // TODO: generate internal user ID for session serialisation
     var serializable_user = _.extend(
       _.pick(user, 'id', 'username', 'displayName', 'profileUrl', 'provider'),
       {

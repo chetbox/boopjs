@@ -1,4 +1,4 @@
-function add_routes(app) {
+exports.add_routes = function(app) {
 
   var expressWs = require('express-ws')(app);
   var auth = require('./auth');
@@ -54,6 +54,4 @@ function add_routes(app) {
     // TODO: remove device from 'devices' when connection closed
   });
 
-}
-
-exports.add_routes = add_routes;
+};
