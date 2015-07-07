@@ -1,29 +1,37 @@
 var config = require('config');
 var dynasty = require('dynasty')(config.get('dynamodb'));
+var _ = require('underscore');
 
-var USERS = 'chetbot.users';
-var CODE  = 'chetbot.code';
+var TABLE_PREFIX = 'chetbot.';
+var TABLES = {
+  'users': {
+    key_schema: {hash: ['id', 'string']},
+    throughput: {write: 10, read: 10}
+  },
+  'code': {
+    key_schema: {hash: ['id', 'string']},
+    throughput: {write: 10, read: 10}
+  }
+};
 
 dynasty.list()
-  .then(function(data) {
-    // TODO: use .all for all 'create' promises and log output
-    if (data.TableNames.indexOf(USERS) === -1) {
-      dynasty.create(USERS, {
-        key_schema: {hash: ['id', 'string']},
-        throughput: {write: 10, read: 10}
-      });
-    }
-    if (data.TableNames.indexOf(CODE) === -1) {
-      dynasty.create(CODE, {
-        key_schema: {hash: ['id', 'string']},
-        throughput: {write: 10, read: 10}
-      });
-    }
-  })
-  .catch(function(e) {
-    console.error(e);
-    process.exit(1);
-  });
+.then(function(data) {
+  return Promise.all(
+    _.map(TABLES, function(options, name) {
+      var full_name = TABLE_PREFIX + name;
+      if (data.TableNames.indexOf(full_name) === -1) {
+        return dynasty.create(full_name, options);
+      }
+    })
+  );
+})
+.catch(function(e) {
+  console.error(e.stack);
+  process.exit(1);
+});
 
-exports.users = function() { return dynasty.table(USERS); };
-exports.code  = function() { return dynasty.table(CODE); };
+_.each(TABLES, function(_, name) {
+  exports[name] = function() {
+    return dynasty.table(TABLE_PREFIX + name);
+  };
+});
