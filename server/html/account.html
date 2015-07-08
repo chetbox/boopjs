@@ -49,7 +49,7 @@
             url: req.signed_request,
             method: 'PUT'
           }).done(function(res) {
-            console.log('Uploaded successfully', res);
+            console.log('Uploaded successfully');
             $('#new-app form input[name=app_url]').val(req.url);
             $('#new-app form').submit();
           });

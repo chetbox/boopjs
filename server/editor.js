@@ -48,7 +48,7 @@ exports.add_routes = function(app) {
         Key: file_path,
         Expires: 60,
         ContentType: req.query.file_type,
-        ACL: 'authenticated-read'
+        ACL: 'public-read'
       };
       s3.getSignedUrl('putObject', s3_params, function(err, data) {
         if (err) {
