@@ -30,11 +30,16 @@ passport.use(new GitHubStrategy(
       }
     );
 
-    db.users().insert(serializable_user)
-      .then(function() {
-        done(null, serializable_user);
-      })
-      .catch(done);
+    // TODO: fix grossness ('apps' stored as part of user object)
+    db.users()
+    .find(user.id)
+    .then(function(db_user) {
+      return db.users().insert( _.extend(db_user || {}, serializable_user) );
+    })
+    .then(function() {
+      done(null, serializable_user);
+    })
+    .catch(done);
   }
 ));
 
@@ -54,7 +59,7 @@ function setup(app) {
   app.get('/account',
     login_required,
     function(req, res) {
-      res.render('account', { locals: req.user });
+      res.render('account', req.user);
     }
   );
 

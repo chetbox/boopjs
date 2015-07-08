@@ -8,8 +8,12 @@ var TABLES = {
     key_schema: {hash: ['id', 'string']},
     throughput: {write: 10, read: 10}
   },
-  'code': {
+  'apps': {
     key_schema: {hash: ['id', 'string']},
+    throughput: {write: 10, read: 10}
+  },
+  'code': {
+    key_schema: {hash: ['id', 'string'], range: ['app_id', 'string']},
     throughput: {write: 10, read: 10}
   }
 };

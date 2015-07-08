@@ -1,12 +1,12 @@
 exports.add_routes = function(app) {
 
   var fs = require('fs');
-  var uuid = require('uuid');
+  var shortid = require('shortid');
 
   app.get('/demo', function(req, res) {
-    res.render('edit', { locals: {
+    res.render('edit', {
       device: {
-        id: uuid.v4(),
+        id: shortid.generate(),
         model: 'nexus5',
         orientation: 'portrait'
       },
@@ -15,7 +15,7 @@ exports.add_routes = function(app) {
         // TODO: memoize
         return fs.readFileSync(__dirname + '/demos/stopwatch.js');
       }
-    }});
+    });
   });
 
 };

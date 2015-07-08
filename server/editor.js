@@ -1,21 +1,16 @@
 exports.add_routes = function(app) {
 
-  var textBody = require('body');
-  var uuid = require('uuid');
+  var shortid = require('shortid');
+  var _ = require('underscore');
+  var AWS = require('aws-sdk');
+  var config = require('config');
+  var Promise = require('bluebird');
+  var request = require('request-promise');
 
   var db = require('./db');
   var auth = require('./auth');
 
-  function extract_text_body(req, res, next) {
-    textBody(req, function(err, body) {
-      if (err) {
-        res.status(500).send('Expected text HTTP body');
-      } else {
-        req.body = body;
-        next();
-      }
-    });
-  }
+  AWS.config.update(config.get('s3'));
 
   function fail_on_error(res) {
     return function(e) {
@@ -24,55 +19,159 @@ exports.add_routes = function(app) {
     }
   }
 
-  app.post('/edit',
+  // TODO: cache DB lookup
+  function ensure_code_belongs_to_app(req, res, next) {
+    db.code().find({hash: req.params.code_id, range: req.params.app_id})
+    .then(function(code) {
+      if (!code) {
+        throw new Error('Code not found');
+      }
+      next();
+    })
+    .catch(fail_on_error(res));
+  }
+
+  function ensure_user_can_access_app(req, res, next) {
+    if (!req.user.apps || req.user.apps.indexOf(req.params.app_id) === -1) {
+      res.status(403).send('You don\'t have access to this app');
+    } else {
+      next();
+    }
+  }
+
+  app.get('/sign_s3',
     auth.login_required,
-    // TODO: check that user is allowed to create another test for this app
     function(req, res) {
-      var new_test_id = uuid.v4();
-      db.code()
-      .insert({
-        id: new_test_id,
-        platform: 'android',
-        content: '// Write your test here\n\n'
-        // TODO: add user to 'can_edit' list
-        // TODO: add app(etize?) identifier
+      var s3 = new AWS.S3();
+      var S3_BUCKET = 'chetbot-apps';
+      var file_path = req.user.id + '/' + shortid.generate() + '.apk';
+      var s3_params = {
+        Bucket: S3_BUCKET,
+        Key: file_path,
+        Expires: 60,
+        ContentType: req.query.file_type,
+        ACL: 'public-read'
+      };
+      s3.getSignedUrl('putObject', s3_params, function(err, data) {
+        if (err) {
+          console.error(err);
+        } else {
+          var return_data = {
+            signed_request: data,
+            url: 'https://' + S3_BUCKET + '.s3.amazonaws.com/' + file_path
+          };
+          res.write(JSON.stringify(return_data));
+          res.end();
+        }
+      });
+    }
+  );
+
+  app.post('/app',
+    auth.login_required,
+    // TODO: check that user is allowed to create another app
+    function(req, res) {
+      var new_app_id = shortid.generate();
+      var new_code_id = shortid.generate();
+
+      console.log('Uploading app to appetize.io', req.body.app_url);
+
+      // TODO: store package name of app and allow replacing
+      // TODO: store name and icon of app to show in UI
+
+      request.post({
+        uri: 'https://api.appetize.io/v1/app/update',
+        method: 'POST',
+        json: {
+          token: config.get('appetize_io').token,
+          url: req.body.app_url,
+          platform : 'android'
+        }
+      })
+      .then(function(appetize) {
+        console.log(appetize);
+        return Promise.all([
+          db.apps().insert({
+            id: new_app_id,
+            platform: 'android',
+            code_id: new_code_id, // TODO: fix gross hack because we can't search 'code' table by range key (app_id)
+            app_url: req.body.app_url,
+            publicKey: appetize.publicKey,
+            privateKey: appetize.privateKey
+          }),
+          db.code().insert({
+            id: new_code_id,
+            app_id: new_app_id,
+            content: '// Write your test here\n\n'
+          })
+        ]);
       })
       .then(function() {
-        res.redirect('/edit/' + new_test_id);
+        req.user.apps = _.union(req.user.apps, [new_app_id]);
+        return db.users().update(req.user);
+      })
+      .then(function() {
+        res.redirect('/app/' + new_app_id + '/edit/' + new_code_id);
       })
       .catch(fail_on_error(res));
     }
   );
 
-  app.get('/edit/:id',
+  // Temporarily just redirect the only code associated with this app
+  // TODO: app.get('/app/:id') -> list of tests for app
+  app.get('/app/:app_id',
     auth.login_required,
-    // TODO: check that user can access this test
+    ensure_user_can_access_app,
     function(req, res) {
-      db.code()
-      .find(req.params.id)
-      .then(function(code) {
-        if (!code) {
+      db.apps().find(req.params.app_id)
+      .then(function(app) {
+        if (app) {
+          res.redirect('/app/' + req.params.app_id + '/edit/' + app.code_id);
+        } else {
+          throw new Error('App/code not found');
+        }
+      })
+      .catch(fail_on_error(res));
+    }
+  );
+
+  app.get('/app/:app_id/edit/:code_id',
+    auth.login_required,
+    ensure_user_can_access_app,
+    ensure_code_belongs_to_app,
+    function(req, res) {
+      Promise.join(
+        db.apps().find(req.params.app_id),
+        db.code().find({hash: req.params.code_id, range: req.params.app_id})
+      )
+      .spread(function(app, code) {
+        if (!code || !app) {
           return res.sendStatus(404);
         }
-        res.render('edit', { locals: {
+        res.render('edit', {
           device: {
-            id: uuid.v4(),
+            id: shortid.generate(),
             model: 'nexus5',
-            orientation: 'portrait'
+            orientation: 'portrait',
+          },
+          app: {
+            publicKey: app.publicKey
           },
           autosave: true,
           code: code.content
-        }});
+        });
       })
       .catch(fail_on_error(res));
     }
   );
 
-  app.get('/edit/:id/code',
+  app.get('/app/:app_id/edit/:code_id/code',
     auth.login_required, // TODO: return forbidden if no access
+    ensure_user_can_access_app,
+    ensure_code_belongs_to_app,
     function(req, res) {
       db.code()
-      .find(req.params.id)
+      .find(req.params.code_id)
       .then(function(code) {
         if (!code) {
           return res.sendStatus(404);
@@ -84,13 +183,14 @@ exports.add_routes = function(app) {
     }
   );
 
-  app.put('/edit/:id/code',
+  app.put('/app/:app_id/edit/:code_id/code',
     auth.login_required, // TODO: return forbidden if no access
-    // TODO: check that user can access this test
-    extract_text_body,
+    ensure_user_can_access_app,
+    ensure_code_belongs_to_app,
     function(req, res) {
       db.code().update({
-        id: req.params.id,
+        id: req.params.code_id,
+        app_id: req.params.app_id,
         content: req.body || null
       })
       .then(function() {
