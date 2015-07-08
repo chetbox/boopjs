@@ -8,7 +8,7 @@ var _ws = new ReconnectingWebSocket('ws://ec2-54-77-127-243.eu-west-1.compute.am
 /* Heartbeat to prevent device timing out */
 var device_iframe = document.querySelector('iframe');
 setInterval(function() { device_iframe.contentWindow.postMessage('heartbeat', '*'); },
-      60 * 1000);
+      15 * 1000);
 
 function __(text_or_options) {
 
