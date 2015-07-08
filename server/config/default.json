@@ -12,5 +12,8 @@
   "s3": {
     "accessKeyId": "DYNAMODB_ACCESS_KEY_ID",
     "secretAccessKey": "DYNAMODB_SECRET_ACCESS_KEY"
+  },
+  "appetize_io": {
+    "token": "APPETIZEIO_TOKEN"
   }
 }

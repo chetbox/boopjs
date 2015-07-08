@@ -4,6 +4,8 @@ exports.add_routes = function(app) {
   var _ = require('underscore');
   var AWS = require('aws-sdk');
   var config = require('config');
+  var Promise = require('bluebird');
+  var request = require('request-promise');
 
   var db = require('./db');
   var auth = require('./auth');
@@ -41,7 +43,7 @@ exports.add_routes = function(app) {
     auth.login_required,
     function(req, res) {
       var s3 = new AWS.S3();
-      var S3_BUCKET = 'chetbot.apps.us-standard';
+      var S3_BUCKET = 'chetbot-apps';
       var file_path = req.user.id + '/' + shortid.generate() + '.apk';
       var s3_params = {
         Bucket: S3_BUCKET,
@@ -69,25 +71,41 @@ exports.add_routes = function(app) {
     auth.login_required,
     // TODO: check that user is allowed to create another app
     function(req, res) {
-      // TODO: upload user's app
-      console.log('TODO: upload to appetize.io', req.body);
       var new_app_id = shortid.generate();
       var new_code_id = shortid.generate();
-      Promise.all([
-        db.apps().insert({
-          id: new_app_id,
-          platform: 'android',
-          code_id: new_code_id, // TODO: fix gross hack because we can't search 'code' table by range key (app_id)
-          app_url: req.body.app_url,
-          publicKey: 'z8460qxgdyrfe8c2ag1z6bqyw0', // TODO: replace stopwatch app with uploaded
-          privateKey: 'private_j9p0rykhzf2tw998t9ndcz0r9r' // TODO: replace stopwatch app with uploaded
-        }),
-        db.code().insert({
-          id: new_code_id,
-          app_id: new_app_id,
-          content: '// Write your test here\n\n'
-        })
-      ])
+
+      console.log('Uploading app to appetize.io', req.body.app_url);
+
+      // TODO: store package name of app and allow replacing
+      // TODO: store name and icon of app to show in UI
+
+      request.post({
+        uri: 'https://api.appetize.io/v1/app/update',
+        method: 'POST',
+        json: {
+          token: config.get('appetize_io').token,
+          url: req.body.app_url,
+          platform : 'android'
+        }
+      })
+      .then(function(appetize) {
+        console.log(appetize);
+        return Promise.all([
+          db.apps().insert({
+            id: new_app_id,
+            platform: 'android',
+            code_id: new_code_id, // TODO: fix gross hack because we can't search 'code' table by range key (app_id)
+            app_url: req.body.app_url,
+            publicKey: appetize.publicKey,
+            privateKey: appetize.privateKey
+          }),
+          db.code().insert({
+            id: new_code_id,
+            app_id: new_app_id,
+            content: '// Write your test here\n\n'
+          })
+        ]);
+      })
       .then(function() {
         req.user.apps = _.union(req.user.apps, [new_app_id]);
         return db.users().update(req.user);
@@ -122,17 +140,22 @@ exports.add_routes = function(app) {
     ensure_user_can_access_app,
     ensure_code_belongs_to_app,
     function(req, res) {
-      db.code()
-      .find({hash: req.params.code_id, range: req.params.app_id})
-      .then(function(code) {
-        if (!code) {
+      Promise.join(
+        db.apps().find(req.params.app_id),
+        db.code().find({hash: req.params.code_id, range: req.params.app_id})
+      )
+      .spread(function(app, code) {
+        if (!code || !app) {
           return res.sendStatus(404);
         }
         res.render('edit', {
           device: {
             id: shortid.generate(),
             model: 'nexus5',
-            orientation: 'portrait'
+            orientation: 'portrait',
+          },
+          app: {
+            publicKey: app.publicKey
           },
           autosave: true,
           code: code.content

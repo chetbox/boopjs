@@ -18,6 +18,7 @@
   "homepage": "https://github.com/chetbox/chetbot#readme",
   "dependencies": {
     "aws-sdk": "^2.1.37",
+    "bluebird": "^2.9.32",
     "body-parser": "^1.13.2",
     "config": "^1.14.0",
     "connect-flash": "^0.1.1",
@@ -28,6 +29,7 @@
     "express-ws": "^0.2.6",
     "passport": "^0.2.2",
     "passport-github2": "^0.1.9",
+    "request-promise": "^0.4.2",
     "shortid": "^2.2.2",
     "underscore": "^1.8.3"
   }
