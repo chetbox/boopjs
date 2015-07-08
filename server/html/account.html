@@ -24,6 +24,7 @@
         <form action="/app" method="POST">
           <input type="hidden" name="app_url" />
         </form>
+        <p class="status"></p>
       </li>
     </ul>
   </body>
@@ -32,6 +33,10 @@
   <script>
     $('#new-app input[type=file]').on('change', function(e) {
       ga('send', 'event', 'app-upload', 'start');
+
+      var status = $('#new-app .status');
+      status.removeClass('error').text('Requsting upload...');
+
       var file = e.target.files[0];
       if (!file) {
         $('#new-app input[name=app_url]').val('');
@@ -45,15 +50,32 @@
         dataType: 'json'
       }).done(function(req) {
         ga('send', 'event', 'app-upload', 'request-granted');
-        $.ajax({
-          url: req.signed_request,
-          method: 'PUT'
-        }).done(function(res) {
-          ga('send', 'event', 'app-upload', 'uploaded');
-          console.log('Uploaded successfully');
-          $('#new-app form input[name=app_url]').val(req.url);
-          $('#new-app form').submit();
-        });
+        status.text('Uploading...');
+        var xhr = new XMLHttpRequest();
+        xhr.upload.onprogress = function(e) {
+          var percent_complete = Math.floor(e.loaded / e.total * 100);
+          status.text(percent_complete + '% complete...');
+        };
+        xhr.open('PUT', req.signed_request);
+        xhr.onload = function() {
+          if (xhr.status === 200) {
+            ga('send', 'event', 'app-upload', 'uploaded');
+
+            status.text('Done. Redirecting...');
+            $('#new-app form input[name=app_url]').val(req.url);
+            $('#new-app form').submit();
+          } else {
+            ga('send', 'event', 'app-upload', 'upload-error', xhr.responseText);
+            status.text(xhr.responseText).addClass('error');
+            console.error(xhr.status, xhr.responseText);
+          }
+        };
+        xhr.onerror = function(e) {
+          ga('send', 'event', 'app-upload', 'upload-error', e.toString());
+          status.text(xhr.responseText).addClass('error');
+          console.error(e);
+        };
+        xhr.send(file);
       });
     });
   </script>
