@@ -38,25 +38,30 @@
   <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
   <script>
     $('#new-app input[type=file]').on('change', function(e) {
+      ga('send', 'event', 'app-upload', 'start');
       var file = e.target.files[0];
-      if (file) {
-        $.ajax({
-          url: '/sign_s3?file_type=' + file.type,
-          method: 'GET',
-          dataType: 'json'
-        }).done(function(req) {
-          $.ajax({
-            url: req.signed_request,
-            method: 'PUT'
-          }).done(function(res) {
-            console.log('Uploaded successfully');
-            $('#new-app form input[name=app_url]').val(req.url);
-            $('#new-app form').submit();
-          });
-        });
-      } else {
+      if (!file) {
         $('#new-app input[name=app_url]').val('');
+        ga('send', 'event', 'app-upload', 'no-file');
+        return;
       }
+
+      $.ajax({
+        url: '/sign_s3?file_type=' + file.type,
+        method: 'GET',
+        dataType: 'json'
+      }).done(function(req) {
+        ga('send', 'event', 'app-upload', 'request-granted');
+        $.ajax({
+          url: req.signed_request,
+          method: 'PUT'
+        }).done(function(res) {
+          ga('send', 'event', 'app-upload', 'uploaded');
+          console.log('Uploaded successfully');
+          $('#new-app form input[name=app_url]').val(req.url);
+          $('#new-app form').submit();
+        });
+      });
     });
   </script>
 
