@@ -1,21 +1,28 @@
 exports.add_routes = function(app) {
 
   var textBody = require('body');
+  var formBody = require("body/form");
   var shortid = require('shortid');
   var _ = require('underscore');
+  var AWS = require('aws-sdk');
+  var config = require('config');
 
   var db = require('./db');
   var auth = require('./auth');
 
-  function extract_text_body(req, res, next) {
-    textBody(req, function(err, body) {
-      if (err) {
-        res.status(500).send('Expected text HTTP body');
-      } else {
-        req.body = body;
-        next();
-      }
-    });
+  AWS.config.update(config.get('s3'));
+
+  function extract_body(parse_fn) {
+    return function(req, res, next) {
+      parse_fn(req, function(err, body) {
+        if (err) {
+          res.status(500).send('Expected text HTTP body');
+        } else {
+          req.body = body;
+          next();
+        }
+      });
+    };
   }
 
   function fail_on_error(res) {
@@ -45,8 +52,37 @@ exports.add_routes = function(app) {
     }
   }
 
+  app.get('/sign_s3',
+    auth.login_required,
+    function(req, res) {
+      var s3 = new AWS.S3();
+      var S3_BUCKET = 'chetbot.apps.us-standard';
+      var file_path = req.user.id + '/' + shortid.generate() + '.apk';
+      var s3_params = {
+        Bucket: S3_BUCKET,
+        Key: file_path,
+        Expires: 60,
+        ContentType: req.query.file_type,
+        ACL: 'authenticated-read'
+      };
+      s3.getSignedUrl('putObject', s3_params, function(err, data) {
+        if (err) {
+          console.error(err);
+        } else {
+          var return_data = {
+            signed_request: data,
+            url: 'https://' + S3_BUCKET + '.s3.amazonaws.com/' + file_path
+          };
+          res.write(JSON.stringify(return_data));
+          res.end();
+        }
+      });
+    }
+  );
+
   app.post('/app',
     auth.login_required,
+    extract_body(formBody),
     // TODO: check that user is allowed to create another app
     function(req, res) {
       // TODO: upload user's app
@@ -57,6 +93,7 @@ exports.add_routes = function(app) {
           id: new_app_id,
           platform: 'android',
           code_id: new_code_id, // TODO: fix gross hack because we can't search 'code' table by range key (app_id)
+          app_url: req.body.app_url,
           publicKey: 'z8460qxgdyrfe8c2ag1z6bqyw0', // TODO: replace stopwatch app with uploaded
           privateKey: 'private_j9p0rykhzf2tw998t9ndcz0r9r' // TODO: replace stopwatch app with uploaded
         }),
@@ -142,10 +179,11 @@ exports.add_routes = function(app) {
     auth.login_required, // TODO: return forbidden if no access
     ensure_user_can_access_app,
     ensure_code_belongs_to_app,
-    extract_text_body,
+    extract_body(textBody),
     function(req, res) {
       db.code().update({
         id: req.params.code_id,
+        app_id: req.params.app_id,
         content: req.body || null
       })
       .then(function() {

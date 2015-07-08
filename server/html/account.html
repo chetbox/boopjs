@@ -25,9 +25,40 @@
       {{#apps}}
       <li><a href="/app/{{.}}">App</a></li>
       {{/apps}}
-      <li><form action="/app" method="post"><input type="submit" value="Upload a new app"/></form></li>
+      <li id="new-app" class="new">
+        <h4>Upload a new app</h4>
+        <input type="file"/>
+        <form action="/app" method="POST">
+          <input type="hidden" name="app_url" />
+        </form>
+      </li>
     </ul>
   </body>
+
+  <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+  <script>
+    $('#new-app input[type=file]').on('change', function(e) {
+      var file = e.target.files[0];
+      if (file) {
+        $.ajax({
+          url: '/sign_s3?file_type=' + file.type,
+          method: 'GET',
+          dataType: 'json'
+        }).done(function(req) {
+          $.ajax({
+            url: req.signed_request,
+            method: 'PUT'
+          }).done(function(res) {
+            console.log('Uploaded successfully', res);
+            $('#new-app form input[name=app_url]').val(req.url);
+            $('#new-app form').submit();
+          });
+        });
+      } else {
+        $('#new-app input[name=app_url]').val('');
+      }
+    });
+  </script>
 
   <!-- Google Analytics -->
   <script>

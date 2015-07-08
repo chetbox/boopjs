@@ -8,5 +8,9 @@
     "accessKeyId": "DYNAMODB_ACCESS_KEY_ID",
     "secretAccessKey": "DYNAMODB_SECRET_ACCESS_KEY",
     "region": "us-west-1"
+  },
+  "s3": {
+    "accessKeyId": "DYNAMODB_ACCESS_KEY_ID",
+    "secretAccessKey": "DYNAMODB_SECRET_ACCESS_KEY"
   }
 }

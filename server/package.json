@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/chetbox/chetbot#readme",
   "dependencies": {
+    "aws-sdk": "^2.1.37",
     "body": "^5.1.0",
     "config": "^1.14.0",
     "connect-flash": "^0.1.1",
