@@ -1,6 +1,6 @@
 var express = require('express');
 var app = express();
-var mu2express = require('mu2express');
+var express_handlebars = require('express-handlebars');
 
 var index = require('./index');
 var editor_demo = require('./editor_demo');
@@ -14,7 +14,7 @@ var port = process.env.PORT || 8001;
 
 // Mustache setup
 
-app.engine('html', mu2express.engine);
+app.engine('html', express_handlebars());
 app.set('view engine', 'html');
 app.set('views', __dirname + '/html');
 

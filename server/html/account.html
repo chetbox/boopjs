@@ -17,8 +17,15 @@
     <h3>Email addresses</h3>
     <ul>
       {{#emails}}
-      <li>{{.}}</li> <!-- TODO: this is blank, fix it! -->
+      <li>{{.}}</li>
       {{/emails}}
     </ul>
+  <h3>Apps</h3>
+  <ul>
+    {{#apps}}
+    <li><a href="/app/{{.}}">App</a></li>
+    {{/apps}}
+    <li><form action="/app" method="post"><input type="submit" value="Upload a new app"/></form></li>
+  </ul>
   </body>
 </html>
