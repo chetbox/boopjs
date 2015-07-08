@@ -20,12 +20,12 @@
       <li>{{.}}</li>
       {{/emails}}
     </ul>
-  <h3>Apps</h3>
-  <ul>
-    {{#apps}}
-    <li><a href="/app/{{.}}">App</a></li>
-    {{/apps}}
-    <li><form action="/app" method="post"><input type="submit" value="Upload a new app"/></form></li>
-  </ul>
+    <h3>Apps</h3>
+    <ul>
+      {{#apps}}
+      <li><a href="/app/{{.}}">App</a></li>
+      {{/apps}}
+      <li><form action="/app" method="post"><input type="submit" value="Upload a new app"/></form></li>
+    </ul>
   </body>
 </html>
