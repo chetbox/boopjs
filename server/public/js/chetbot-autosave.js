@@ -1,4 +1,4 @@
-var SAVE_AFTER_MS = 3000;
+var SAVE_AFTER_MS = 1000;
 var save_timeout = false;
 
 function save(editor) {
@@ -11,7 +11,7 @@ function save(editor) {
     save_timeout = null;
     $.ajax(window.location.pathname + '/code', {
       method: 'PUT',
-      mimeType: 'text/javascript',
+      contentType: 'text/plain; charset=UTF-8',
       data: code,
       beforeSend: function() {
         $('body').addClass('saving');

@@ -1,7 +1,5 @@
 exports.add_routes = function(app) {
 
-  var textBody = require('body');
-  var formBody = require("body/form");
   var shortid = require('shortid');
   var _ = require('underscore');
   var AWS = require('aws-sdk');
@@ -11,19 +9,6 @@ exports.add_routes = function(app) {
   var auth = require('./auth');
 
   AWS.config.update(config.get('s3'));
-
-  function extract_body(parse_fn) {
-    return function(req, res, next) {
-      parse_fn(req, function(err, body) {
-        if (err) {
-          res.status(500).send('Expected text HTTP body');
-        } else {
-          req.body = body;
-          next();
-        }
-      });
-    };
-  }
 
   function fail_on_error(res) {
     return function(e) {
@@ -82,10 +67,10 @@ exports.add_routes = function(app) {
 
   app.post('/app',
     auth.login_required,
-    extract_body(formBody),
     // TODO: check that user is allowed to create another app
     function(req, res) {
       // TODO: upload user's app
+      console.log('TODO: upload to appetize.io', req.body);
       var new_app_id = shortid.generate();
       var new_code_id = shortid.generate();
       Promise.all([
@@ -179,7 +164,6 @@ exports.add_routes = function(app) {
     auth.login_required, // TODO: return forbidden if no access
     ensure_user_can_access_app,
     ensure_code_belongs_to_app,
-    extract_body(textBody),
     function(req, res) {
       db.code().update({
         id: req.params.code_id,
