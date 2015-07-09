@@ -56,15 +56,22 @@ function setup(app) {
   app.use(passport.session());
   app.use(flash());
 
-  app.get('/account',
+  app.get('/home',
     login_required,
     function(req, res) {
-      res.render('account', req.user);
+      res.render('auth/home', req.user);
+    }
+  );
+
+  app.get('/apps',
+    login_required,
+    function(req, res) {
+      res.render('auth/apps', req.user);
     }
   );
 
   app.get('/login', function(req, res) {
-    res.render('login');
+    res.render('login', {layout: false});
   });
 
   app.get('/auth/github',
