@@ -21,7 +21,7 @@ You might want to run this in a separate terminal or a `screen` session.
 
 ### Create an appetize.io account
 
-Click [here]() and enter your email address. You'll need the token sent to you by email.
+Click [here](https://appetize.io/api) and enter your email address. You'll need the token sent to you by email.
 
 ### Create debug config
 
