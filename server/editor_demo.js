@@ -10,6 +10,7 @@ exports.add_routes = function(app) {
         model: 'nexus5',
         orientation: 'portrait'
       },
+      layout: false,
       autosave: false,
       code: function() {
         // TODO: memoize
