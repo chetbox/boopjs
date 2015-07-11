@@ -17,7 +17,7 @@ public class ChetbotServerConnection {
 
     private static final String TAG = ChetbotServerConnection.class.getSimpleName();
 
-    private static final String SERVER_URI = "ws://ec2-54-77-127-243.eu-west-1.compute.amazonaws.com/api/device";
+    private static final String SERVER_URI = "ws://chetbot-alpha.chetbox.com/api/device";
 
     public interface MessageHandler {
         Object onMessage(Command[] message) throws IllegalArgumentException;
@@ -152,7 +152,7 @@ public class ChetbotServerConnection {
             Log.d(TAG, "Disconnected (" + e + ")");
             reconnectLater();
         }
-        
+
         private void sendAsJson(Object data) {
             send(sGson.toJson(data));
         }

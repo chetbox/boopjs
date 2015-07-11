@@ -3,7 +3,7 @@
 **/
 
 var chetbot_device = null;
-var _ws = new ReconnectingWebSocket('ws://ec2-54-77-127-243.eu-west-1.compute.amazonaws.com/api/client');
+var _ws = new ReconnectingWebSocket('ws://chetbot-alpha.chetbox.com/api/client');
 
 /* Heartbeat to prevent device timing out */
 var device_iframe = document.querySelector('iframe');
