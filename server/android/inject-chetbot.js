@@ -4,8 +4,7 @@ var path = require('path');
 var shortid = require('shortid');
 
 require('shelljs/global');
-config.fatal = true;
-config.silent = false;
+config.silent = true;
 
 
 function inject_chetbot_start(activity_smali_file) {
@@ -32,7 +31,7 @@ function get_output(exec_obj) {
   global[cmd] = function() {
     var result = exec(cmd + ' ' + [].slice.call(arguments).map(escape_arg).join(' '));
     if (result.code !== 0) {
-      throw new Error(result.output);
+      throw '\'' + cmd + '\' exited with status ' + result.code + ': ' + (result.output || error());
     }
     return result.output;
   };
