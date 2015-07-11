@@ -4,9 +4,8 @@ var path = require('path');
 var shortid = require('shortid');
 
 require('shelljs/global');
-var shelljs = require('shelljs');
-shelljs.config.fatal = true;
-shelljs.config.silent = false;
+config.fatal = true;
+config.silent = false;
 
 
 function inject_chetbot_start(activity_smali_file) {
