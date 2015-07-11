@@ -121,7 +121,7 @@ module.exports = function(input_apk, output_apk) {
 
   console.log('Copying APK to destination');
   console.log('  -> ' + output_apk);
-  cp(tmp('app-aligned.apk'), output_apk);
+  mv(tmp('app-aligned.apk'), output_apk);
 
   console.log('Cleaning up');
   // rm('-r', tmp());
