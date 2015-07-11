@@ -56,7 +56,6 @@
           var percent_complete = Math.floor(e.loaded / e.total * 100);
           status.text(percent_complete + '% complete...');
         };
-        xhr.open('PUT', req.signed_request);
         xhr.onload = function() {
           if (xhr.status === 200) {
             ga('send', 'event', 'app-upload', 'uploaded');
@@ -71,10 +70,11 @@
           }
         };
         xhr.onerror = function(e) {
-          ga('send', 'event', 'app-upload', 'upload-error', e.toString());
-          status.text(xhr.responseText).addClass('error');
-          console.error(e);
+          ga('send', 'event', 'app-upload', 'upload-error', xhr.responseText);
+          status.text('Upload error: ' + xhr.responseText).addClass('error');
+          console.error(xhr.responseText, e);
         };
+        xhr.open('PUT', req.signed_request);
         xhr.send(file);
       });
     });

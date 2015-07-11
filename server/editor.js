@@ -2,15 +2,12 @@ exports.add_routes = function(app) {
 
   var shortid = require('shortid');
   var _ = require('underscore');
-  var AWS = require('aws-sdk');
-  var config = require('config');
   var Promise = require('bluebird');
-  var request = require('request-promise');
 
   var db = require('./db');
   var auth = require('./auth');
-
-  AWS.config.update(config.get('s3'));
+  var apps_s3 = require('./apps/s3');
+  var appetizeio = require('./apps/appetizeio');
 
   function fail_on_error(res) {
     return function(e) {
@@ -42,26 +39,12 @@ exports.add_routes = function(app) {
   app.get('/sign_s3',
     auth.login_required,
     function(req, res) {
-      var s3 = new AWS.S3();
-      var S3_BUCKET = 'chetbot-apps';
-      var file_path = req.user.id + '/' + shortid.generate() + '.apk';
-
-      Promise.promisify(s3.getSignedUrl, s3)('putObject', {
-        Bucket: S3_BUCKET,
-        Key: file_path,
-        Expires: 60,
-        ContentType: req.query.file_type,
-        ACL: 'public-read'
-      })
-      .then(function (data) {
-        return JSON.stringify({
-          signed_request: data,
-          url: 'https://' + S3_BUCKET + '.s3.amazonaws.com/' + file_path
-        });
-      })
-      .then(function(return_data) {
-        res.write(return_data);
-        res.end();
+      apps_s3.client_upload_request(
+        'chetbot-apps',
+        req.user.id + '/' + shortid.generate() + '.apk'
+      )
+      .then(function(upload_req) {
+        res.json(upload_req);
       })
       .catch(fail_on_error(res));
     }
@@ -79,17 +62,9 @@ exports.add_routes = function(app) {
       // TODO: store package name of app and allow replacing
       // TODO: store name and icon of app to show in UI
 
-      request.post({
-        uri: 'https://api.appetize.io/v1/app/update',
-        method: 'POST',
-        json: {
-          token: config.get('appetize_io').token,
-          url: req.body.app_url,
-          platform : 'android'
-        }
-      })
+      appetizeio.create_app(req.body.app_url, 'android')
       .then(function(appetize) {
-        console.log(appetize);
+        console.log('Appetize upload complete');
         return Promise.all([
           db.apps().insert({
             id: new_app_id,
