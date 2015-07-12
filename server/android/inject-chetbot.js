@@ -24,7 +24,7 @@ function get_output(exec_obj) {
 }
 
 // helpers
-['zip', 'unzip', 'smali', 'baksmali', 'java', 'xml', 'jarsigner', 'zipalign'].forEach(function(cmd) {
+['zip', 'unzip', 'smali', 'baksmali', 'java', 'xmlstarlet', 'jarsigner', 'zipalign'].forEach(function(cmd) {
   function escape_arg(s) {
     return "'" + s.replace("'", "\\'") + "'";
   }
@@ -77,7 +77,7 @@ module.exports = function(input_apk, output_apk) {
   java('-jar', apk_parser, tmp('app.apk')).to(tmp('AndroidManifest.xml'));
 
   // TODO: port to node XML processing
-  var main_activity = xml('sel', '-t', '-v',
+  var main_activity = xmlstarlet('sel', '-t', '-v',
     '/manifest' +
     '/application' +
     '/activity[' +
