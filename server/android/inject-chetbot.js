@@ -50,6 +50,8 @@ function tmp_dir() {
 
 module.exports = function(input_apk, output_apk) {
 
+  output_apk = output_apk || input_apk;
+
   var apk_parser = path.join(__dirname, 'APKParser.jar');
   var chetbot_smali = path.join(__dirname, 'chetbot-smali', '*');
 
@@ -121,12 +123,10 @@ module.exports = function(input_apk, output_apk) {
 
   console.log('Copying APK to destination');
   console.log('  -> ' + output_apk);
-  mv(tmp('app-aligned.apk'), output_apk);
+  mv('-f', tmp('app-aligned.apk'), output_apk);
 
   console.log('Cleaning up');
-  // rm('-r', tmp());
-
-  console.log(tmp('app-aligned.apk'));
+  rm('-r', tmp());
 
   return output_apk;
 }
