@@ -6,6 +6,9 @@ VOLUME /opt/chetbot-server/config
 
 WORKDIR /opt/chetbot-server
 
+# TODO: install smali, baksmali
+# TODO: run gen-smali.sh
+
 RUN apt-get update
 RUN apt-get -y install zip unzip default-jre-headless xmlstarlet
 RUN wget https://xml-apk-parser.googlecode.com/files/APKParser.jar -o android/APKParser.jar
