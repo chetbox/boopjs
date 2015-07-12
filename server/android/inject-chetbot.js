@@ -52,8 +52,8 @@ module.exports = function(input_apk, output_apk) {
 
   output_apk = output_apk || input_apk;
 
-  var apk_parser = path.join(__dirname, 'APKParser.jar');
-  var chetbot_smali = path.join(__dirname, 'chetbot-smali', '*');
+  var apk_parser = path.join(__dirname, 'deps', 'APKParser.jar');
+  var chetbot_smali = path.join(__dirname, 'deps', 'chetbot-smali', '*');
 
   // TODO: generate a key that lasts longer and store it in the project
   var android_debug_keystore = path.join(user_home(), '.android', 'debug.keystore');
