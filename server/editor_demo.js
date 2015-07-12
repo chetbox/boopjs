@@ -8,7 +8,10 @@ exports.add_routes = function(app) {
       device: {
         id: shortid.generate(),
         model: 'nexus5',
-        orientation: 'portrait'
+        orientation: 'portrait',
+      },
+      app: {
+        publicKey: 'z8460qxgdyrfe8c2ag1z6bqyw0'
       },
       autosave: false,
       code: function() {
