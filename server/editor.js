@@ -66,6 +66,7 @@ exports.add_routes = function(app) {
       var modified_apk_url = null;
 
       // TODO: cleanup downloaded files
+      // TODO: return immediately and show user a progress page
       console.log('Downloading app', user_apk_url);
       apps_s3.download(user_apk_url)
       .then(function(apk) {
