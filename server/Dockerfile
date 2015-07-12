@@ -7,8 +7,9 @@ VOLUME /opt/chetbot-server/config
 WORKDIR /opt/chetbot-server
 
 RUN apt-get update
-RUN apt-get install zip unzip
-RUN npm install
+RUN apt-get -y install zip unzip
+RUN wget https://xml-apk-parser.googlecode.com/files/APKParser.jar -o android/APKParser.jar
+RUN npm update
 
 ENV PORT 8000
 ENV NODE_ENV production
