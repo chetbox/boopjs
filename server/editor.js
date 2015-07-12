@@ -3,11 +3,13 @@ exports.add_routes = function(app) {
   var shortid = require('shortid');
   var _ = require('underscore');
   var Promise = require('bluebird');
+  var url = require('url');
 
   var db = require('./db');
   var auth = require('./auth');
   var apps_s3 = require('./apps/s3');
   var appetizeio = require('./apps/appetizeio');
+  var inject_chetbot = require('./android/inject-chetbot');
 
   function fail_on_error(res) {
     return function(e) {
@@ -57,20 +59,37 @@ exports.add_routes = function(app) {
       var new_app_id = shortid.generate();
       var new_code_id = shortid.generate();
 
-      console.log('Uploading app to appetize.io', req.body.app_url);
-
       // TODO: store package name of app and allow replacing
       // TODO: store name and icon of app to show in UI
 
-      appetizeio.create_app(req.body.app_url, 'android')
+      var user_apk_url = req.body.app_url;
+      var modified_apk_url = null;
+
+      // TODO: cleanup downloaded files
+      console.log('Downloading app', user_apk_url);
+      apps_s3.download(user_apk_url)
+      .then(function(apk) {
+        console.log('Adding Chetbot to APK', apk);
+        return inject_chetbot(apk);
+      })
+      .then(function(apk) {
+        console.log('Uploading ' + apk + ' to S3');
+        return apps_s3.upload(apk, 'chetbot-apps-v1', url.parse(user_apk_url).pathname + '.chetbot.apk');
+      })
+      .then(function(url) {
+        modified_apk_url = url;
+        console.log('Creating appetize.io app', modified_apk_url);
+        return appetizeio.create_app(modified_apk_url, 'android');
+      })
       .then(function(appetize) {
-        console.log('Appetize upload complete');
+        console.log('Recording app in database', new_app_id);
         return Promise.all([
           db.apps().insert({
             id: new_app_id,
             platform: 'android',
             code_id: new_code_id, // TODO: fix gross hack because we can't search 'code' table by range key (app_id)
-            app_url: req.body.app_url,
+            user_app_url: user_apk_url,
+            app_url: modified_apk_url,
             publicKey: appetize.publicKey,
             privateKey: appetize.privateKey
           }),
@@ -82,7 +101,7 @@ exports.add_routes = function(app) {
         ]);
       })
       .then(function() {
-        req.user.apps = _.union(req.user.apps, [new_app_id]);
+        req.user.apps = _.union(req.user.apps, [new_app_id]); // Keep existing info (dynasty's .update is broken)
         return db.users().update(req.user);
       })
       .then(function() {
