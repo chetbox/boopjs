@@ -38,5 +38,5 @@ require('./websocket_server') .add_routes(app);
 // Launch
 
 app.listen(port, function() {
-    console.log((new Date()) + ' Server is listening on port ' + port);
+    console.log((new Date()) + ' Server is listening on port ' + port + ' with configuration: ' + process.env.NODE_ENV);
 });
