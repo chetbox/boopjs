@@ -13,7 +13,7 @@ exports.add_routes = function(app) {
 
   function fail_on_error(res) {
     return function(e) {
-      console.error(e.stack);
+      console.error(e.stack || e);
       res.status(500).send(e.toString());
     }
   }
