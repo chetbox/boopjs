@@ -14,8 +14,8 @@ CWD=$(pwd)
 cd $(dirname "$0")
 
 # Compile Java
-../gradlew clean
-../gradlew compileReleaseJava
+./gradlew clean
+./gradlew compileReleaseJava
 
 # Find class files and dex them
 cd build/intermediates/classes/release

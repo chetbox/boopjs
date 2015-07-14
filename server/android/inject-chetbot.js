@@ -24,7 +24,7 @@ function get_output(exec_obj) {
 }
 
 // helpers
-['zip', 'unzip', 'smali', 'baksmali', 'java', 'xml', 'jarsigner', 'zipalign'].forEach(function(cmd) {
+['zip', 'unzip', 'java', 'xmlstarlet', 'jarsigner', 'zipalign'].forEach(function(cmd) {
   function escape_arg(s) {
     return "'" + s.replace("'", "\\'") + "'";
   }
@@ -36,6 +36,11 @@ function get_output(exec_obj) {
     return result.output;
   };
 });
+
+var apk_parser = path.join(__dirname, 'deps', 'APKParser.jar');
+var smali = path.join(__dirname, 'deps', 'smali.jar');
+var baksmali = path.join(__dirname, 'deps', 'baksmali.jar');
+var chetbot_smali = path.join(__dirname, 'deps', 'chetbot-smali', '*');
 
 function user_home() {
   return process.env.HOME || process.env.USERPROFILE;
@@ -51,9 +56,6 @@ function tmp_dir() {
 module.exports = function(input_apk, output_apk) {
 
   output_apk = output_apk || input_apk;
-
-  var apk_parser = path.join(__dirname, 'APKParser.jar');
-  var chetbot_smali = path.join(__dirname, 'chetbot-smali', '*');
 
   // TODO: generate a key that lasts longer and store it in the project
   var android_debug_keystore = path.join(user_home(), '.android', 'debug.keystore');
@@ -71,13 +73,13 @@ module.exports = function(input_apk, output_apk) {
   unzip(tmp('app.apk'), 'classes.dex', '-d', tmp());
 
   console.log('Decompiling');
-  baksmali('-x', tmp('classes.dex'), '-o', tmp('app-smali'));
+  java('-jar', baksmali, '-x', tmp('classes.dex'), '-o', tmp('app-smali'));
 
   console.log('Finding main activity');
   java('-jar', apk_parser, tmp('app.apk')).to(tmp('AndroidManifest.xml'));
 
   // TODO: port to node XML processing
-  var main_activity = xml('sel', '-t', '-v',
+  var main_activity = xmlstarlet('sel', '-t', '-v',
     '/manifest' +
     '/application' +
     '/activity[' +
@@ -98,7 +100,7 @@ module.exports = function(input_apk, output_apk) {
 
   console.log('Recompiling');
   rm(tmp('classes.dex'));
-  smali(tmp('app-smali'), '-o', tmp('classes.dex'));
+  java('-jar', smali, tmp('app-smali'), '-o', tmp('classes.dex'));
 
   console.log('Updating APK');
   zip('-j', tmp('app.apk'), tmp('classes.dex'));
