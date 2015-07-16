@@ -15,6 +15,10 @@ var TABLES = {
   'code': {
     key_schema: {hash: ['id', 'string'], range: ['app_id', 'string']},
     throughput: {write: 10, read: 10}
+  },
+  'devices': {
+    key_schema: {hash: ['id', 'string']},
+    throughput: {read: 100, write: 100}
   }
 };
 

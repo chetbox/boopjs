@@ -3,7 +3,7 @@
 **/
 
 var chetbot_device = null;
-var _ws = new ReconnectingWebSocket('ws://chetbot-alpha.chetbox.com/api/client');
+var _ws = new ReconnectingWebSocket('ws://localhost:8001/api/client');
 
 /* Heartbeat to prevent device timing out */
 var device_iframe = document.querySelector('iframe');

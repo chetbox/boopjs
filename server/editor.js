@@ -7,6 +7,7 @@ exports.add_routes = function(app) {
 
   var db = require('./db');
   var auth = require('./auth');
+  var devices = require('./devices');
   var apps_s3 = require('./apps/s3');
   var appetizeio = require('./apps/appetizeio');
   var inject_chetbot = require('./android/inject-chetbot');
@@ -137,15 +138,16 @@ exports.add_routes = function(app) {
     function(req, res) {
       Promise.join(
         db.apps().find(req.params.app_id),
-        db.code().find({hash: req.params.code_id, range: req.params.app_id})
+        db.code().find({hash: req.params.code_id, range: req.params.app_id}),
+        devices.create_device({user: req.user})
       )
-      .spread(function(app, code) {
+      .spread(function(app, code, device_id) {
         if (!code || !app) {
           return res.sendStatus(404);
         }
         res.render('edit', {
           device: {
-            id: shortid.generate(),
+            id: device_id,
             model: 'nexus5',
             orientation: 'portrait',
           },

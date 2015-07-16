@@ -2,12 +2,21 @@ exports.add_routes = function(app) {
 
   var expressWs = require('express-ws')(app);
   var auth = require('./auth');
+  var devices = require('./devices');
 
-  var devices = {};
+  var devices_in_use = {};
   var requires_response = {};
 
+  function fail_on_error(ws) {
+    return function(e) {
+      console.error(e.stack || e);
+      ws.send(JSON.stringify({
+        error: e.toString()
+      }));
+    }
+  }
+
   app.ws('/api/client',
-    auth.login_required,
     function(ws, req) {
       ws.on('message',
         function(messageStr) {
@@ -20,17 +29,20 @@ exports.add_routes = function(app) {
             return;
           }
 
-          console.log('commands (' + message.device + '): ' + JSON.stringify(message.commands));
-          requires_response[message.device] = ws;
-          var device = devices[message.device];
-          if (device) {
-            device.send(messageStr);
-          } else {
-            console.error('Device not found: ' + message.device);
-            ws.send(JSON.stringify({
-              error: 'Device not found: ' + message.device
-            }));
-          }
+          devices.check_device_access(message.device, req.user).then(function() {
+            console.log('commands (' + message.device + '): ' + JSON.stringify(message.commands));
+            requires_response[message.device] = ws;
+            var device = devices_in_use[message.device];
+            if (device) {
+              device.send(messageStr);
+            } else {
+              console.error('Device not in use: ' + message.device);
+              ws.send(JSON.stringify({
+                error: 'Device not in use: ' + message.device
+              }));
+            }
+          })
+          .catch(fail_on_error(ws));
         }
       )
     }
@@ -41,8 +53,12 @@ exports.add_routes = function(app) {
       var message = JSON.parse(messageStr);
 
       if (message.register_device) {
-        console.log('new device registered: ' + message.register_device);
-        devices[message.register_device] = ws;
+        console.log('registering device: ' + message.register_device);
+        devices.check_device_exists()
+        .then(function() {
+          devices_in_use[message.register_device] = ws;
+        })
+        .catch(fail_on_error(ws));
 
       } else if (message.device && ('result' in message || 'error' in message)) {
         console.log('result (' + message.device + '): ' + (message.result || message.error));
@@ -50,10 +66,10 @@ exports.add_routes = function(app) {
         delete requires_response[message.device];
 
       } else {
-        console.log('dunno what to do with: ' + messageStr);
+        fail_on_error(ws)(new Error('dunno what to do with: ' + messageStr));
       }
     });
-    // TODO: remove device from 'devices' when connection closed
+    // TODO: remove device from 'devices_in_use' when connection closed
   });
 
 };
