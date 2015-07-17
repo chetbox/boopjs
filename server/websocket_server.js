@@ -54,7 +54,7 @@ exports.add_routes = function(app) {
 
       if (message.register_device) {
         console.log('registering device: ' + message.register_device);
-        devices.check_device_exists()
+        devices.check_device_exists(message.register_device)
         .then(function() {
           devices_in_use[message.register_device] = ws;
         })
@@ -66,7 +66,7 @@ exports.add_routes = function(app) {
         delete requires_response[message.device];
 
       } else {
-        fail_on_error(ws)(new Error('dunno what to do with: ' + messageStr));
+        console.error('dunno what to do with: ' + messageStr);
       }
     });
     // TODO: remove device from 'devices_in_use' when connection closed

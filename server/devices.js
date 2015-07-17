@@ -32,7 +32,11 @@ exports.check_device_access = function(device_id, user) {
       return;
     }
 
-    if (user && device.users.indexOf(user.id) >= 0) {
+    if (!user) {
+      throw new Error('Not logged in');
+    }
+
+    if (device.users && device.users.indexOf(user.id) >= 0) {
       return;
     }
 
