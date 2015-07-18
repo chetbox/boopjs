@@ -9,6 +9,12 @@
       paper-toolbar {
         --paper-toolbar-background: #00BCD4;
       }
+
+      paper-toolbar .account img {
+        width: 24px;
+        height: 24px;
+        border-radius: 12px;
+      }
     </style>
     <style type="text/css">
       body {
@@ -100,10 +106,19 @@
   </head>
   <body class="fullbleed">
     <paper-header-panel class="cyan">
+      {{#user}}
       <paper-toolbar>
+        <a href="/account" alt="Apps">
+          <paper-icon-button icon="arrow-back"></paper-icon-button>
+        </a>
         <div class="title">CHETBOT</div>
+        <a class="account" href="/account" alt="{{displayName}}">
+          <img src="{{avatarUrl}}"/>
+        </a>
       </paper-toolbar>
+      {{/user}}
       <div class="content">
+        {{#user}}
         <div id="header">
           <img id="avatar" src="{{avatarUrl}}" title="{{displayName}} ({{username}})"/>
           <h2>{{displayName}}<br><span class="username">(<a target="_blank" href="{{profileUrl}}" title="{{username}} on GitHub">{{username}}</a>)</span></h2>
@@ -122,6 +137,7 @@
           </li>
         </ul>
       </div>
+      {{/user}}
     </paper-header-panel>
   </body>
 
