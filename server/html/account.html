@@ -48,6 +48,42 @@
         text-decoration: none;
         color: #777;
       }
+
+      h4 {
+        margin-bottom: 1em;
+      }
+
+      #app-upload .status {
+        display: none;
+        color: #999;
+      }
+
+      input[type=file] {
+        color: transparent;
+      }
+      input[type=file]::-webkit-file-upload-button {
+        visibility: hidden;
+      }
+      input[type=file]::before {
+        color: #111;
+        content: 'Select an APK file';
+        display: inline-block;
+        background: #f9f9f9;
+        border: 1px solid #999;
+        border-radius: 3px;
+        padding: 5px 8px;
+        outline: none;
+        white-space: nowrap;
+        user-select: none;
+        cursor: pointer;
+        text-shadow: 1px 1px #fff;
+      }
+      input[type=file]:hover::before {
+        border-color: #777;
+      }
+      input[type=file]:active::before {
+        background: #eee;
+      }
     </style>
     <link href="http://fonts.googleapis.com/css?family=Roboto:100,300" rel="stylesheet" type="text/css">
   </head>
@@ -60,10 +96,10 @@
       {{#apps}}
       <li><a href="/app/{{.}}">App ({{.}})</a></li>
       {{/apps}}
-      <li id="new-app" class="new">
+      <li id="app-upload">
         <h4>Upload a new app</h4>
         <p class="status"></p>
-        <input type="file"/>
+        <input type="file" accept=".apk"/>
         <form action="/app" method="POST">
           <input type="hidden" name="app_url" />
         </form>
@@ -73,15 +109,17 @@
 
   <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
   <script>
-    $('#new-app input[type=file]').on('change', function(e) {
+    $('#app-upload input[type=file]').on('change', function(e) {
       ga('send', 'event', 'app-upload', 'start');
 
-      var status = $('#new-app .status');
-      status.removeClass('error').text('Requesting upload...');
+      $(e.target).hide();
+
+      var status = $('#app-upload .status');
+      status.removeClass('error').text('Requesting upload...').show();
 
       var file = e.target.files[0];
       if (!file) {
-        $('#new-app input[name=app_url]').val('');
+        $('#app-upload input[name=app_url]').val('');
         ga('send', 'event', 'app-upload', 'no-file');
         return;
       }
@@ -103,8 +141,8 @@
             ga('send', 'event', 'app-upload', 'uploaded');
 
             status.text('Done. Redirecting...');
-            $('#new-app form input[name=app_url]').val(req.url);
-            $('#new-app form').submit();
+            $('#app-upload form input[name=app_url]').val(req.url);
+            $('#app-upload form').submit();
           } else {
             ga('send', 'event', 'app-upload', 'upload-error', xhr.responseText);
             status.text(xhr.responseText).addClass('error');
