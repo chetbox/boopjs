@@ -3,12 +3,21 @@
   <head>
     <title>{{username}} - ChetBot</title>
     <link rel="icon" href="/favicon.ico">
+    <link href="/components/paper-header-panel/paper-header-panel.html" rel="import">
+    <link href="/components/paper-toolbar/paper-toolbar.html" rel="import">
+    <style is="custom-style">
+      paper-toolbar {
+        --paper-toolbar-background: #00BCD4;
+      }
+    </style>
     <style type="text/css">
       body {
-        margin: 0 auto;
-        max-width: 400px;
         font-family: 'Roboto', sans-serif;
         font-weight: 100;
+      }
+
+      .content {
+        text-align: center;
       }
 
       h1, h2, h3, h4 {
@@ -28,7 +37,6 @@
 
       h2 {
         margin-top: 0;
-        margin-bottom: 2em;
       }
 
       h2 .username {
@@ -36,8 +44,10 @@
       }
 
       ul#apps {
+        display: inline-block;
         list-style: none;
         padding-left: 0;
+        text-align: left;
       }
 
       ul#apps > li {
@@ -60,6 +70,7 @@
 
       input[type=file] {
         color: transparent;
+        width: 12em;
       }
       input[type=file]::-webkit-file-upload-button {
         visibility: hidden;
@@ -87,24 +98,31 @@
     </style>
     <link href="http://fonts.googleapis.com/css?family=Roboto:100,300" rel="stylesheet" type="text/css">
   </head>
-  <body>
-    <div id="header">
-      <img id="avatar" src="{{avatarUrl}}" title="{{displayName}} ({{username}})"/>
-      <h2>{{displayName}}<br><span class="username">(<a target="_blank" href="{{profileUrl}}" title="{{username}} on GitHub">{{username}}</a>)</span></h2>
-    </div>
-    <ul id="apps">
-      {{#apps}}
-      <li><a href="/app/{{.}}">App ({{.}})</a></li>
-      {{/apps}}
-      <li id="app-upload">
-        <h4>Upload a new app</h4>
-        <p class="status"></p>
-        <input type="file" accept=".apk"/>
-        <form action="/app" method="POST">
-          <input type="hidden" name="app_url" />
-        </form>
-      </li>
-    </ul>
+  <body class="fullbleed">
+    <paper-header-panel class="cyan">
+      <paper-toolbar>
+        <div class="title">CHETBOT</div>
+      </paper-toolbar>
+      <div class="content">
+        <div id="header">
+          <img id="avatar" src="{{avatarUrl}}" title="{{displayName}} ({{username}})"/>
+          <h2>{{displayName}}<br><span class="username">(<a target="_blank" href="{{profileUrl}}" title="{{username}} on GitHub">{{username}}</a>)</span></h2>
+        </div>
+        <ul id="apps">
+          {{#apps}}
+          <li><a href="/app/{{.}}">App ({{.}})</a></li>
+          {{/apps}}
+          <li id="app-upload">
+            <h4>Upload a new app</h4>
+            <p class="status"></p>
+            <input type="file" accept=".apk"/>
+            <form action="/app" method="POST">
+              <input type="hidden" name="app_url" />
+            </form>
+          </li>
+        </ul>
+      </div>
+    </paper-header-panel>
   </body>
 
   <script src="/components/jquery/dist/jquery.min.js"></script>

@@ -10,6 +10,8 @@
     "tests"
   ],
   "dependencies": {
-    "jquery": "~2.1.4"
+    "jquery": "~2.1.4",
+    "paper-toolbar": "PolymerElements/paper-toolbar#~1.0.4",
+    "paper-header-panel": "PolymerElements/paper-header-panel#~1.0.2",
   }
 }
