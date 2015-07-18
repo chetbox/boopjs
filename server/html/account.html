@@ -4,27 +4,69 @@
     <title>{{username}} - ChetBot</title>
     <link rel="icon" href="/favicon.ico">
     <style type="text/css">
+      body {
+        margin: 0 auto;
+        max-width: 400px;
+        font-family: 'Roboto', sans-serif;
+        font-weight: 100;
+      }
+
+      h1, h2, h3, h4 {
+        font-weight: 300;
+      }
+
+      #header {
+        text-align: center;
+      }
+
       #avatar {
-        width: 50px;
-        border-radius: 25px;
+        height: 100px;
+        width: 100px;
+        border-radius: 50px;
+        margin: 50px 50px 25px 50px;
+      }
+
+      h2 {
+        margin-top: 0;
+        margin-bottom: 2em;
+      }
+
+      h2 .username {
+        font-size: 0.67em;
+      }
+
+      ul#apps {
+        list-style: none;
+        padding-left: 0;
+      }
+
+      ul#apps > li {
+        margin: 0.5em 0;
+      }
+
+      a {
+        text-decoration: none;
+        color: #777;
       }
     </style>
+    <link href="http://fonts.googleapis.com/css?family=Roboto:100,300" rel="stylesheet" type="text/css">
   </head>
   <body>
-    <img id="avatar" src="{{avatarUrl}}" title="{{displayName}} ({{username}})"/>
-    <h2>{{displayName}} (<a target="_blank" href="{{profileUrl}}" title="{{username}} on GitHub">{{username}}</a>)</h2>
-    <h3>Apps</h3>
-    <ul>
+    <div id="header">
+      <img id="avatar" src="{{avatarUrl}}" title="{{displayName}} ({{username}})"/>
+      <h2>{{displayName}}<br><span class="username">(<a target="_blank" href="{{profileUrl}}" title="{{username}} on GitHub">{{username}}</a>)</span></h2>
+    </div>
+    <ul id="apps">
       {{#apps}}
       <li><a href="/app/{{.}}">App ({{.}})</a></li>
       {{/apps}}
       <li id="new-app" class="new">
         <h4>Upload a new app</h4>
+        <p class="status"></p>
         <input type="file"/>
         <form action="/app" method="POST">
           <input type="hidden" name="app_url" />
         </form>
-        <p class="status"></p>
       </li>
     </ul>
   </body>
