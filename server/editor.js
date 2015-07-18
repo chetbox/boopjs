@@ -146,6 +146,7 @@ exports.add_routes = function(app) {
           return res.sendStatus(404);
         }
         res.render('edit', {
+          user: req.user,
           device: {
             id: device_id,
             model: 'nexus5',

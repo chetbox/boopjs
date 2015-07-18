@@ -3,9 +3,19 @@
   <head>
     <title>{{title}} - ChetBot</title>
     <link rel="icon" href="/favicon.ico">
+    <link href="/components/paper-header-panel/paper-header-panel.html" rel="import">
+    <link href="/components/paper-toolbar/paper-toolbar.html" rel="import">
+    <link href="/components/iron-icons/iron-icons.html" rel="import">
+    <link href="/components/iron-icons/av-icons.html" rel="import">
+    <link href="/components/paper-icon-button/paper-icon-button.html" rel="import">
+    <style is="custom-style">
+      paper-toolbar {
+        --paper-toolbar-background: #00BCD4;
+      }
+    </style>
     <style type="text/css">
     body {
-      background: #f8f8f8;
+      background: #e7e7e7;
       text-align: center;
       font-family: sans-serif;
       color: rgba(0,0,0,0.87);
@@ -23,10 +33,14 @@
     a > .hint {
       display: inline-block;
       font-size: 0.8em;
-      color: rgba(0,0,0,0.5);
-      margin: 0 1em;
+      color: rgba(255,255,255,0.67);
+      margin-right: 1em;
       position: relative;
-      top: -0.1em
+      top: 1px;
+    }
+
+    paper-toolbar * {
+      color: #fff;
     }
 
     #header {
@@ -51,35 +65,33 @@
       display: none;
     }
 
-    #content {
-      position: relative;
-      width: 100%;
-      min-height: 100%;
-    }
-
     #device {
-      position: fixed;
-      top: 30px;
+      position: absolute;
+      top: 20px;
       left: 40px;
       width: 300px;
       height: 597px;
     }
 
     #controls {
-      padding: 20px;
-      background: #4DB6AC;
-      height: 16px;
+      padding: 0 12px;
+      height: 64px;
+    }
+
+    body:not(.logged-in) #controls {
+      background: #00BCD4;
     }
 
     #controls > * {
       font-size: 16px;
       vertical-align: middle;
       line-height: 1.0;
-      margin-right: 1em;
+      margin-top: 12px;
     }
 
     #controls a {
       display: none;
+      color: #fff;
     }
 
     #controls .status {
@@ -96,11 +108,10 @@
 
     #editor-container {
       position: fixed;
-      top: 48px;
+      top: 0;
       left: 380px;
-      right: 40px;
-      bottom: 40px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.5);;
+      right: 0;
+      bottom: 0;
     }
 
     #editor-container:not(.editing) #controls a.back,
@@ -112,7 +123,7 @@
     #editor, #test-report {
       display: block;
       position: absolute;
-      top: 56px;
+      top: 64px;
       bottom: 0;
       left: 0;
       right: 0;
@@ -187,27 +198,41 @@
     }
     </style>
   </head>
-  <body data-device-id="{{device.id}}">
-    <div id="header">
-      <h1>ChetBot</h1>
-    </div>
-    <div id="content">
-      <iframe id="device" src="https://appetize.io/embed/{{app.publicKey}}?device={{device.model}}&amp;scale=75&amp;autoplay=true&amp;orientation={{device.orientation}}&amp;deviceColor=black&amp;xdocMsg=true&amp;params=%7B%22chetbot.session%22%3A%22{{device.id}}%22%7D" frameborder="0" scrolling="no"></iframe>
-      <div id="editor-container" class="editing">
-        <div id="controls">
-          <a class="back" href="javascript:showEditor();" title="Back to editor">&#8592;</a>
-          <a class="run" href="javascript:run(editor);" title="Run test">&#9654;<span class="hint">&#8592; Press me</span></a>
-          <!-- TODO: implement stop()
-          <a class="stop" href="javascript:stop();" title="Stop test">&#9632;</a>
-          -->
-          <span class="saved status">Saving...</span>
-        </div>
-        <div id="editor">{{code}}</div>
-        <div id="test-report">
-          <ol></ol>
+  <body class="fullbleed {{#user}}logged-in{{/user}}" data-device-id="{{device.id}}">
+    <paper-header-panel class="cyan">
+      {{#user}}
+      <paper-toolbar>
+        <a href="/account" alt="Apps">
+          <paper-icon-button icon="arrow-back"></paper-icon-button>
+        </a>
+        <div class="title">CHETBOT</div>
+      </paper-toolbar>
+      {{/user}}
+      <div class="content">
+        <iframe id="device" src="https://appetize.io/embed/{{app.publicKey}}?device={{device.model}}&amp;scale=75&amp;autoplay=true&amp;orientation={{device.orientation}}&amp;deviceColor=black&amp;xdocMsg=true&amp;params=%7B%22chetbot.session%22%3A%22{{device.id}}%22%7D" frameborder="0" scrolling="no"></iframe>
+        <div id="editor-container" class="editing">
+          <div id="controls">
+            <a class="back" href="javascript:showEditor();" title="Back to editor">
+              <paper-icon-button icon="create"></paper-icon-button>
+            </a>
+            <a class="run" href="javascript:run(editor);" title="Run test">
+              <paper-icon-button icon="av:play-arrow"></paper-icon-button>
+              <span class="hint">&#8592; Press me</span>
+            </a>
+            <!-- TODO: implement stop()
+            <a class="stop" href="javascript:stop();" title="Stop test">
+              <paper-icon-button icon="av:stop" alt="Run test"></paper-icon-button>
+            </a>
+            -->
+            <span class="saved status">Saving...</span>
+          </div>
+          <div id="editor">{{code}}</div>
+          <div id="test-report">
+            <ol></ol>
+          </div>
         </div>
       </div>
-    </div>
+    </paper-header-panel>
   </body>
 
   <!-- JavaScript API -->
