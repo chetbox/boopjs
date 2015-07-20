@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Apps - ChetBot</title>
+    <link rel="icon" href="/favicon.ico">
+
+    {{> material-design}}
+
+    <style type="text/css">
+      .content {
+        text-align: center;
+      }
+
+      ul#apps {
+        display: inline-block;
+        list-style: none;
+        padding-left: 0;
+        text-align: left;
+      }
+
+      ul#apps > li {
+        margin: 0.5em 0;
+      }
+
+      h4 {
+        margin-bottom: 1em;
+      }
+
+      #app-upload .status {
+        display: none;
+        color: #999;
+      }
+
+      input[type=file] {
+        color: transparent;
+        width: 12em;
+      }
+      input[type=file]::-webkit-file-upload-button {
+        visibility: hidden;
+      }
+      input[type=file]::before {
+        color: #111;
+        content: 'Upload a new app';
+        display: inline-block;
+        background: #f9f9f9;
+        border: 1px solid #999;
+        border-radius: 3px;
+        padding: 5px 8px;
+        outline: none;
+        white-space: nowrap;
+        user-select: none;
+        cursor: pointer;
+        text-shadow: 1px 1px #fff;
+      }
+      input[type=file]:hover::before {
+        border-color: #777;
+      }
+      input[type=file]:active::before {
+        background: #eee;
+      }
+    </style>
+  </head>
+  <body class="fullbleed">
+    <paper-header-panel class="cyan">
+      {{#user}}
+      <paper-toolbar>
+        <!--
+        <a href="/account" alt="Apps">
+          <paper-icon-button icon="arrow-back"></paper-icon-button>
+        </a>
+        -->
+        <div class="title">Apps</div>
+        <a class="account" href="/account" alt="{{displayName}}">
+          <img src="{{avatarUrl}}"/>
+        </a>
+      </paper-toolbar>
+      {{/user}}
+      <div class="content">
+        {{#user}}
+        <ul id="apps">
+          <li id="app-upload">
+            <p class="status"></p>
+            <input type="file" accept=".apk"/>
+            <form action="/apps" method="POST">
+              <input type="hidden" name="app_url" />
+            </form>
+          </li>
+          {{#apps}}
+          <li><a href="/app/{{.}}">App ({{.}})</a></li>
+          {{/apps}}
+        </ul>
+        {{/user}}
+      </div>
+    </paper-header-panel>
+  </body>
+
+  <script src="/components/jquery/dist/jquery.min.js"></script>
+  <script>
+    $('#app-upload input[type=file]').on('change', function(e) {
+      ga('send', 'event', 'app-upload', 'start');
+
+      $(e.target).hide();
+
+      var status = $('#app-upload .status');
+      status.removeClass('error').text('Requesting upload...').show();
+
+      var file = e.target.files[0];
+      if (!file) {
+        $('#app-upload input[name=app_url]').val('');
+        ga('send', 'event', 'app-upload', 'no-file');
+        return;
+      }
+
+      $.ajax({
+        url: '/sign_s3?file_type=' + file.type,
+        method: 'GET',
+        dataType: 'json'
+      }).done(function(req) {
+        ga('send', 'event', 'app-upload', 'request-granted');
+        status.text('Uploading...');
+        var xhr = new XMLHttpRequest();
+        xhr.upload.onprogress = function(e) {
+          var percent_complete = Math.floor(e.loaded / e.total * 100);
+          status.text(percent_complete + '% complete...');
+        };
+        xhr.onload = function() {
+          if (xhr.status === 200) {
+            ga('send', 'event', 'app-upload', 'uploaded');
+
+            status.text('Done. Redirecting...');
+            $('#app-upload form input[name=app_url]').val(req.url);
+            $('#app-upload form').submit();
+          } else {
+            ga('send', 'event', 'app-upload', 'upload-error', xhr.responseText);
+            status.text(xhr.responseText).addClass('error');
+            console.error(xhr.status, xhr.responseText);
+          }
+        };
+        xhr.onerror = function(e) {
+          ga('send', 'event', 'app-upload', 'upload-error', xhr.responseText);
+          status.text('Upload error: ' + xhr.responseText).addClass('error');
+          console.error(xhr.responseText, e);
+        };
+        xhr.open('PUT', req.signed_request);
+        xhr.send(file);
+      });
+    });
+  </script>
+
+  {{> google-analytics}}
+
+</html>

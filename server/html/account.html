@@ -1,94 +1,60 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>{{username}} - ChetBot</title>
+    <title>My Account - ChetBot</title>
     <link rel="icon" href="/favicon.ico">
+
+    {{> material-design}}
+
     <style type="text/css">
+      .content {
+        text-align: center;
+      }
+
+      #header {
+        text-align: center;
+      }
+
       #avatar {
-        width: 50px;
-        border-radius: 25px;
+        height: 100px;
+        width: 100px;
+        border-radius: 50px;
+        margin: 50px 50px 25px 50px;
+      }
+
+      h2 {
+        margin-top: 0;
+      }
+
+      h2 .username {
+        font-size: 0.67em;
       }
     </style>
   </head>
-  <body>
-    <img id="avatar" src="{{avatarUrl}}" title="{{displayName}} ({{username}})"/>
-    <h2>{{displayName}} (<a target="_blank" href="{{profileUrl}}" title="{{username}} on GitHub">{{username}}</a>)</h2>
-    <h3>Apps</h3>
-    <ul>
-      {{#apps}}
-      <li><a href="/app/{{.}}">App ({{.}})</a></li>
-      {{/apps}}
-      <li id="new-app" class="new">
-        <h4>Upload a new app</h4>
-        <input type="file"/>
-        <form action="/app" method="POST">
-          <input type="hidden" name="app_url" />
-        </form>
-        <p class="status"></p>
-      </li>
-    </ul>
+  <body class="fullbleed">
+    <paper-header-panel class="cyan">
+      {{#user}}
+      <paper-toolbar>
+        <a href="/apps" alt="Apps">
+          <paper-icon-button icon="arrow-back"></paper-icon-button>
+        </a>
+        <div class="title">My Account</div>
+        <a class="account" href="/account" alt="{{displayName}}">
+          <img src="{{avatarUrl}}"/>
+        </a>
+      </paper-toolbar>
+      {{/user}}
+      <div class="content">
+        {{#user}}
+        <div id="header">
+          <img id="avatar" src="{{avatarUrl}}" title="{{displayName}} ({{username}})"/>
+          <h2>{{displayName}}<br><span class="username">(<a target="_blank" href="{{profileUrl}}" title="{{username}} on GitHub">{{username}}</a>)</span></h2>
+        </div>
+      </div>
+      {{/user}}
+    </paper-header-panel>
   </body>
 
-  <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
-  <script>
-    $('#new-app input[type=file]').on('change', function(e) {
-      ga('send', 'event', 'app-upload', 'start');
-
-      var status = $('#new-app .status');
-      status.removeClass('error').text('Requesting upload...');
-
-      var file = e.target.files[0];
-      if (!file) {
-        $('#new-app input[name=app_url]').val('');
-        ga('send', 'event', 'app-upload', 'no-file');
-        return;
-      }
-
-      $.ajax({
-        url: '/sign_s3?file_type=' + file.type,
-        method: 'GET',
-        dataType: 'json'
-      }).done(function(req) {
-        ga('send', 'event', 'app-upload', 'request-granted');
-        status.text('Uploading...');
-        var xhr = new XMLHttpRequest();
-        xhr.upload.onprogress = function(e) {
-          var percent_complete = Math.floor(e.loaded / e.total * 100);
-          status.text(percent_complete + '% complete...');
-        };
-        xhr.onload = function() {
-          if (xhr.status === 200) {
-            ga('send', 'event', 'app-upload', 'uploaded');
-
-            status.text('Done. Redirecting...');
-            $('#new-app form input[name=app_url]').val(req.url);
-            $('#new-app form').submit();
-          } else {
-            ga('send', 'event', 'app-upload', 'upload-error', xhr.responseText);
-            status.text(xhr.responseText).addClass('error');
-            console.error(xhr.status, xhr.responseText);
-          }
-        };
-        xhr.onerror = function(e) {
-          ga('send', 'event', 'app-upload', 'upload-error', xhr.responseText);
-          status.text('Upload error: ' + xhr.responseText).addClass('error');
-          console.error(xhr.responseText, e);
-        };
-        xhr.open('PUT', req.signed_request);
-        xhr.send(file);
-      });
-    });
-  </script>
-
-  <!-- Google Analytics -->
-  <script>
-    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-    ga('create', 'UA-61569356-3', 'auto');
-    ga('send', 'pageview');
-  </script>
+  {{> google-analytics}}
 
 </html>

@@ -59,7 +59,9 @@ function setup(app) {
   app.get('/account',
     login_required,
     function(req, res) {
-      res.render('account', req.user);
+      res.render('account', {
+        user: req.user
+      });
     }
   );
 

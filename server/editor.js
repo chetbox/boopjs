@@ -53,7 +53,16 @@ exports.add_routes = function(app) {
     }
   );
 
-  app.post('/app',
+  app.get('/apps',
+    auth.login_required,
+    function(req, res) {
+      res.render('apps', {
+        user: req.user
+      });
+    }
+  );
+
+  app.post('/apps',
     auth.login_required,
     // TODO: check that user is allowed to create another app
     function(req, res) {
@@ -146,6 +155,7 @@ exports.add_routes = function(app) {
           return res.sendStatus(404);
         }
         res.render('edit', {
+          user: req.user,
           device: {
             id: device_id,
             model: 'nexus5',
