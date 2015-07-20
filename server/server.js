@@ -15,12 +15,20 @@ var port = process.env.PORT || 8001;
 
 // Mustache setup
 
-app.engine('html', express_handlebars());
+var hbs = express_handlebars.create({
+    defaultLayout: false,
+    extname: '.html',
+    layoutsDir: __dirname + '/html',
+    partialsDir: __dirname + '/html/partials',
+});
+
+app.engine('html', hbs.engine);
 app.set('view engine', 'html');
 app.set('views', __dirname + '/html');
 
 
 // HTTP body parsing
+
 app.use(body_parser.text());
 app.use(body_parser.urlencoded());
 
