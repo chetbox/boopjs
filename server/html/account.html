@@ -1,10 +1,13 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>{{username}} - ChetBot</title>
+    <title>My Account - ChetBot</title>
     <link rel="icon" href="/favicon.ico">
     <link href="/components/paper-header-panel/paper-header-panel.html" rel="import">
     <link href="/components/paper-toolbar/paper-toolbar.html" rel="import">
+    <link href="/components/iron-icons/iron-icons.html" rel="import">
+    <link href="/components/iron-icons/av-icons.html" rel="import">
+    <link href="/components/paper-icon-button/paper-icon-button.html" rel="import">
     <style is="custom-style">
       paper-toolbar {
         --paper-toolbar-background: #00BCD4;
@@ -14,6 +17,11 @@
         width: 24px;
         height: 24px;
         border-radius: 12px;
+      }
+
+      paper-toolbar a {
+        color: #fff;
+        z-index: 2;
       }
     </style>
     <style type="text/css">
@@ -49,57 +57,9 @@
         font-size: 0.67em;
       }
 
-      ul#apps {
-        display: inline-block;
-        list-style: none;
-        padding-left: 0;
-        text-align: left;
-      }
-
-      ul#apps > li {
-        margin: 0.5em 0;
-      }
-
       a {
         text-decoration: none;
         color: #777;
-      }
-
-      h4 {
-        margin-bottom: 1em;
-      }
-
-      #app-upload .status {
-        display: none;
-        color: #999;
-      }
-
-      input[type=file] {
-        color: transparent;
-        width: 12em;
-      }
-      input[type=file]::-webkit-file-upload-button {
-        visibility: hidden;
-      }
-      input[type=file]::before {
-        color: #111;
-        content: 'Select an APK file';
-        display: inline-block;
-        background: #f9f9f9;
-        border: 1px solid #999;
-        border-radius: 3px;
-        padding: 5px 8px;
-        outline: none;
-        white-space: nowrap;
-        user-select: none;
-        cursor: pointer;
-        text-shadow: 1px 1px #fff;
-      }
-      input[type=file]:hover::before {
-        border-color: #777;
-      }
-      input[type=file]:active::before {
-        background: #eee;
       }
     </style>
     <link href="http://fonts.googleapis.com/css?family=Roboto:100,300" rel="stylesheet" type="text/css">
@@ -108,10 +68,10 @@
     <paper-header-panel class="cyan">
       {{#user}}
       <paper-toolbar>
-        <a href="/account" alt="Apps">
+        <a href="/apps" alt="Apps">
           <paper-icon-button icon="arrow-back"></paper-icon-button>
         </a>
-        <div class="title">CHETBOT</div>
+        <div class="title">My Account</div>
         <a class="account" href="/account" alt="{{displayName}}">
           <img src="{{avatarUrl}}"/>
         </a>
@@ -123,76 +83,10 @@
           <img id="avatar" src="{{avatarUrl}}" title="{{displayName}} ({{username}})"/>
           <h2>{{displayName}}<br><span class="username">(<a target="_blank" href="{{profileUrl}}" title="{{username}} on GitHub">{{username}}</a>)</span></h2>
         </div>
-        <ul id="apps">
-          {{#apps}}
-          <li><a href="/app/{{.}}">App ({{.}})</a></li>
-          {{/apps}}
-          <li id="app-upload">
-            <h4>Upload a new app</h4>
-            <p class="status"></p>
-            <input type="file" accept=".apk"/>
-            <form action="/app" method="POST">
-              <input type="hidden" name="app_url" />
-            </form>
-          </li>
-        </ul>
       </div>
       {{/user}}
     </paper-header-panel>
   </body>
-
-  <script src="/components/jquery/dist/jquery.min.js"></script>
-  <script>
-    $('#app-upload input[type=file]').on('change', function(e) {
-      ga('send', 'event', 'app-upload', 'start');
-
-      $(e.target).hide();
-
-      var status = $('#app-upload .status');
-      status.removeClass('error').text('Requesting upload...').show();
-
-      var file = e.target.files[0];
-      if (!file) {
-        $('#app-upload input[name=app_url]').val('');
-        ga('send', 'event', 'app-upload', 'no-file');
-        return;
-      }
-
-      $.ajax({
-        url: '/sign_s3?file_type=' + file.type,
-        method: 'GET',
-        dataType: 'json'
-      }).done(function(req) {
-        ga('send', 'event', 'app-upload', 'request-granted');
-        status.text('Uploading...');
-        var xhr = new XMLHttpRequest();
-        xhr.upload.onprogress = function(e) {
-          var percent_complete = Math.floor(e.loaded / e.total * 100);
-          status.text(percent_complete + '% complete...');
-        };
-        xhr.onload = function() {
-          if (xhr.status === 200) {
-            ga('send', 'event', 'app-upload', 'uploaded');
-
-            status.text('Done. Redirecting...');
-            $('#app-upload form input[name=app_url]').val(req.url);
-            $('#app-upload form').submit();
-          } else {
-            ga('send', 'event', 'app-upload', 'upload-error', xhr.responseText);
-            status.text(xhr.responseText).addClass('error');
-            console.error(xhr.status, xhr.responseText);
-          }
-        };
-        xhr.onerror = function(e) {
-          ga('send', 'event', 'app-upload', 'upload-error', xhr.responseText);
-          status.text('Upload error: ' + xhr.responseText).addClass('error');
-          console.error(xhr.responseText, e);
-        };
-        xhr.open('PUT', req.signed_request);
-        xhr.send(file);
-      });
-    });
-  </script>
 
   <!-- Google Analytics -->
   <script>

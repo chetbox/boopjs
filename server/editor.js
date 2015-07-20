@@ -53,7 +53,16 @@ exports.add_routes = function(app) {
     }
   );
 
-  app.post('/app',
+  app.get('/apps',
+    auth.login_required,
+    function(req, res) {
+      res.render('apps', {
+        user: req.user
+      });
+    }
+  );
+
+  app.post('/apps',
     auth.login_required,
     // TODO: check that user is allowed to create another app
     function(req, res) {
