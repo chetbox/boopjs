@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Apps - ChetBot</title>
+    <title>{{app.name}} - ChetBot</title>
     <link rel="icon" href="/favicon.ico">
 
     {{> material-design}}
@@ -11,22 +11,37 @@
         text-align: center;
       }
 
-      ul#apps {
+      #header {
+        text-align: center;
+      }
+
+      #app-icon {
+        height: 100px;
+        width: 100px;
+        border-radius: 18px;
+        margin: 50px 50px 25px 50px;
+      }
+
+      h2 {
+        margin-top: 0;
+      }
+
+      h2 .info {
+        font-size: 0.67em;
+      }
+
+      ul#code {
         display: inline-block;
         list-style: none;
         padding-left: 0;
         text-align: left;
       }
 
-      ul#apps > li {
+      ul#code > li {
         margin: 0.5em 0;
       }
 
-      h4 {
-        margin-bottom: 1em;
-      }
-
-      #app-upload .status {
+      #app-update .status {
         display: none;
         color: #999;
       }
@@ -40,17 +55,19 @@
       }
       input[type=file]::before {
         color: #111;
-        content: 'Upload a new app';
+        content: 'Update app';
         display: inline-block;
         background: #f9f9f9;
         border: 1px solid #999;
         border-radius: 3px;
-        padding: 5px 8px;
+        padding: 5px 0;
         outline: none;
         white-space: nowrap;
         user-select: none;
         cursor: pointer;
         text-shadow: 1px 1px #fff;
+        text-align: center;
+        width: 98%;
       }
       input[type=file]:hover::before {
         border-color: #777;
@@ -64,32 +81,34 @@
     <paper-header-panel class="cyan">
       {{#user}}
       <paper-toolbar>
-        <!--
-        <a href="/account" alt="Apps">
+        <a href="/apps" alt="Apps">
           <paper-icon-button icon="arrow-back"></paper-icon-button>
         </a>
-        -->
-        <div class="title">Apps</div>
+        <div class="title">{{../app.name}}</div>
         <a class="account" href="/account" alt="{{displayName}}">
           <img src="{{avatarUrl}}"/>
         </a>
       </paper-toolbar>
       {{/user}}
       <div class="content">
-        {{#user}}
-        <ul id="apps">
-          <li id="app-upload">
-            <p class="status"></p>
-            <input type="file" accept=".apk"/>
-            <form action="/apps" method="POST">
-              <input type="hidden" name="app_url" />
-            </form>
-          </li>
-          {{#apps}}
-          <li><a href="/app/{{.}}">App ({{.}})</a></li>
-          {{/apps}}
+        {{#app}}
+        <div id="header">
+          <img id="app-icon" src="{{iconURL}}" title="{{name}}"/>
+          <h2>{{name}}<br><span class="info">({{identifier}})</span><br><span class="info">{{version}}</span></h2>
+        </div>
+        {{/app}}
+        <div id="app-update">
+          <p class="status"></p>
+          <input type="file" accept=".apk"/>
+          <form method="POST">
+            <input type="hidden" name="app_url" />
+          </form>
+        </div>
+        <ul id="code">
+          {{#code}}
+          <li><a href="/app/{{app_id}}/edit/{{id}}">Code ({{id}})</a></li>
+          {{/code}}
         </ul>
-        {{/user}}
       </div>
     </paper-header-panel>
   </body>
@@ -99,12 +118,12 @@
   <script src="/components/jquery/dist/jquery.min.js"></script>
   <script src="/js/s3_upload.js"></script>
   <script>
-    s3_upload($('#app-upload input[type=file]'), $('#app-upload input[name=app_url]'), {
+    s3_upload($('#app-update input[type=file]'), $('#app-update input[name=app_url]'), {
       progress: function(progress) {
-        $('#app-upload .status').removeClass('error').text(progress).show();
+        $('#app-update .status').removeClass('error').text(progress).show();
       },
       error: function(error) {
-        $('#app-upload .status').addClass('error').text(error).show();
+        $('#app-update .status').addClass('error').text(error).show();
       },
       google_analytics: ga
     });
