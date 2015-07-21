@@ -13,7 +13,7 @@ var TABLES = {
     throughput: {write: 10, read: 10}
   },
   'code': {
-    key_schema: {hash: ['id', 'string'], range: ['app_id', 'string']},
+    key_schema: {hash: ['app_id', 'string'], range: ['id', 'string']},
     throughput: {write: 10, read: 10}
   },
   'devices': {

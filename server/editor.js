@@ -19,12 +19,11 @@ exports.add_routes = function(app) {
     }
   }
 
-  // TODO: cache DB lookup
   function ensure_code_belongs_to_app(req, res, next) {
-    db.code().find({hash: req.params.code_id, range: req.params.app_id})
+    db.code().find({hash: req.params.app_id, range: req.params.code_id})
     .then(function(code) {
       if (!code) {
-        throw new Error('Code not found');
+        res.status(404).send('Code ' + req.params.code_id + ' not found');
       }
       next();
     })
@@ -147,7 +146,7 @@ exports.add_routes = function(app) {
     function(req, res) {
       Promise.join(
         db.apps().find(req.params.app_id),
-        db.code().find({hash: req.params.code_id, range: req.params.app_id}),
+        db.code().find({hash: req.params.app_id, range: req.params.code_id}),
         devices.create_device({user: req.user})
       )
       .spread(function(app, code, device_id) {
