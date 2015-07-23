@@ -107,18 +107,17 @@ exports.add_routes = function(app) {
       .spread(function(apk_info, modified_apk_url, appetize_resp) {
         console.log('Creating app', new_app_id);
         return Promise.all([
-          db.apps().insert({
-            id: new_app_id,
-            platform: 'android',
-            name: apk_info.name,
-            identifier: apk_info.identifier,
-            icon: apk_info.icon,
-            version: apk_info.version,
-            user_app_url: user_apk_url,
-            app_url: modified_apk_url,
-            publicKey: appetize_resp.publicKey,
-            privateKey: appetize_resp.privateKey
-          }),
+          db.apps().insert(
+            _.extend({
+              id: new_app_id,
+              platform: 'android',
+              user_app_url: user_apk_url,
+              app_url: modified_apk_url,
+              publicKey: appetize_resp.publicKey,
+              privateKey: appetize_resp.privateKey
+            },
+            apk_info)
+          ),
           db.code().insert({
             id: new_code_id,
             app_id: new_app_id,
@@ -150,15 +149,16 @@ exports.add_routes = function(app) {
 
       create_and_upload_chetbot_apk(user_apk_url)
       .spread(function(apk_info, modified_apk_url, appetize_resp) {
-        return [modified_apk_url, db.apps().find(app_id)];
+        return [apk_info, modified_apk_url, db.apps().find(app_id)];
       })
-      .spread(function(modified_apk_url, app) {
+      .spread(function(apk_info, modified_apk_url, app) {
         console.log('Updating app', app_id);
         app.user_app_url = user_apk_url;
         app.app_url = modified_apk_url;
-        return [app, db.apps().update(app)];
+        app = _.extend(app, apk_info);
+        return db.apps().update(app);
       })
-      .then(function(app) {
+      .then(function() {
         // refresh
         res.redirect(req.url);
       })

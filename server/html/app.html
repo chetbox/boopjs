@@ -26,8 +26,9 @@
         margin-top: 0;
       }
 
-      h2 .info {
+      h2 .identifier, h2 .version {
         font-size: 0.67em;
+        opacity: 0.5;
       }
 
       ul#code {
@@ -94,7 +95,7 @@
         {{#app}}
         <div id="header">
           <img id="app-icon" src="{{icon}}" title="{{name}}"/>
-          <h2>{{name}}<br><span class="info">({{identifier}})</span><br><span class="info">{{version}}</span></h2>
+          <h2>{{name}}<br><span class="identifier">{{identifier}}</span><br><span class="version">{{version}}</span></h2>
         </div>
         {{/app}}
         <div id="app-update">
