@@ -110,6 +110,7 @@ exports.add_routes = function(app) {
       .spread(function(apk_info, modified_apk_url, appetize_resp) {
         console.log('Creating app', new_app_id);
         return Promise.all([
+          db.users().find(req.user.id),
           db.apps().insert(
             _.extend({
               id: new_app_id,
@@ -128,9 +129,9 @@ exports.add_routes = function(app) {
           })
         ]);
       })
-      .then(function() {
-        req.user.apps = _.union(req.user.apps, [new_app_id]); // Keep existing info (dynasty's .update is broken)
-        return db.users().update(req.user);
+      .then(function(user) {
+        user.apps = _.union(user.apps, [new_app_id]); // Keep existing info (dynasty's .update is broken)
+        return db.users().update(user);
       })
       .then(function() {
         // Take the user straight to their first test
