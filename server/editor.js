@@ -40,8 +40,6 @@ exports.add_routes = function(app) {
   }
 
   function create_and_upload_chetbot_apk(user_apk_url) {
-    // TODO: store package name of app and allow replacing
-    // TODO: store name and icon of app to show in UI
     // TODO: cleanup downloaded files
     // TODO: return immediately and show user a progress page
 
