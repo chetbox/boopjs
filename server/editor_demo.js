@@ -5,6 +5,8 @@ exports.add_routes = function(app) {
 
   var devices = require('./devices');
 
+  var demo_code = fs.readFileSync(__dirname + '/demos/stopwatch.js');
+
   app.get('/demo', function(req, res) {
     devices.create_device({user: null})
     .then(function(device_id) {
@@ -18,9 +20,8 @@ exports.add_routes = function(app) {
           publicKey: 'z8460qxgdyrfe8c2ag1z6bqyw0'
         },
         autosave: false,
-        code: function() {
-          // TODO: memoize
-          return fs.readFileSync(__dirname + '/demos/stopwatch.js');
+        code: {
+          content: demo_code
         }
       });
     })
