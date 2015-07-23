@@ -82,7 +82,12 @@ exports.add_routes = function(app) {
   app.get('/apps',
     auth.login_required,
     function(req, res) {
-      db.apps().batchFind(req.user.apps)
+      new Promise(function(resolve) {
+        return resolve(req.user.apps
+          ? db.apps().batchFind(req.user.apps)
+          : []
+        );
+      })
       .then(function(apps) {
         res.render('apps', {
           user: req.user,
