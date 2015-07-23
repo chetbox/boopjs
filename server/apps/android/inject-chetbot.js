@@ -57,7 +57,6 @@ module.exports = function(input_apk, output_apk) {
 
   output_apk = output_apk || input_apk;
 
-  // TODO: generate a key that lasts longer and store it in the project
   var android_debug_keystore = path.join(user_home(), '.android', 'debug.keystore');
 
   var tmp = tmp_dir();
