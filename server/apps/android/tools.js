@@ -1,14 +1,15 @@
 var path = require('path');
-var exec = require('shelljs').exec;
+var shell = require('shelljs');
+shell.config.silent = true;
 
-['zip', 'unzip', 'java', 'xmlstarlet', 'jarsigner', 'zipalign'].forEach(function(cmd) {
+['zip', 'unzip', 'java', 'xmlstarlet', 'jarsigner', 'zipalign', 'aapt'].forEach(function(cmd) {
   function escape_arg(s) {
     return "'" + s.replace("'", "\\'") + "'";
   }
   exports[cmd] = function() {
-    var result = exec(cmd + ' ' + [].slice.call(arguments).map(escape_arg).join(' '));
+    var result = shell.exec(cmd + ' ' + [].slice.call(arguments).map(escape_arg).join(' '));
     if (result.code !== 0) {
-      throw '\'' + cmd + '\' exited with status ' + result.code + ': ' + (result.output || error());
+      throw '\'' + cmd + '\' exited with status ' + result.code + ': ' + (result.output || shell.error());
     }
     return result.output;
   };
