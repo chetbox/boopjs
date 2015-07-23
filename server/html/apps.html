@@ -20,6 +20,33 @@
 
       ul#apps > li {
         margin: 0.5em 0;
+        min-height: 4em;
+        display: block;
+      }
+
+      ul#apps .details {
+        display: inline-block;
+      }
+
+      ul#apps img {
+        float: left;
+        width: 3em;
+        height: 3em;
+        border: none;
+        margin: 0 1em 1em 0;
+      }
+
+      ul#apps h4 {
+        margin: 0.25em 0 0 0;
+      }
+
+      ul#apps .info {
+        font-size: 0.8em;
+        opacity: 0.8;
+      }
+
+      ul#apps .version {
+        opacity: 0.5;
       }
 
       h4 {
@@ -76,7 +103,6 @@
       </paper-toolbar>
       {{/user}}
       <div class="content">
-        {{#user}}
         <ul id="apps">
           <li id="app-upload">
             <p class="status"></p>
@@ -86,10 +112,17 @@
             </form>
           </li>
           {{#apps}}
-          <li><a href="/app/{{.}}">App ({{.}})</a></li>
+          <li>
+            <a href="/app/{{id}}">
+              <img src="{{icon}}">
+              <span class="details">
+                <h4>{{name}} <span class="version">{{version}}</span></h4>
+                <span class="info">{{identifier}}</span>
+              </span>
+            </a>
+          </li>
           {{/apps}}
         </ul>
-        {{/user}}
       </div>
     </paper-header-panel>
   </body>
