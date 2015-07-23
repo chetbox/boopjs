@@ -1,5 +1,6 @@
 var assert = require('assert');
 var path = require('path');
+var fs = require('fs');
 
 describe('Android APK info', function() {
 
@@ -15,7 +16,8 @@ describe('Android APK info', function() {
   });
 
   it('returns the xhdpi icon', function () {
-    assert.equal(apk_info.icon, 'res/mipmap-xhdpi-v4/ic_launcher.png');
+    var expected_icon_begins_with = 'data:image/png;base64,77+9UE5HDQoaCgAAAA1JSERSAAAAYAAAAGAIBgAAAO';
+    assert.equal(apk_info.icon.slice(0, 64), expected_icon_begins_with);
   });
 
   it('returns the version name', function () {

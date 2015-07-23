@@ -1,6 +1,6 @@
 var _ = require('underscore');
 var path = require('path');
-var aapt = require('./tools').aapt;
+var tools = require('./tools');
 
 // hack to parse quoted string things
 function parse_value(val) {
@@ -22,9 +22,13 @@ function parse_value(val) {
   return val;
 }
 
+function base64_file_contents(zip_file, file_name) {
+  return new Buffer(tools.unzip('-p', zip_file, file_name)).toString('base64')
+}
+
 module.exports = function(apk_file) {
   var apk_info = _.object(
-    aapt('dump', 'badging', apk_file)
+    tools.aapt('dump', 'badging', apk_file)
     .split('\n')
     .map(function(line) {
       var i = line.indexOf(':');
@@ -34,7 +38,7 @@ module.exports = function(apk_file) {
 
   return {
     name: apk_info['application-label'],
-    icon: apk_info['application-icon-320'],
+    icon: 'data:image/png;base64,' + base64_file_contents(apk_file, apk_info['application-icon-320']),
     identifier: apk_info.package.name,
     version: apk_info.package.versionName
   };
