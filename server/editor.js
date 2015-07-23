@@ -8,9 +8,10 @@ exports.add_routes = function(app) {
   var db = require('./db');
   var auth = require('./auth');
   var devices = require('./devices');
-  var apps_s3 = require('./apps/s3');
+  var s3 = require('./s3');
   var appetizeio = require('./apps/appetizeio');
-  var inject_chetbot = require('./android/inject-chetbot');
+  var inject_chetbot = require('./apps/android/inject-chetbot');
+  var android_app_info = require('./apps/android/info');
 
   function fail_on_error(res) {
     return function(e) {
@@ -19,12 +20,11 @@ exports.add_routes = function(app) {
     }
   }
 
-  // TODO: cache DB lookup
   function ensure_code_belongs_to_app(req, res, next) {
-    db.code().find({hash: req.params.code_id, range: req.params.app_id})
+    db.code().find({hash: req.params.app_id, range: req.params.code_id})
     .then(function(code) {
       if (!code) {
-        throw new Error('Code not found');
+        res.status(404).send('Code ' + req.params.code_id + ' not found');
       }
       next();
     })
@@ -39,12 +39,38 @@ exports.add_routes = function(app) {
     }
   }
 
+  function create_and_upload_chetbot_apk(user_apk_url) {
+    // TODO: cleanup downloaded files
+    // TODO: return immediately and show user a progress page
+
+    console.log('Downloading app', user_apk_url);
+    return s3.download(user_apk_url)
+    .then(function(apk) {
+      console.log('Getting info from APK');
+      var apk_info = android_app_info(apk);
+      console.log('  ' + apk_info.name)
+      return [apk, apk_info];
+    })
+    .spread(function(apk, apk_info) {
+      console.log('Adding Chetbot to APK', apk);
+      return [apk_info, inject_chetbot(apk)];
+    })
+    .spread(function(apk_info, modified_apk_file) {
+      console.log('Uploading ' + modified_apk_file + ' to S3');
+      return [apk_info, s3.upload(modified_apk_file, 'chetbot-apps-v1', url.parse(user_apk_url).pathname + '.chetbot.apk')];
+    })
+    .spread(function(apk_info, modified_apk_url) {
+      console.log('Creating appetize.io app', modified_apk_url);
+      return [apk_info, modified_apk_url, appetizeio.create_app(modified_apk_url, 'android')];
+    });
+  }
+
   app.get('/sign_s3',
     auth.login_required,
     function(req, res) {
-      apps_s3.client_upload_request(
+      s3.client_upload_request(
         'chetbot-apps',
-        req.user.id + '/' + shortid.generate() + '.apk'
+        shortid.generate() + '/app.apk'
       )
       .then(function(upload_req) {
         res.json(upload_req);
@@ -56,9 +82,14 @@ exports.add_routes = function(app) {
   app.get('/apps',
     auth.login_required,
     function(req, res) {
-      res.render('apps', {
-        user: req.user
-      });
+      db.apps().batchFind(req.user.apps)
+      .then(function(apps) {
+        res.render('apps', {
+          user: req.user,
+          apps: apps
+        });
+      })
+      .catch(fail_on_error(res));
     }
   );
 
@@ -66,44 +97,25 @@ exports.add_routes = function(app) {
     auth.login_required,
     // TODO: check that user is allowed to create another app
     function(req, res) {
+      var user_apk_url = req.body.app_url;
       var new_app_id = shortid.generate();
       var new_code_id = shortid.generate();
 
-      // TODO: store package name of app and allow replacing
-      // TODO: store name and icon of app to show in UI
-
-      var user_apk_url = req.body.app_url;
-      var modified_apk_url = null;
-
-      // TODO: cleanup downloaded files
-      // TODO: return immediately and show user a progress page
-      console.log('Downloading app', user_apk_url);
-      apps_s3.download(user_apk_url)
-      .then(function(apk) {
-        console.log('Adding Chetbot to APK', apk);
-        return inject_chetbot(apk);
-      })
-      .then(function(apk) {
-        console.log('Uploading ' + apk + ' to S3');
-        return apps_s3.upload(apk, 'chetbot-apps-v1', url.parse(user_apk_url).pathname + '.chetbot.apk');
-      })
-      .then(function(url) {
-        modified_apk_url = url;
-        console.log('Creating appetize.io app', modified_apk_url);
-        return appetizeio.create_app(modified_apk_url, 'android');
-      })
-      .then(function(appetize) {
-        console.log('Recording app in database', new_app_id);
+      create_and_upload_chetbot_apk(user_apk_url)
+      .spread(function(apk_info, modified_apk_url, appetize_resp) {
+        console.log('Creating app', new_app_id);
         return Promise.all([
-          db.apps().insert({
-            id: new_app_id,
-            platform: 'android',
-            code_id: new_code_id, // TODO: fix gross hack because we can't search 'code' table by range key (app_id)
-            user_app_url: user_apk_url,
-            app_url: modified_apk_url,
-            publicKey: appetize.publicKey,
-            privateKey: appetize.privateKey
-          }),
+          db.apps().insert(
+            _.extend({
+              id: new_app_id,
+              platform: 'android',
+              user_app_url: user_apk_url,
+              app_url: modified_apk_url,
+              publicKey: appetize_resp.publicKey,
+              privateKey: appetize_resp.privateKey
+            },
+            apk_info)
+          ),
           db.code().insert({
             id: new_code_id,
             app_id: new_app_id,
@@ -116,25 +128,59 @@ exports.add_routes = function(app) {
         return db.users().update(req.user);
       })
       .then(function() {
+        // Take the user straight to their first test
         res.redirect('/app/' + new_app_id + '/edit/' + new_code_id);
       })
       .catch(fail_on_error(res));
     }
   );
 
-  // Temporarily just redirect the only code associated with this app
-  // TODO: app.get('/app/:id') -> list of tests for app
+  // browsers aren't happy doing a PUT from <form>s so we use POST
+  app.post('/app/:app_id',
+    auth.login_required,
+    ensure_user_can_access_app,
+    function(req, res) {
+      // TODO: check that app has the same package name
+
+      var app_id = req.params.app_id;
+      var user_apk_url = req.body.app_url;
+
+      create_and_upload_chetbot_apk(user_apk_url)
+      .spread(function(apk_info, modified_apk_url, appetize_resp) {
+        return [apk_info, modified_apk_url, db.apps().find(app_id)];
+      })
+      .spread(function(apk_info, modified_apk_url, app) {
+        console.log('Updating app', app_id);
+        app.user_app_url = user_apk_url;
+        app.app_url = modified_apk_url;
+        app = _.extend(app, apk_info);
+        return db.apps().update(app);
+      })
+      .then(function() {
+        // refresh
+        res.redirect(req.url);
+      })
+      .catch(fail_on_error(res));
+    }
+  );
+
   app.get('/app/:app_id',
     auth.login_required,
     ensure_user_can_access_app,
     function(req, res) {
-      db.apps().find(req.params.app_id)
-      .then(function(app) {
-        if (app) {
-          res.redirect('/app/' + req.params.app_id + '/edit/' + app.code_id);
-        } else {
-          throw new Error('App/code not found');
+      return Promise.all([
+        db.apps().find(req.params.app_id),
+        db.code().findAll(req.params.app_id)
+      ])
+      .spread(function(app, code) {
+        if (!app) {
+          return res.sendStatus(404);
         }
+        res.render('app', {
+          user: req.user,
+          app: app,
+          code: code
+        });
       })
       .catch(fail_on_error(res));
     }
@@ -147,7 +193,7 @@ exports.add_routes = function(app) {
     function(req, res) {
       Promise.join(
         db.apps().find(req.params.app_id),
-        db.code().find({hash: req.params.code_id, range: req.params.app_id}),
+        db.code().find({hash: req.params.app_id, range: req.params.code_id}),
         devices.create_device({user: req.user})
       )
       .spread(function(app, code, device_id) {
@@ -165,7 +211,7 @@ exports.add_routes = function(app) {
             publicKey: app.publicKey
           },
           autosave: true,
-          code: code.content
+          code: code
         });
       })
       .catch(fail_on_error(res));

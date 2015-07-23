@@ -179,7 +179,7 @@
     <paper-header-panel class="cyan">
       {{#user}}
       <paper-toolbar>
-        <a href="/apps" alt="Apps">
+        <a href="/app/{{../code.app_id}}" alt="Apps">
           <paper-icon-button icon="arrow-back"></paper-icon-button>
         </a>
         <div class="title"><!-- TODO: app name --></div>
@@ -206,7 +206,7 @@
             -->
             <span class="saved status">Saving...</span>
           </div>
-          <div id="editor">{{code}}</div>
+          <div id="editor">{{code.content}}</div>
           <div id="test-report">
             <ol></ol>
           </div>

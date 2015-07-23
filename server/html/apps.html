@@ -20,6 +20,33 @@
 
       ul#apps > li {
         margin: 0.5em 0;
+        min-height: 4em;
+        display: block;
+      }
+
+      ul#apps .details {
+        display: inline-block;
+      }
+
+      ul#apps img {
+        float: left;
+        width: 3em;
+        height: 3em;
+        border: none;
+        margin: 0 1em 1em 0;
+      }
+
+      ul#apps h4 {
+        margin: 0.25em 0 0 0;
+      }
+
+      ul#apps .info {
+        font-size: 0.8em;
+        opacity: 0.8;
+      }
+
+      ul#apps .version {
+        opacity: 0.5;
       }
 
       h4 {
@@ -76,7 +103,6 @@
       </paper-toolbar>
       {{/user}}
       <div class="content">
-        {{#user}}
         <ul id="apps">
           <li id="app-upload">
             <p class="status"></p>
@@ -86,67 +112,34 @@
             </form>
           </li>
           {{#apps}}
-          <li><a href="/app/{{.}}">App ({{.}})</a></li>
+          <li>
+            <a href="/app/{{id}}">
+              <img src="{{icon}}">
+              <span class="details">
+                <h4>{{name}} <span class="version">{{version}}</span></h4>
+                <span class="info">{{identifier}}</span>
+              </span>
+            </a>
+          </li>
           {{/apps}}
         </ul>
-        {{/user}}
       </div>
     </paper-header-panel>
   </body>
 
-  <script src="/components/jquery/dist/jquery.min.js"></script>
-  <script>
-    $('#app-upload input[type=file]').on('change', function(e) {
-      ga('send', 'event', 'app-upload', 'start');
-
-      $(e.target).hide();
-
-      var status = $('#app-upload .status');
-      status.removeClass('error').text('Requesting upload...').show();
-
-      var file = e.target.files[0];
-      if (!file) {
-        $('#app-upload input[name=app_url]').val('');
-        ga('send', 'event', 'app-upload', 'no-file');
-        return;
-      }
-
-      $.ajax({
-        url: '/sign_s3?file_type=' + file.type,
-        method: 'GET',
-        dataType: 'json'
-      }).done(function(req) {
-        ga('send', 'event', 'app-upload', 'request-granted');
-        status.text('Uploading...');
-        var xhr = new XMLHttpRequest();
-        xhr.upload.onprogress = function(e) {
-          var percent_complete = Math.floor(e.loaded / e.total * 100);
-          status.text(percent_complete + '% complete...');
-        };
-        xhr.onload = function() {
-          if (xhr.status === 200) {
-            ga('send', 'event', 'app-upload', 'uploaded');
-
-            status.text('Done. Redirecting...');
-            $('#app-upload form input[name=app_url]').val(req.url);
-            $('#app-upload form').submit();
-          } else {
-            ga('send', 'event', 'app-upload', 'upload-error', xhr.responseText);
-            status.text(xhr.responseText).addClass('error');
-            console.error(xhr.status, xhr.responseText);
-          }
-        };
-        xhr.onerror = function(e) {
-          ga('send', 'event', 'app-upload', 'upload-error', xhr.responseText);
-          status.text('Upload error: ' + xhr.responseText).addClass('error');
-          console.error(xhr.responseText, e);
-        };
-        xhr.open('PUT', req.signed_request);
-        xhr.send(file);
-      });
-    });
-  </script>
-
   {{> google-analytics}}
 
+  <script src="/components/jquery/dist/jquery.min.js"></script>
+  <script src="/js/s3_upload.js"></script>
+  <script>
+    s3_upload($('#app-upload input[type=file]'), $('#app-upload input[name=app_url]'), {
+      progress: function(progress) {
+        $('#app-upload .status').removeClass('error').text(progress).show();
+      },
+      error: function(error) {
+        $('#app-upload .status').addClass('error').text(error).show();
+      },
+      google_analytics: ga
+    });
+  </script>
 </html>
