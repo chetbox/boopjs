@@ -80,7 +80,7 @@ function setup(app) {
   app.get('/auth/github/callback',
     passport.authenticate('github', {failureRedirect: '/login'}),
     function (req, res) {
-      res.redirect(_.last(req.flash('redirect')) || '/demo');
+      res.redirect(_.last(req.flash('redirect')) || '/apps');
     }
   );
 
