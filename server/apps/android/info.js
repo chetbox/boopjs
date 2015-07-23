@@ -1,6 +1,7 @@
 var _ = require('underscore');
 var path = require('path');
 var tools = require('./tools');
+var Zip = require('adm-zip');
 
 // hack to parse quoted string things
 function parse_value(val) {
@@ -22,8 +23,13 @@ function parse_value(val) {
   return val;
 }
 
-function base64_file_contents(zip_file, file_name) {
-  return new Buffer(tools.unzip('-p', zip_file, file_name)).toString('base64')
+function file_from_zip(zip_file, file_name) {
+  return new Zip(zip_file)
+  .getEntries()
+  .filter(function(e) {
+    return e.entryName == file_name;
+  })[0]
+  .getData();
 }
 
 module.exports = function(apk_file) {
@@ -38,7 +44,7 @@ module.exports = function(apk_file) {
 
   return {
     name: apk_info['application-label'],
-    icon: 'data:image/png;base64,' + base64_file_contents(apk_file, apk_info['application-icon-320']),
+    icon: 'data:image/png;base64,' + file_from_zip(apk_file, apk_info['application-icon-320']).toString('base64'),
     identifier: apk_info.package.name,
     version: apk_info.package.versionName
   };

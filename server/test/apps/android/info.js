@@ -16,7 +16,7 @@ describe('Android APK info', function() {
   });
 
   it('returns the xhdpi icon', function () {
-    var expected_icon_begins_with = 'data:image/png;base64,77+9UE5HDQoaCgAAAA1JSERSAAAAYAAAAGAIBgAAAO';
+    var expected_icon_begins_with = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimH';
     assert.equal(apk_info.icon.slice(0, 64), expected_icon_begins_with);
   });
 
