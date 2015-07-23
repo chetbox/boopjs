@@ -18,10 +18,10 @@ WORKDIR /opt/chetbot-server
 VOLUME /opt/chetbot-server/config
 
 # Get project dependencies
-RUN mkdir -p android/deps
-RUN wget -q https://xml-apk-parser.googlecode.com/files/APKParser.jar -O android/deps/APKParser.jar
-RUN wget -q https://bitbucket.org/JesusFreke/smali/downloads/smali-2.0.6.jar -O android/deps/smali.jar
-RUN wget -q https://bitbucket.org/JesusFreke/smali/downloads/baksmali-2.0.6.jar -O android/deps/baksmali.jar
+RUN mkdir -p apps/android/deps
+RUN wget -q https://xml-apk-parser.googlecode.com/files/APKParser.jar -O apps/android/deps/APKParser.jar
+RUN wget -q https://bitbucket.org/JesusFreke/smali/downloads/smali-2.0.6.jar -O apps/android/deps/smali.jar
+RUN wget -q https://bitbucket.org/JesusFreke/smali/downloads/baksmali-2.0.6.jar -O apps/android/deps/baksmali.jar
 
 # Generate Android keystore
 RUN mkdir -p /root/.android

@@ -10,7 +10,7 @@ exports.add_routes = function(app) {
   var devices = require('./devices');
   var s3 = require('./s3');
   var appetizeio = require('./apps/appetizeio');
-  var inject_chetbot = require('./android/inject-chetbot');
+  var inject_chetbot = require('./apps/android/inject-chetbot');
 
   function fail_on_error(res) {
     return function(e) {
