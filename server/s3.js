@@ -10,7 +10,7 @@ var url = require('url');
 
 AWS.config.update(config.get('s3'));
 
-var tmp_dir = path.join(os.tmpdir(), 'chetbot.apps');
+var tmp_dir = path.join(os.tmpdir(), 'chetbot.s3');
 sh.mkdir('-p', tmp_dir);
 
 function s3_url(bucket, file_path) {

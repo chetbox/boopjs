@@ -8,7 +8,7 @@ exports.add_routes = function(app) {
   var db = require('./db');
   var auth = require('./auth');
   var devices = require('./devices');
-  var apps_s3 = require('./apps/s3');
+  var s3 = require('./s3');
   var appetizeio = require('./apps/appetizeio');
   var inject_chetbot = require('./android/inject-chetbot');
 
@@ -45,14 +45,14 @@ exports.add_routes = function(app) {
     // TODO: return immediately and show user a progress page
 
     console.log('Downloading app', user_apk_url);
-    return apps_s3.download(user_apk_url)
+    return s3.download(user_apk_url)
     .then(function(apk) {
       console.log('Adding Chetbot to APK', apk);
       return inject_chetbot(apk);
     })
     .then(function(modified_apk_file) {
       console.log('Uploading ' + modified_apk_file + ' to S3');
-      return apps_s3.upload(modified_apk_file, 'chetbot-apps-v1', url.parse(user_apk_url).pathname + '.chetbot.apk');
+      return s3.upload(modified_apk_file, 'chetbot-apps-v1', url.parse(user_apk_url).pathname + '.chetbot.apk');
     })
     .then(function(modified_apk_url) {
       console.log('Creating appetize.io app', modified_apk_url);
@@ -63,7 +63,7 @@ exports.add_routes = function(app) {
   app.get('/sign_s3',
     auth.login_required,
     function(req, res) {
-      apps_s3.client_upload_request(
+      s3.client_upload_request(
         'chetbot-apps',
         req.user.id + '/' + shortid.generate() + '.apk'
       )
