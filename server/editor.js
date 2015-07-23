@@ -129,7 +129,7 @@ exports.add_routes = function(app) {
           })
         ]);
       })
-      .then(function(user) {
+      .spread(function(user) {
         user.apps = _.union(user.apps, [new_app_id]); // Keep existing info (dynasty's .update is broken)
         return db.users().update(user);
       })
