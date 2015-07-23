@@ -3,6 +3,7 @@ var fs = require('fs');
 var path = require('path');
 var shortid = require('shortid');
 
+require('./tools').global();
 require('shelljs/global');
 config.silent = true;
 
@@ -22,25 +23,6 @@ function get_output(exec_obj) {
   check_succeeds(exec_obj);
   return exec_obj.output;
 }
-
-// helpers
-['zip', 'unzip', 'java', 'xmlstarlet', 'jarsigner', 'zipalign'].forEach(function(cmd) {
-  function escape_arg(s) {
-    return "'" + s.replace("'", "\\'") + "'";
-  }
-  global[cmd] = function() {
-    var result = exec(cmd + ' ' + [].slice.call(arguments).map(escape_arg).join(' '));
-    if (result.code !== 0) {
-      throw '\'' + cmd + '\' exited with status ' + result.code + ': ' + (result.output || error());
-    }
-    return result.output;
-  };
-});
-
-var apk_parser = path.join(__dirname, 'deps', 'APKParser.jar');
-var smali = path.join(__dirname, 'deps', 'smali.jar');
-var baksmali = path.join(__dirname, 'deps', 'baksmali.jar');
-var chetbot_smali = path.join(__dirname, 'deps', 'chetbot-smali', '*');
 
 function user_home() {
   return process.env.HOME || process.env.USERPROFILE;
