@@ -8,7 +8,7 @@
 
     <style type="text/css">
     body {
-      background: #e7e7e7;
+      background: #dFe8eC;
     }
 
     a > .hint {
@@ -116,7 +116,7 @@
 
     #test-report {
       font-size: 12px;
-      background: #CFD8DC;
+      background: #dFe8eC;
       font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
       color: rgba(0,0,0,0.87);
       padding-top: 0.5em;
@@ -173,6 +173,24 @@
     #editor-container:not(.editing) #editor {
       display: none;
     }
+    </style>
+    <style type="text/css" media="print">
+      paper-toolbar {
+        visibility: hidden;
+      }
+
+      iframe, #controls {
+        display: none;
+      }
+
+      #editor-container {
+        left: 0;
+      }
+
+      #editor, #test-report {
+        top: 0;
+        left: 0;
+      }
     </style>
   </head>
   <body class="fullbleed {{#user}}logged-in{{/user}}" data-device-id="{{device.id}}">
