@@ -65,7 +65,7 @@ exports.add_routes = function(app) {
     function(req, res) {
       s3.client_upload_request(
         'chetbot-apps',
-        req.user.id + '/' + shortid.generate() + '.apk'
+        shortid.generate() + '/app.apk'
       )
       .then(function(upload_req) {
         res.json(upload_req);
