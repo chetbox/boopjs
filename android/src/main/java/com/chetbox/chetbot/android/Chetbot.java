@@ -99,7 +99,7 @@ public class Chetbot implements ChetbotServerConnection.MessageHandler {
                 activity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        view.callOnClick();
+                        view.performClick();
                     }
                 });
                 return lastResults;
