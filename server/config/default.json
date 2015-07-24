@@ -1,8 +1,11 @@
 {
+  "host": {
+    "protocol": "http",
+    "address": "SERVER_ADDRESS"
+  },
   "github-oauth": {
     "clientID": "GITHUB_CLIENT_ID",
-    "clientSecret": "GITHUB_CLIENT_SECRET",
-    "callbackURL": "http://SERVER_ADDRESS/auth/github/callback"
+    "clientSecret": "GITHUB_CLIENT_SECRET"
   },
   "dynamodb": {
     "accessKeyId": "DYNAMODB_ACCESS_KEY_ID",

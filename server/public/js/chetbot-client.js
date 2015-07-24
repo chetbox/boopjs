@@ -2,22 +2,21 @@
  * Copyright 2015 - Chetan Padia
 **/
 
-var chetbot_device = null;
-var _ws = new ReconnectingWebSocket('ws://chetbot-alpha.chetbox.com/api/client');
+var _device_id = null;
+var _ws = null;
 
 /* Heartbeat to prevent device timing out */
 var device_iframe = document.querySelector('iframe');
 setInterval(function() { device_iframe.contentWindow.postMessage('heartbeat', '*'); },
       15 * 1000);
 
+function unhandled_data(e) {
+  console.error('Unhandled response', e.data);
+}
+
 function __(text_or_options) {
 
   var _commands = [];
-
-  function unhandled_data(e) {
-    console.error('Unhandled response', e.data);
-  }
-  _ws.onmessage = unhandled_data;
 
   function _log_result(r) {
     console.log(r);
@@ -30,7 +29,7 @@ function __(text_or_options) {
 
   function _execute() {
     var msg = {
-      'device':   chetbot_device,
+      'device':   _device_id,
       'commands': _commands
     }
     var deferred_result = Q.defer();
@@ -117,6 +116,19 @@ function not(promise) {
     return !unpack_result(val);
   });
 }
+
+__.connect = function(server, device_id) {
+  if (!server) {
+    console.error('No host specified');
+  }
+  if (!device_id) {
+    console.error('No device specified');
+  }
+
+  _device_id = device_id;
+  _ws = new ReconnectingWebSocket('ws://' + server + '/api/client');
+  _ws.onmessage = unhandled_data;
+};
 
 window.__ = __;
 window.back = __().back;

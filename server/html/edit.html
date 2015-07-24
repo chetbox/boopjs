@@ -193,7 +193,7 @@
       }
     </style>
   </head>
-  <body class="fullbleed {{#user}}logged-in{{/user}}" data-device-id="{{device.id}}">
+  <body class="fullbleed {{#user}}logged-in{{/user}}">
     <paper-header-panel class="cyan">
       {{#user}}
       <paper-toolbar>
@@ -207,7 +207,7 @@
       </paper-toolbar>
       {{/user}}
       <div class="content">
-        <iframe id="device" src="https://appetize.io/embed/{{app.publicKey}}?device={{device.model}}&amp;scale=75&amp;autoplay=true&amp;orientation={{device.orientation}}&amp;deviceColor=black&amp;xdocMsg=true&amp;params=%7B%22chetbot.session%22%3A%22{{device.id}}%22%7D" frameborder="0" scrolling="no"></iframe>
+        <iframe id="device" src="https://appetize.io/embed/{{app.publicKey}}?device={{device.model}}&amp;scale=75&amp;autoplay=true&amp;orientation={{device.orientation}}&amp;deviceColor=black&amp;xdocMsg=true&amp;params=%7b%22chetbot.server%22%3a%22{{server}}%22%2c%22chetbot.device%22%3a%22{{device.id}}%22%7d" frameborder="0" scrolling="no"></iframe>
         <div id="editor-container" class="editing">
           <div id="controls">
             <a class="back" href="javascript:showEditor();" title="Back to editor">
@@ -241,8 +241,7 @@
   <script src="/js/chetbot-autosave.js"></script>
   {{/autosave}}
   <script>
-    // chetbot-client device ID
-    chetbot_device = document.getElementsByTagName('body')[0].getAttributeNode('data-device-id').value;
+    __.connect('{{server}}', '{{device.id}}');
   </script>
 
   <!-- code editor -->
