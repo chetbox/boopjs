@@ -55,7 +55,7 @@ function __(text_or_options) {
     } else if (typeof(args) === 'string') {
       args = [args];
     }
-    _add('VIEW', args)
+    _add('VIEW', args);
     return view;
   }
 
@@ -67,10 +67,10 @@ function __(text_or_options) {
     }
   });
 
-  var action_cmds = ['tap', 'back', 'home', 'screenshot', 'text', 'id', 'type', 'count', 'exists', 'location', 'center', 'size'];
+  var action_cmds = ['tap', 'back', 'home', 'screenshot', 'text', 'id', 'type', 'count', 'exists', 'location', 'center', 'size', 'type_text'];
   action_cmds.forEach(function(cmd) {
     view[cmd] = function() {
-      _add(cmd.toUpperCase(), [].slice.call(arguments, 1));
+      _add(cmd.toUpperCase(), [].slice.call(arguments));
       return _execute();
     }
   });
@@ -133,4 +133,5 @@ __.connect = function(server, device_id) {
 window.__ = __;
 window.back = __().back;
 window.home = __().home;
+window.type_text = __().type_text;
 window.screenshot = __().screenshot;
