@@ -19,7 +19,7 @@ exports.check_device_exists = function(device_id) {
   return db.devices().find(device_id)
   .then(function(device) {
     if (!device) {
-      throw new Error('Device not found');
+      throw new Error('Device not found: ' + device_id);
     }
     return device;
   });

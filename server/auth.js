@@ -18,7 +18,12 @@ passport.deserializeUser(function(user_id, done) {
 });
 
 passport.use(new GitHubStrategy(
-  config.get('github-oauth'),
+  _.extend(
+    config.get('github-oauth'),
+    {
+      callbackURL: config.get('host.protocol') + '://' + config.get('host.address') + '/auth/github/callback'
+    }
+  ),
   function(accessToken, refreshToken, user, done) {
     console.log('User authenticated: ' + user.username);
     // TODO: generate internal user ID for session serialisation

@@ -4,6 +4,7 @@ exports.add_routes = function(app) {
   var _ = require('underscore');
   var Promise = require('bluebird');
   var url = require('url');
+  var host_address = require('config').get('host.address');
 
   var db = require('./db');
   var auth = require('./auth');
@@ -213,6 +214,7 @@ exports.add_routes = function(app) {
             model: 'nexus5',
             orientation: 'portrait',
           },
+          server: host_address,
           app: {
             publicKey: app.publicKey
           },

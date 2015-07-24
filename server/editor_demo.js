@@ -2,6 +2,7 @@ exports.add_routes = function(app) {
 
   var fs = require('fs');
   var shortid = require('shortid');
+  var host_address = require('config').get('host.address');
 
   var devices = require('./devices');
 
@@ -16,6 +17,7 @@ exports.add_routes = function(app) {
           model: 'nexus5',
           orientation: 'portrait',
         },
+        server: host_address,
         app: {
           publicKey: 'z8460qxgdyrfe8c2ag1z6bqyw0'
         },
