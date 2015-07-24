@@ -2,6 +2,7 @@ package com.chetbox.chetbot.android;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.Log;
 import android.view.View;
@@ -22,18 +23,24 @@ public class Chetbot implements ChetbotServerConnection.MessageHandler {
     private static Chetbot sInstance = null;
 
     private final String mPackageName;
-    private final String mSessionId;
     private ChetbotServerConnection mServerConnection = null;
 
     private Chetbot(Activity activity) {
         mPackageName = activity.getPackageName();
-        mSessionId = activity.getIntent().getStringExtra("chetbot.session");
+    }
+
+    private void connect(Activity activity) {
+        String server = activity.getIntent().getStringExtra("chetbot.server");
+        String deviceId = activity.getIntent().getStringExtra("chetbot.device");
+        boolean quiet = !TextUtils.isEmpty( activity.getIntent().getStringExtra("chetbot.quiet") );
 
         // Connect to Chetbot server
-        if (mSessionId != null) {
-            Log.d(TAG, "Starting ChetBot (" + mSessionId + ")");
-            Toast.makeText(activity, "Starting ChetBot", Toast.LENGTH_SHORT).show(); // TODO: remove
-            mServerConnection = new ChetbotServerConnection(mSessionId, this);
+        if (!TextUtils.isEmpty(server) && !TextUtils.isEmpty(deviceId)) {
+            Log.d(TAG, "Starting ChetBot (" + deviceId + ")");
+            if (!quiet) {
+                Toast.makeText(activity, "Starting ChetBot", Toast.LENGTH_SHORT).show();
+            }
+            mServerConnection = new ChetbotServerConnection(server, deviceId, this);
         }
     }
 
@@ -139,6 +146,7 @@ public class Chetbot implements ChetbotServerConnection.MessageHandler {
     public static void start(Activity activity) {
         if (sInstance == null) {
             sInstance = new Chetbot(activity);
+            sInstance.connect(activity);
         }
     }
 

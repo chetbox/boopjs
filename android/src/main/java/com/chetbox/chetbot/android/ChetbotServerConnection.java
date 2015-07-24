@@ -17,8 +17,6 @@ public class ChetbotServerConnection {
 
     private static final String TAG = ChetbotServerConnection.class.getSimpleName();
 
-    private static final String SERVER_URI = "ws://chetbot-alpha.chetbox.com/api/device";
-
     public interface MessageHandler {
         Object onMessage(Command[] message) throws IllegalArgumentException;
     }
@@ -78,11 +76,13 @@ public class ChetbotServerConnection {
 
     private static Gson sGson = new GsonBuilder().serializeNulls().create();
 
-    private final String mSessionId;
+    private final URI mHost;
+    private final String mDeviceId;
     private final MessageHandler mMessageHandler;
 
-    public ChetbotServerConnection(String sessionId, MessageHandler messageHandler) {
-        mSessionId = sessionId;
+    public ChetbotServerConnection(String host, String deviceId, MessageHandler messageHandler) {
+        mHost = URI.create("ws://" + host + "/api/device");
+        mDeviceId = deviceId;
         mMessageHandler = messageHandler;
         mServerConnection = new ServerConnectionImpl();
         mServerConnection.connect();
@@ -118,13 +118,13 @@ public class ChetbotServerConnection {
     private class ServerConnectionImpl extends WebSocketClient {
 
         public ServerConnectionImpl() {
-            super(URI.create(SERVER_URI));
+            super(mHost);
         }
 
         @Override
         public void onOpen(ServerHandshake handshakeData) {
             Log.d(TAG, "HTTP " + handshakeData.getHttpStatus() + ": " + handshakeData.getHttpStatusMessage());
-            sendAsJson(new DeviceRegistration(mSessionId));
+            sendAsJson(new DeviceRegistration(mDeviceId));
         }
 
         @Override
