@@ -28,6 +28,7 @@ public class Command {
         TAP,
         BACK,
         HOME,
+        TYPE_TEXT,
     }
 
     private Name name;

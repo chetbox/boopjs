@@ -2,9 +2,11 @@ package com.chetbox.chetbot.android;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -48,7 +50,7 @@ public class Chetbot implements ChetbotServerConnection.MessageHandler {
         return new SubViews(cmd.getText(), cmd.getType(), cmd.getId());
     }
 
-    private Iterable<?> performAction(Command cmd, final Activity activity, Iterable<?> lastResults) throws IllegalArgumentException {
+    private Iterable<?> performAction(final Command cmd, final Activity activity, Iterable<?> lastResults) throws IllegalArgumentException {
         switch (cmd.getName()) {
             case VIEW:
                 return concat(transform(asViews(lastResults), subViewsSelector(cmd)));
@@ -117,6 +119,17 @@ public class Chetbot implements ChetbotServerConnection.MessageHandler {
                 homeIntent.addCategory(Intent.CATEGORY_HOME);
                 homeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 activity.startActivity(homeIntent);
+                return lastResults;
+            }
+            case TYPE_TEXT: {
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        getRootView(activity).dispatchKeyEvent(
+                                new KeyEvent(SystemClock.uptimeMillis(), cmd.getText(), 0, 0)
+                        );
+                    }
+                });
                 return lastResults;
             }
             default:
