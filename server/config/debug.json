@@ -1,0 +1,20 @@
+{
+  "host": {
+    "protocol": "http",
+    "address": "chetbot-alpha.chetbox.com:8001"
+  },
+  "github-oauth": {
+    "clientID": "dc39a4e0f69d0b2a9ecc",
+    "clientSecret": "5bc77eee025a648bd10dfc0fda472b11d3a1f6aa"
+  },
+  "dynamodb": {
+    "endpoint": "http://localhost:8000"
+  },
+  "s3": {
+    "accessKeyId": "AKIAJMXB6I7Y726U26AA",
+    "secretAccessKey": "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"
+  },
+  "appetize_io": {
+    "token": "tok_4dwcbqrxd4gp86frz4vx38cvug"
+  }
+}

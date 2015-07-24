@@ -59,10 +59,6 @@ exports.add_routes = function(app) {
     .spread(function(apk_info, modified_apk_file) {
       console.log('Uploading ' + modified_apk_file + ' to S3');
       return [apk_info, s3.upload(modified_apk_file, 'chetbot-apps-v1', url.parse(user_apk_url).pathname + '.chetbot.apk')];
-    })
-    .spread(function(apk_info, modified_apk_url) {
-      console.log('Creating appetize.io app', modified_apk_url);
-      return [apk_info, modified_apk_url, appetizeio.create_app(modified_apk_url, 'android')];
     });
   }
 
@@ -108,6 +104,10 @@ exports.add_routes = function(app) {
       var new_code_id = shortid.generate();
 
       create_and_upload_chetbot_apk(user_apk_url)
+      .spread(function(apk_info, modified_apk_url) {
+        console.log('Creating appetize.io app', modified_apk_url);
+        return [apk_info, modified_apk_url, appetizeio.create_app(modified_apk_url, 'android')];
+      })
       .spread(function(apk_info, modified_apk_url, appetize_resp) {
         console.log('Creating app', new_app_id);
         return Promise.all([
@@ -153,19 +153,29 @@ exports.add_routes = function(app) {
       var user_apk_url = req.body.app_url;
 
       create_and_upload_chetbot_apk(user_apk_url)
-      .spread(function(apk_info, modified_apk_url, appetize_resp) {
+      .spread(function(apk_info, modified_apk_url) {
         return [apk_info, modified_apk_url, db.apps().find(app_id)];
       })
-      .spread(function(apk_info, modified_apk_url, app) {
+      .spread(function(apk_info, modified_apk_url, existing_app) {
+        console.log('Updating appetize.io app', modified_apk_url);
+        return [apk_info, modified_apk_url, existing_app, appetizeio.update_app(existing_app.privateKey, modified_apk_url, 'android')];
+      })
+      .spread(function(apk_info, modified_apk_url, existing_app, appetize_resp) {
         console.log('Updating app', app_id);
-        app.user_app_url = user_apk_url;
-        app.app_url = modified_apk_url;
-        app = _.extend(app, apk_info);
-        return db.apps().update(app);
+        if (existing_app.privateKey !== appetize_resp.privateKey) {
+          throw new Error('New private key does not match existing');
+        }
+        if (existing_app.publicKey !== appetize_resp.publicKey) {
+          throw new Error('New public key does not match existing');
+        }
+        existing_app.user_app_url = user_apk_url;
+        existing_app.app_url = modified_apk_url;
+        existing_app = _.extend(existing_app, apk_info);
+        return db.apps().update(existing_app);
       })
       .then(function() {
         // refresh
-        res.redirect(req.url);
+        res.redirect(req.get('referer'));
       })
       .catch(fail_on_error(res));
     }
