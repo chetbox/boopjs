@@ -2,7 +2,7 @@ var path = require('path');
 var shell = require('shelljs');
 shell.config.silent = true;
 
-['zip', 'unzip', 'java', 'xmlstarlet', 'jarsigner', 'zipalign', 'aapt'].forEach(function(cmd) {
+['zip', 'java', 'xmlstarlet', 'jarsigner', 'zipalign', 'aapt'].forEach(function(cmd) {
   function escape_arg(s) {
     return "'" + s.replace("'", "\\'") + "'";
   }

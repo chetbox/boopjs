@@ -2,11 +2,11 @@ var os = require('os');
 var fs = require('fs');
 var path = require('path');
 var shortid = require('shortid');
+var zip = require('./zip-utils')
 
 require('./tools').global();
 require('shelljs/global');
 config.silent = true;
-
 
 function inject_chetbot_start(activity_smali_file) {
   var smali_src = String(fs.readFileSync(activity_smali_file));
@@ -51,7 +51,7 @@ module.exports = function(input_apk, output_apk) {
   cp(input_apk, tmp('app.apk'));
 
   console.log('Extracting classes.dex');
-  unzip(tmp('app.apk'), 'classes.dex', '-d', tmp());
+  fs.writeFileSync(tmp('classes.dex'), zip.extract_file('classes.dex'));
 
   console.log('Decompiling');
   java('-jar', baksmali, '-x', tmp('classes.dex'), '-o', tmp('app-smali'));
