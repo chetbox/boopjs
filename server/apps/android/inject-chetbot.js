@@ -34,15 +34,13 @@ exports.find_main_activity = function(apk_file) {
   return main_activity;
 }
 
-function inject_chetbot_start(activity_smali_file) {
-  var smali_src = String(fs.readFileSync(activity_smali_file));
-  smali_src = smali_src.replace(
+exports.add_chetbot_to_oncreate = function(smali_src) {
+  return String(smali_src).replace(
     /^(\.method protected onCreate\(Landroid\/os\/Bundle;\)V[\s\S]*?\.prologue\b)/m,
     '$1' +
     '\n\n' +
     '    # Injected by Chetbot\n' +
     '    invoke-static {p0}, Lcom/chetbox/chetbot/android/Chetbot;->start(Landroid/app/Activity;)V\n');
-  fs.writeFileSync(activity_smali_file, smali_src);
 }
 
 function get_output(exec_obj) {
@@ -92,7 +90,10 @@ exports.add_chetbot_to_apk = function(input_apk, output_apk) {
 
   console.log('Injecting "Chetbot.start( );"');
   var main_activity_smali = path.join(tmp('app-smali'), main_activity.replace(/\./g, '/') + '.smali');
-  inject_chetbot_start(main_activity_smali);
+  fs.writeFileSync(
+    main_activity_smali,
+    exports.add_chetbot_to_oncreate(fs.readFileSync(main_activity_smali))
+  );
 
   console.log('Adding Chetbot sources');
   cp('-R', chetbot_smali, tmp('app-smali'));
