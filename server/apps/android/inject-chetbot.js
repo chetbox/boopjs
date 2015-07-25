@@ -2,7 +2,7 @@ var os = require('os');
 var fs = require('fs');
 var path = require('path');
 var shortid = require('shortid');
-var zip = require('./zip-utils')
+var zip_utils = require('./zip-utils')
 
 require('./tools').global();
 require('shelljs/global');
@@ -10,7 +10,7 @@ config.silent = true;
 
 exports.find_main_activity = function(apk_file) {
   var tmp = path.join(os.tmpdir(), shortid.generate());
-  fs.mkdirSync(tmp);
+  mkdir('-p', tmp);
 
   var manifest_file = path.join(tmp, 'AndroidManifest.xml');
   java('-jar', apk_parser, apk_file).to(manifest_file);
@@ -77,7 +77,11 @@ exports.add_chetbot_to_apk = function(input_apk, output_apk) {
   cp(input_apk, tmp('app.apk'));
 
   console.log('Extracting classes.dex');
-  fs.writeFileSync(tmp('classes.dex'), zip.extract_file('classes.dex'));
+  fs.writeFileSync(
+    tmp('classes.dex'),
+    zip_utils.extract_file(tmp('app.apk'), 'classes.dex'),
+    {encoding :null}
+  );
 
   console.log('Decompiling');
   java('-jar', baksmali, '-x', tmp('classes.dex'), '-o', tmp('app-smali'));
