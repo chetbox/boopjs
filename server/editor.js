@@ -54,7 +54,7 @@ exports.add_routes = function(app) {
     })
     .spread(function(apk, apk_info) {
       console.log('Adding Chetbot to APK', apk);
-      return [apk_info, inject_chetbot(apk)];
+      return [apk_info, inject_chetbot.add_chetbot_to_apk(apk)];
     })
     .spread(function(apk_info, modified_apk_file) {
       console.log('Uploading ' + modified_apk_file + ' to S3');

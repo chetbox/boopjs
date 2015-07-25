@@ -8,6 +8,32 @@ require('./tools').global();
 require('shelljs/global');
 config.silent = true;
 
+exports.find_main_activity = function(apk_file) {
+  var tmp = path.join(os.tmpdir(), shortid.generate());
+  fs.mkdirSync(tmp);
+
+  var manifest_file = path.join(tmp, 'AndroidManifest.xml');
+  java('-jar', apk_parser, apk_file).to(manifest_file);
+
+  // TODO: port to node XML processing
+  var main_activity = xmlstarlet('sel', '-t', '-v',
+      '/manifest' +
+      '/application' +
+      '/activity[' +
+        'intent-filter/category/@android:name="android.intent.category.LAUNCHER" ' +
+        'and ' +
+        'intent-filter/action/@android:name="android.intent.action.MAIN"]' +
+      '/@android:name',
+    manifest_file
+  );
+
+  // Clean up
+  fs.unlinkSync(manifest_file);
+  fs.rmdirSync(tmp);
+
+  return main_activity;
+}
+
 function inject_chetbot_start(activity_smali_file) {
   var smali_src = String(fs.readFileSync(activity_smali_file));
   smali_src = smali_src.replace(
@@ -35,7 +61,7 @@ function tmp_dir() {
   }
 }
 
-module.exports = function(input_apk, output_apk) {
+exports.add_chetbot_to_apk = function(input_apk, output_apk) {
 
   output_apk = output_apk || input_apk;
 
@@ -57,19 +83,7 @@ module.exports = function(input_apk, output_apk) {
   java('-jar', baksmali, '-x', tmp('classes.dex'), '-o', tmp('app-smali'));
 
   console.log('Finding main activity');
-  java('-jar', apk_parser, tmp('app.apk')).to(tmp('AndroidManifest.xml'));
-
-  // TODO: port to node XML processing
-  var main_activity = xmlstarlet('sel', '-t', '-v',
-    '/manifest' +
-    '/application' +
-    '/activity[' +
-      'intent-filter/category/@android:name="android.intent.category.LAUNCHER" ' +
-      'and ' +
-      'intent-filter/action/@android:name="android.intent.action.MAIN"]' +
-    '/@android:name',
-    tmp('AndroidManifest.xml')
-  );
+  var main_activity = exports.find_main_activity(tmp('app.apk'));
   console.log('  ' + main_activity);
 
   console.log('Injecting "Chetbot.start( );"');
