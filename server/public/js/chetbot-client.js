@@ -130,8 +130,9 @@ __.connect = function(server, device_id) {
   _ws.onmessage = unhandled_data;
 };
 
-window.__ = __;
-window.back = __().back;
-window.home = __().home;
-window.type_text = __().type_text;
-window.screenshot = __().screenshot;
+['back', 'home', 'type_text', 'screenshot'].forEach(function(cmd) {
+    window[cmd] = function() {
+      var view = __();
+      view[cmd].apply(view, [].slice.call(arguments));
+    }
+});
