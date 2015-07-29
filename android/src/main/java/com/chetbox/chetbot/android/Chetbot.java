@@ -1,6 +1,7 @@
 package com.chetbox.chetbot.android;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.SystemClock;
 import android.text.TextUtils;
@@ -9,6 +10,7 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -126,10 +128,17 @@ public class Chetbot implements ChetbotServerConnection.MessageHandler {
                 activity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        activity.onBackPressed();
+                        // TODO: hide keyboard instead if the keyboard is showing
+                        activity.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
+                        activity.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
                     }
                 });
                 return lastResults;
+            case HIDE_KEYBOARD: {
+                InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(getRootView(activity).getWindowToken(), 0);
+                return lastResults;
+            }
             case HOME: {
                 Intent homeIntent = new Intent(Intent.ACTION_MAIN);
                 homeIntent.addCategory(Intent.CATEGORY_HOME);
@@ -141,7 +150,7 @@ public class Chetbot implements ChetbotServerConnection.MessageHandler {
                 activity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        getRootView(activity).dispatchKeyEvent(
+                        activity.dispatchKeyEvent(
                                 new KeyEvent(SystemClock.uptimeMillis(), cmd.getText(), 0, 0)
                         );
                     }

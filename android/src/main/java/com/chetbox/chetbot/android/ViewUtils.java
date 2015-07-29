@@ -3,15 +3,18 @@ package com.chetbox.chetbot.android;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.text.TextUtils;
 import android.util.Base64;
 import android.view.View;
+import android.widget.TextView;
 
+import com.android.internal.util.Predicate;
 import com.google.common.base.Function;
 import com.google.common.collect.Ordering;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 import static com.google.common.collect.Iterables.*;
@@ -32,42 +35,95 @@ public class ViewUtils {
         return activity.getWindow().getDecorView().findViewById(android.R.id.content);
     }
 
+    private static Method getDeclaredMethod(Class clazz, String methodName, Class... args) {
+        try {
+            return clazz.getDeclaredMethod(methodName, args);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static class SubViews implements Function<View, Iterable<View>> {
 
-        private final String mText;
-        private final String mType;
-        private final String mId;
+        private static Method findViewByPredicate = getDeclaredMethod(View.class, "findViewByPredicate", Predicate.class);
 
-        public SubViews(String text, String type, String id) {
-            mText = text;
-            mType = type;
-            mId = id;
+        private final Predicate<View> mViewPredicate;
 
-            if (type != null) {
-                throw new UnsupportedOperationException("'type' specifier not yet implemented");
+        public SubViews(final String text, final String type, final String id) {
+
+            if (TextUtils.isEmpty(text) && TextUtils.isEmpty(type) && TextUtils.isEmpty(id)) {
+                throw new IllegalArgumentException("At least one of text, type and id must be specified");
             }
+
+            mViewPredicate = new Predicate<View>() {
+
+                Predicate<View> textPredicate = new Predicate<View>() {
+                    @Override
+                    public boolean apply(View input) {
+                        if (!(input instanceof TextView)) {
+                            return false;
+                        }
+
+                        CharSequence viewText = ((TextView) input).getText();
+                        CharSequence hintText = ((TextView) input).getHint();
+                        if (TextUtils.isEmpty(viewText) && TextUtils.isEmpty(hintText)) {
+                            return false;
+                        }
+
+                        // Here we know some text is displayed and we have text to match.
+                        // viewText or hintText must match.
+
+                        if (!TextUtils.isEmpty(viewText)) {
+                            // Text is showing
+                            return text.equalsIgnoreCase(viewText.toString());
+                        } else {
+                            // Hint is showing
+                            return text.equalsIgnoreCase(hintText.toString());
+                        }
+                    }
+                };
+
+                Predicate<View> typePredicate = new Predicate<View>() {
+                    @Override
+                    public boolean apply(View input) {
+                        return type.equalsIgnoreCase( input.getClass().getSimpleName() );
+                    }
+                };
+
+                Predicate<View> idPredicate = new Predicate<View>() {
+                    @Override
+                    public boolean apply(View input) {
+                        int inputId = input.getId();
+                        if (inputId == -1) {
+                            return false;
+                        }
+                        String inputIdStr = input.getResources().getResourceName(inputId);
+                        if (id.contains("/")) {
+                            return id.equalsIgnoreCase(inputIdStr);
+                        } else {
+                            // match without namespace, if not supplied
+                            return !TextUtils.isEmpty(inputIdStr) && inputIdStr.endsWith("/" + id);
+                        }
+                    }
+                };
+
+                @Override
+                public boolean apply(View input) {
+                    return (TextUtils.isEmpty(text) || textPredicate.apply(input))
+                            && (TextUtils.isEmpty(type) || typePredicate.apply(input))
+                            && (TextUtils.isEmpty(id) || idPredicate.apply(input));
+                }
+            };
         }
 
         @Override
         public Iterable<View> apply(View input) {
-            // TODO: support multiple views with same ID. Combine with type, class.
-            if (mId != null) {
-                View v = input.findViewById(getIdentifier(mId, input.getContext()));
+            try {
+                View v = (View) findViewByPredicate.invoke(input, mViewPredicate);
                 return (ArrayList<View>) (v != null ? newArrayList(v) : newArrayList());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
-
-            // assume mText exists
-            ArrayList<View> matchingViews = new ArrayList<>();
-            // TODO: make substrings optional (this impl. allows substrings)
-            input.findViewsWithText(matchingViews, mText, View.FIND_VIEWS_WITH_TEXT);
-            return matchingViews;
-        }
-
-        @Override
-        public boolean equals(Object that) {
-            return this == that
-                    || (that.getClass() == SubViews.class
-                    && ((SubViews) that).mText == this.mText);
         }
     }
 
