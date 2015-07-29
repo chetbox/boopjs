@@ -27,6 +27,7 @@ public class Command {
         // Interaction
         TAP,
         BACK,
+        HIDE_KEYBOARD,
         HOME,
         TYPE_TEXT,
     }
