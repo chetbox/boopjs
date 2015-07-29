@@ -7,6 +7,7 @@ import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -75,7 +76,7 @@ public class Chetbot implements ChetbotServerConnection.MessageHandler {
             case LOCATION:
                 return newArrayList( location(firstView(lastResults)) );
             case CENTER:
-                return newArrayList( location(firstView(lastResults)) );
+                return newArrayList( center(firstView(lastResults)) );
             case SIZE:
                 return newArrayList( size(firstView(lastResults)) );
             case SCREENSHOT:
@@ -98,10 +99,25 @@ public class Chetbot implements ChetbotServerConnection.MessageHandler {
             }
             case TAP: {
                 final View view = firstView(lastResults);
+                final int[] viewCenter = center(view);
+                final long timestamp = SystemClock.uptimeMillis();
                 activity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        view.performClick();
+                        view.dispatchTouchEvent(MotionEvent.obtain(
+                                timestamp,
+                                timestamp,
+                                MotionEvent.ACTION_DOWN,
+                                viewCenter[0],
+                                viewCenter[1],
+                                0));
+                        view.dispatchTouchEvent(MotionEvent.obtain(
+                                timestamp,
+                                timestamp + 20,
+                                MotionEvent.ACTION_UP,
+                                viewCenter[0],
+                                viewCenter[1],
+                                0));
                     }
                 });
                 return lastResults;
