@@ -136,3 +136,7 @@ __.connect = function(server, device_id) {
       view[cmd].apply(view, [].slice.call(arguments));
     }
 });
+
+function tap() {
+  __.apply(null, [].slice.call(arguments)).tap();
+}
