@@ -23,10 +23,6 @@ import static com.google.common.collect.Lists.*;
 
 public class ViewUtils {
 
-    public static Iterable<View> asViews(Iterable<?> views) {
-        return (Iterable<View>) views;
-    }
-
     public static View firstView(Iterable<?> views) {
         return (View) get(views, 0);
     }
