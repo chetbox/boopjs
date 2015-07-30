@@ -16,10 +16,9 @@ import android.widget.Toast;
 
 import org.mozilla.javascript.Callable;
 import org.mozilla.javascript.Scriptable;
-import org.mozilla.javascript.Undefined;
+import org.mozilla.javascript.ScriptableObject;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 
 import static com.chetbox.chetbot.android.ViewUtils.*;
 
@@ -77,7 +76,8 @@ public class Chetbot implements ChetbotServerConnection.MessageHandler {
         org.mozilla.javascript.Context jsContext = org.mozilla.javascript.Context.enter();
         try {
             jsContext.setOptimizationLevel(-1);
-            Scriptable scope = jsContext.initStandardObjects();
+            ScriptableObject scope = jsContext.initStandardObjects();
+
             registerJsViewFunction(scope, "get_id", new JsViewFunction() {
                 @Override
                 public Object call(Activity activity, Iterable<View> selectedViews) {
@@ -212,7 +212,15 @@ public class Chetbot implements ChetbotServerConnection.MessageHandler {
                     return null;
                 }
             });
-            jsContext.evaluateString(scope, script.getScript(), script.getScriptName(), script.getLineNo(), null);
+
+            jsContext.evaluateString(scope, "RegExp; getClass; java; Packages; JavaAdapter;", "lazyLoad", 0, null);
+            scope.sealObject();
+
+            Scriptable scriptScope = jsContext.newObject(scope);
+            scriptScope.setPrototype(scope);
+            scriptScope.setParentScope(null);
+
+            jsContext.evaluateString(scriptScope, script.getScript(), script.getScriptName(), script.getLineNo(), null);
         } finally {
             jsContext.exit();
         }
