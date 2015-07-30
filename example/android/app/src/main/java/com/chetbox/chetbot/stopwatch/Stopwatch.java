@@ -91,24 +91,6 @@ public class Stopwatch extends AppCompatActivity {
         mRunning = false;
         mResetButton.callOnClick();
 
-        /* DEBUGGING */
-
-//        new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                try {
-//                    Thread.sleep(4000);
-//                    for (int i=1; i<=5; i++) {
-//                        ChetBot.get().tap("start");
-//                        Thread.sleep(i * 1000);
-//                        ChetBot.get().tap("stop");
-//                        Thread.sleep(1000);
-//                        ChetBot.get().tap("reset");
-//                        Thread.sleep(1000);
-//                    }
-//                } catch (InterruptedException e) {}
-//            }
-//        }).start();
     }
 
     @Override

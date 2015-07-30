@@ -14,7 +14,12 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.mozilla.javascript.Callable;
+import org.mozilla.javascript.Scriptable;
+import org.mozilla.javascript.Undefined;
+
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 
 import static com.chetbox.chetbot.android.ViewUtils.*;
 
@@ -49,136 +54,214 @@ public class Chetbot implements ChetbotServerConnection.MessageHandler {
         }
     }
 
-    private static SubViews subViewsSelector(Command cmd) {
-        return new SubViews(cmd.getText(), cmd.getType(), cmd.getId());
+    private static SubViews subViewsSelector(Object selector, Scriptable scope) {
+        if (selector instanceof String) {
+            return new SubViews((String) selector, null, null);
+        }
+
+        return new SubViews(
+                (String) ((Scriptable) selector).get("text", scope),
+                (String) ((Scriptable) selector).get("type", scope),
+                (String) ((Scriptable) selector).get("id", scope));
     }
 
-    private Iterable<?> performAction(final Command cmd, final Activity activity, Iterable<?> lastResults) throws IllegalArgumentException {
-        switch (cmd.getName()) {
-            case VIEW:
-                return concat(transform(asViews(lastResults), subViewsSelector(cmd)));
-            case ID: {
-                View v = firstView(lastResults);
-                String idStr = v.getResources().getResourceName(v.getId());
-                idStr = idStr.substring(idStr.lastIndexOf("/") + 1);
-                return newArrayList( idStr );
-            }
-            case TYPE: {
-                return newArrayList( firstView(lastResults).getClass().getSimpleName() );
-            }
-            case COUNT:
-                return newArrayList( size(lastResults) );
-            case EXISTS:
-                return newArrayList( !isEmpty(lastResults) );
-            case TEXT:
-                if (!isEmpty(lastResults)) {
-                    TextView tv = ((TextView) firstView(lastResults));
-                    return newArrayList( tv.getText().toString() );
+    private static Iterable<View> selectViews(View srcView, Object[] args, Scriptable scope) {
+        Iterable<View> views = newArrayList(srcView);
+        for (Object arg : args) {
+            views = concat(transform(views, subViewsSelector(arg, scope)));
+        }
+        return views;
+    }
+
+    public Object onMessage(ChetbotServerConnection.Script script) throws IllegalArgumentException {
+        org.mozilla.javascript.Context jsContext = org.mozilla.javascript.Context.enter();
+        try {
+            jsContext.setOptimizationLevel(-1);
+            Scriptable scope = jsContext.initStandardObjects();
+            registerJsViewFunction(scope, "get_id", new JsViewFunction() {
+                @Override
+                public Object call(Activity activity, Iterable<View> selectedViews) {
+                    View v = firstView(selectedViews);
+                    int id = v.getId();
+                    return id != -1
+                            ? v.getResources().getResourceName(id)
+                            : null;
                 }
-            case LOCATION:
-                return newArrayList( location(firstView(lastResults)) );
-            case CENTER:
-                return newArrayList( center(firstView(lastResults)) );
-            case SIZE:
-                return newArrayList( size(firstView(lastResults)) );
-            case SCREENSHOT:
-                return newArrayList( screenshot(activity) );
-            case LEFTMOST:
-                return newArrayList( horizontalOrdering.min(asViews(lastResults)) );
-            case RIGHTMOST:
-                return newArrayList( horizontalOrdering.max(asViews(lastResults)) );
-            case TOPMOST:
-                return newArrayList( verticalOrdering.min(asViews(lastResults)) );
-            case BOTTOMMOST:
-                return newArrayList( verticalOrdering.max(asViews(lastResults)) );
-            case CLOSEST_TO: {
-                View target = firstView(subViewsSelector(cmd).apply(getRootView(getActivity())));
-                return newArrayList(new EuclidianDistanceOrdering(center(target)).min(asViews(lastResults)));
-            }
-            case FURTHEST_FROM: {
-                View target = firstView(subViewsSelector(cmd).apply(getRootView(getActivity())));
-                return newArrayList(new EuclidianDistanceOrdering(center(target)).max(asViews(lastResults)));
-            }
-            case TAP: {
-                final View view = firstView(lastResults);
-                final int[] viewCenter = center(view);
-                final long timestamp = SystemClock.uptimeMillis();
-                activity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        view.dispatchTouchEvent(MotionEvent.obtain(
-                                timestamp,
-                                timestamp,
-                                MotionEvent.ACTION_DOWN,
-                                viewCenter[0],
-                                viewCenter[1],
-                                0));
-                        view.dispatchTouchEvent(MotionEvent.obtain(
-                                timestamp,
-                                timestamp + 20,
-                                MotionEvent.ACTION_UP,
-                                viewCenter[0],
-                                viewCenter[1],
-                                0));
+            });
+            registerJsViewFunction(scope, "class_of", new JsViewFunction() {
+                @Override
+                public Object call(Activity activity, Iterable<View> selectedViews) {
+                    return firstView(selectedViews).getClass().getSimpleName();
+                }
+            });
+            registerJsViewFunction(scope, "count", new JsViewFunction() {
+                @Override
+                public Object call(Activity activity, Iterable<View> selectedViews) {
+                    return size(selectedViews);
+                }
+            });
+            registerJsViewFunction(scope, "exists", new JsViewFunction() {
+                @Override
+                public Object call(Activity activity, Iterable<View> selectedViews) {
+                    return !isEmpty(selectedViews);
+                }
+            });
+            registerJsViewFunction(scope, "text", new JsViewFunction() {
+                @Override
+                public Object call(Activity activity, Iterable<View> selectedViews) {
+                    return ((TextView) firstView(selectedViews)).getText().toString();
+                }
+            });
+            registerJsViewFunction(scope, "location", new JsViewFunction() {
+                @Override
+                public Object call(Activity activity, Iterable<View> selectedViews) {
+                    return location(firstView(selectedViews));
+                }
+            });
+            registerJsViewFunction(scope, "center", new JsViewFunction() {
+                @Override
+                public Object call(Activity activity, Iterable<View> selectedViews) {
+                    return center(firstView(selectedViews));
+                }
+            });
+            registerJsViewFunction(scope, "size", new JsViewFunction() {
+                @Override
+                public Object call(Activity activity, Iterable<View> selectedViews) {
+                    return size(firstView(selectedViews));
+                }
+            });
+            registerJsViewFunction(scope, "screenshot", new JsViewFunction() {
+                @Override
+                public Object call(Activity activity, Iterable<View> selectedViews) {
+                    return screenshot(activity);
+                }
+            });
+            registerJsViewFunction(scope, "tap", new JsViewFunction() {
+                @Override
+                public Object call(Activity activity, Iterable<View> selectedViews) {
+                    final View view = firstView(selectedViews);
+                    final int[] viewCenter = center(view);
+                    final long timestamp = SystemClock.uptimeMillis();
+                    activity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            view.dispatchTouchEvent(MotionEvent.obtain(
+                                    timestamp,
+                                    timestamp,
+                                    MotionEvent.ACTION_DOWN,
+                                    viewCenter[0],
+                                    viewCenter[1],
+                                    0));
+                            view.dispatchTouchEvent(MotionEvent.obtain(
+                                    timestamp,
+                                    timestamp + 20,
+                                    MotionEvent.ACTION_UP,
+                                    viewCenter[0],
+                                    viewCenter[1],
+                                    0));
+                        }
+                    });
+                    return null;
+                }
+            });
+            registerJsFunction(scope, "back", new JsFunction() {
+                @Override
+                public Object call(Activity activity, Object[] args) {
+                    // TODO: hide keyboard instead if keyboard is showing
+                    activity.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
+                    activity.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
+                    return null;
+                }
+            });
+            registerJsFunction(scope, "hide_keyboard", new JsFunction() {
+                @Override
+                public Object call(Activity activity, Object[] args) {
+                    InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(getRootView(activity).getWindowToken(), 0);
+                    return null;
+                }
+            });
+            registerJsFunction(scope, "home", new JsFunction() {
+                @Override
+                public Object call(Activity activity, Object[] args) {
+                    Intent homeIntent = new Intent(Intent.ACTION_MAIN);
+                    homeIntent.addCategory(Intent.CATEGORY_HOME);
+                    homeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    activity.startActivity(homeIntent);
+                    return null;
+                }
+            });
+            registerJsFunction(scope, "type_text", new JsFunction() {
+                @Override
+                public Object call(Activity activity, Object[] args) {
+                    activity.dispatchKeyEvent(
+                            new KeyEvent(SystemClock.uptimeMillis(), (String) args[0], 0, 0)
+                    );
+                    return null;
+                }
+            });
+            scope.put("wait", scope, new Callable() {
+                @Override
+                public Object call(org.mozilla.javascript.Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
+                    Double seconds = (Double) args[0];
+                    try {
+                        Thread.sleep(Math.round(seconds * 1000.0));
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
                     }
-                });
-                return lastResults;
-            }
-            case BACK:
-                activity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        // TODO: hide keyboard instead if the keyboard is showing
-                        activity.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
-                        activity.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
-                    }
-                });
-                return lastResults;
-            case HIDE_KEYBOARD: {
-                InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-                imm.hideSoftInputFromWindow(getRootView(activity).getWindowToken(), 0);
-                return lastResults;
-            }
-            case HOME: {
-                Intent homeIntent = new Intent(Intent.ACTION_MAIN);
-                homeIntent.addCategory(Intent.CATEGORY_HOME);
-                homeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                activity.startActivity(homeIntent);
-                return lastResults;
-            }
-            case TYPE_TEXT: {
-                activity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        activity.dispatchKeyEvent(
-                                new KeyEvent(SystemClock.uptimeMillis(), cmd.getText(), 0, 0)
-                        );
-                    }
-                });
-                return lastResults;
-            }
-            default:
-                throw new IllegalArgumentException("Invalid command: " + cmd);
+                    return null;
+                }
+            });
+            jsContext.evaluateString(scope, script.getScript(), script.getScriptName(), script.getLineNo(), null);
+        } finally {
+            jsContext.exit();
         }
+        return null;
     }
 
-    public Object onMessage(Command[] commands) throws IllegalArgumentException {
-        if (commands.length == 0) {
-            throw new IllegalArgumentException("No commands given");
-        }
+    private interface JsFunction {
+        Object call(Activity activity, Object[] args);
+    }
 
-        Activity activity = getActivity();
-        Iterable<?> results = newArrayList(getRootView(activity));
-        for (Command cmd : commands) {
-            results = performAction(cmd, activity, results);
-        }
+    private interface JsViewFunction {
+        Object call(Activity activity, Iterable<View> selectedViews);
+    }
 
-        Object result = isEmpty(results) ? null : get(results, 0);
-        if (ChetbotServerConnection.isSupportedResultType(result)) {
-            return result;
-        } else {
-            return null;
-        }
+    private void registerJsFunction(Scriptable scope, String name, final JsFunction fn) {
+        scope.put(name, scope, new Callable() {
+            @Override
+            public Object call(org.mozilla.javascript.Context cx, Scriptable scope, Scriptable thisObj, final Object[] args) {
+                final Activity activity = getActivity();
+                final Iterable<View> selectedViews = selectViews(getRootView(activity), args, scope);
+                if (activity == null) throw new AssertionError();
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        fn.call(activity, args);
+                    }
+                });
+                return null;
+            }
+        });
+    }
+
+    private void registerJsViewFunction(Scriptable scope, String name, final JsViewFunction fn) {
+        scope.put(name, scope, new Callable() {
+            @Override
+            public Object call(org.mozilla.javascript.Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
+                final Activity activity = getActivity();
+                final View rootView = getRootView(activity);
+                final Iterable<View> selectedViews = selectViews(rootView, args, scope);
+                if (activity == null) throw new AssertionError();
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        fn.call(activity, selectedViews);
+                    }
+                });
+                return null;
+            }
+        });
     }
 
     public static void start(Activity activity) {
@@ -186,6 +269,13 @@ public class Chetbot implements ChetbotServerConnection.MessageHandler {
             sInstance = new Chetbot(activity);
             sInstance.connect(activity);
         }
+    }
+
+    /**
+     * For testing only
+     */
+    public static Chetbot getInstance() {
+        return sInstance;
     }
 
     // based on https://androidreclib.wordpress.com/2014/11/22/getting-the-current-activity/

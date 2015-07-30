@@ -18,21 +18,37 @@ public class ChetbotServerConnection {
     private static final String TAG = ChetbotServerConnection.class.getSimpleName();
 
     public interface MessageHandler {
-        Object onMessage(Command[] message) throws IllegalArgumentException;
+        Object onMessage(Script script) throws IllegalArgumentException;
     }
 
-    public static class Message {
+    public static class Script {
+
+        private String script;
+        private String scriptName;
+        private int lineNo;
         private String device;
-        private Command[] commands;
 
-        public Command[] getCommands() {
-            return commands.clone();
+        public Script(String script, String scriptName, int lineNo, String device) {
+            this.script = script;
+            this.scriptName = scriptName;
+            this.lineNo = lineNo;
+            this.device = device;
         }
 
-        public String getDevice() {
-            return device;
+        public String getScript() {
+            return script;
+        }
+
+        public String getScriptName() {
+            return scriptName + "";
+        }
+
+        public int getLineNo() {
+            return lineNo;
         }
     }
+
+
     private static class Result {
         private String device;
         private String type;
@@ -44,6 +60,7 @@ public class ChetbotServerConnection {
             this.result = result;
         }
     }
+
     private static class Error {
         private String device;
         private String error;
@@ -130,14 +147,14 @@ public class ChetbotServerConnection {
         @Override
         public void onMessage(String messageStr) {
             Log.v(TAG, "Message received: " + messageStr);
-            Message message = sGson.fromJson(messageStr, Message.class);
+            Script script = sGson.fromJson(messageStr, Script.class);
             try {
-                Object result = mMessageHandler.onMessage(message.getCommands());
-                sendAsJson(makeResult(message.getDevice(), result));
+                Object result = mMessageHandler.onMessage(script);
+                sendAsJson(makeResult(script.device, result));
             } catch (Exception e) {
-                Log.e(TAG, "error: " + sGson.toJson(new Error(message.getDevice(), e.getMessage())));
+                Log.e(TAG, "error: " + sGson.toJson(new Error(script.device, e.getMessage())));
                 e.printStackTrace();
-                sendAsJson(new Error(message.getDevice(), e.getMessage()));
+                sendAsJson(new Error(script.device, e.getMessage()));
             }
         }
 
