@@ -75,7 +75,9 @@ function __(text_or_options) {
     }
   });
 
-  view.view(text_or_options);
+  if (text_or_options) {
+    view.view(text_or_options);
+  }
 
   return view;
 }
