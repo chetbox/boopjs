@@ -130,9 +130,9 @@ public class Chetbot implements ChetbotServerConnection.MessageHandler {
                     return size(firstView(selectedViews));
                 }
             });
-            registerJsViewFunction(scope, "screenshot", new JsViewFunction() {
+            registerJsFunction(scope, "screenshot", new JsFunction() {
                 @Override
-                public Object call(Activity activity, Iterable<View> selectedViews) {
+                public Object call(Activity activity, Object[] args) {
                     return screenshot(activity);
                 }
             });
@@ -166,10 +166,15 @@ public class Chetbot implements ChetbotServerConnection.MessageHandler {
             });
             registerJsFunction(scope, "back", new JsFunction() {
                 @Override
-                public Object call(Activity activity, Object[] args) {
+                public Object call(final Activity activity, Object[] args) {
                     // TODO: hide keyboard instead if keyboard is showing
-                    activity.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
-                    activity.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
+                    activity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            activity.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
+                            activity.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
+                        }
+                    });
                     return null;
                 }
             });
@@ -193,10 +198,16 @@ public class Chetbot implements ChetbotServerConnection.MessageHandler {
             });
             registerJsFunction(scope, "type_text", new JsFunction() {
                 @Override
-                public Object call(Activity activity, Object[] args) {
-                    activity.dispatchKeyEvent(
-                            new KeyEvent(SystemClock.uptimeMillis(), (String) args[0], 0, 0)
-                    );
+                public Object call(final Activity activity, Object[] args) {
+                    final String text = (String) args[0];
+                    activity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            activity.dispatchKeyEvent(
+                                    new KeyEvent(SystemClock.uptimeMillis(), text, 0, 0)
+                            );
+                        }
+                    });
                     return null;
                 }
             });
@@ -240,15 +251,8 @@ public class Chetbot implements ChetbotServerConnection.MessageHandler {
             @Override
             public Object call(org.mozilla.javascript.Context cx, Scriptable scope, Scriptable thisObj, final Object[] args) {
                 final Activity activity = getActivity();
-                final Iterable<View> selectedViews = selectViews(getRootView(activity), args, scope);
                 if (activity == null) throw new AssertionError();
-                activity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        fn.call(activity, args);
-                    }
-                });
-                return null;
+                return fn.call(activity, args);
             }
         });
     }
@@ -261,13 +265,7 @@ public class Chetbot implements ChetbotServerConnection.MessageHandler {
                 final View rootView = getRootView(activity);
                 final Iterable<View> selectedViews = selectViews(rootView, args, scope);
                 if (activity == null) throw new AssertionError();
-                activity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        fn.call(activity, selectedViews);
-                    }
-                });
-                return null;
+                return fn.call(activity, selectedViews);
             }
         });
     }
