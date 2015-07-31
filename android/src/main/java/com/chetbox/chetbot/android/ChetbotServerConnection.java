@@ -3,6 +3,8 @@ package com.chetbox.chetbot.android;
 import android.graphics.Bitmap;
 import android.util.Log;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -23,31 +25,50 @@ public class ChetbotServerConnection {
 
     public static class Script {
 
-        private String script;
-        private String scriptName;
-        private int lineNo;
+        private Statement[] statements;
+        private String name;
         private String device;
 
-        public Script(String script, String scriptName, int lineNo, String device) {
-            this.script = script;
-            this.scriptName = scriptName;
-            this.lineNo = lineNo;
+        public Script(Statement[] statements, String name, String device) {
+            this.statements = statements;
+            this.name = name;
             this.device = device;
         }
 
-        public String getScript() {
-            return script;
+        public Script(String[] lines) {
+            this.statements = new Statement[lines.length];
+            for (int i=0; i<lines.length; i++) {
+                this.statements[i] = new Statement(lines[i], i+1);
+            }
         }
 
-        public String getScriptName() {
-            return scriptName + "";
+        public Statement[] getStatements() {
+            return statements;
+        }
+
+        public String getName() {
+            return name + "";
+        }
+    }
+
+    public static class Statement {
+
+        private String source;
+        private int lineNo;
+
+        public Statement(String source, int lineNo) {
+            this.source = source;
+            this.lineNo = lineNo;
+        }
+
+        public String getSource() {
+            return source;
         }
 
         public int getLineNo() {
             return lineNo;
         }
     }
-
 
     private static class Result {
         private String device;
