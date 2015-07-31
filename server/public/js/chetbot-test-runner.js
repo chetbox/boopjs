@@ -67,9 +67,10 @@ function run(editor, server, device_id) {
   statements.forEach(function(stmt) {
     testReportEl.append(
       $('<li>')
+        .addClass('line')
         .addClass('line-' + stmt.line)
         .text(stmt.source)
-        .append('<ul>')
+        .append('<ol>')
     );
   });
 
@@ -83,10 +84,16 @@ function run(editor, server, device_id) {
   ws.onopen = function() {
     ws.send(JSON.stringify(script));
   };
+  ws.onerror = function(e) {
+    console.error(error);
+    testReportEl.append(
+      $('<li>')
+        .addClass('error')
+        .text(e.toString())
+    )
+  };
   ws.onmessage = function(event) {
     var message = JSON.parse(event.data);
-    console.log(message);
-
     if (!message.line) {
       alert(message.error);
       return;
@@ -99,7 +106,7 @@ function run(editor, server, device_id) {
 
       lineEl
         .addClass('error')
-        .find('ul')
+        .find('ol')
           .append( $('<li>').text(message.error) );
     } else {
       ga('send', 'event', 'test-step', 'success');
@@ -108,7 +115,7 @@ function run(editor, server, device_id) {
     if (message.hasOwnProperty('result')) {
       lineEl
         .addClass('success')
-        .find('ul')
+        .find('ol')
           .append(resultHTML(message));
     }
 
