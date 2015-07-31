@@ -32,31 +32,31 @@ public class ChetbotServerConnection {
     public static class Statement {
 
         private String source;
-        private int lineNo;
+        private int line;
 
-        public Statement(String source, int lineNo) {
+        public Statement(String source, int line) {
             this.source = source;
-            this.lineNo = lineNo;
+            this.line = line;
         }
 
         public String getSource() {
             return source;
         }
 
-        public int getLineNo() {
-            return lineNo;
+        public int getLine() {
+            return line;
         }
     }
 
     private static class Result {
         private String device;
-        private int lineNo;
+        private int line;
         private String type;
         private Object result;
 
-        public Result(String device, int lineNo, String type, Object result) {
+        public Result(String device, int line, String type, Object result) {
             this.device = device;
-            this.lineNo = lineNo;
+            this.line = line;
             this.type = type;
             this.result = result;
         }
@@ -64,12 +64,12 @@ public class ChetbotServerConnection {
 
     private static class Error {
         private String device;
-        private int lineNo;
+        private int line;
         private String error;
 
-        public Error(String device, int lineNo, String message) {
+        public Error(String device, int line, String message) {
             this.device = device;
-            this.lineNo = lineNo;
+            this.line = line;
             this.error = message;
         }
     }
@@ -156,9 +156,9 @@ public class ChetbotServerConnection {
                 for (Statement stmt : script.statements) {
                     try {
                         Object result = mScriptHandler.onStatement(stmt, script.name);
-                        sendAsJson(makeResult(script.device, stmt.lineNo, result));
+                        sendAsJson(makeResult(script.device, stmt.line, result));
                     } catch (Exception e) {
-                        Error error = new Error(script.device, stmt.lineNo, e.getMessage());
+                        Error error = new Error(script.device, stmt.line, e.getMessage());
                         Log.e(TAG, "error: " + sGson.toJson(error));
                         e.printStackTrace();
                         sendAsJson(error);

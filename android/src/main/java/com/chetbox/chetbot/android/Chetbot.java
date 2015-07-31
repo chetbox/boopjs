@@ -88,7 +88,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
         mJsContext.setOptimizationLevel(-1);
         ScriptableObject scope = mJsContext.initStandardObjects();
 
-        registerJsViewFunction(scope, "get_id", new JsViewFunction() {
+        registerJsFunction(scope, "view_id", new JsViewFunction() {
             @Override
             public Object call(Activity activity, Iterable<View> selectedViews) {
                 View v = firstView(selectedViews);
@@ -98,43 +98,43 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
                         : null;
             }
         });
-        registerJsViewFunction(scope, "class_of", new JsViewFunction() {
+        registerJsFunction(scope, "class_of", new JsViewFunction() {
             @Override
             public Object call(Activity activity, Iterable<View> selectedViews) {
                 return firstView(selectedViews).getClass().getSimpleName();
             }
         });
-        registerJsViewFunction(scope, "count", new JsViewFunction() {
+        registerJsFunction(scope, "count", new JsViewFunction() {
             @Override
             public Object call(Activity activity, Iterable<View> selectedViews) {
                 return size(selectedViews);
             }
         });
-        registerJsViewFunction(scope, "exists", new JsViewFunction() {
+        registerJsFunction(scope, "exists", new JsViewFunction() {
             @Override
             public Object call(Activity activity, Iterable<View> selectedViews) {
                 return !isEmpty(selectedViews);
             }
         });
-        registerJsViewFunction(scope, "text", new JsViewFunction() {
+        registerJsFunction(scope, "text", new JsViewFunction() {
             @Override
             public Object call(Activity activity, Iterable<View> selectedViews) {
                 return ((TextView) firstView(selectedViews)).getText().toString();
             }
         });
-        registerJsViewFunction(scope, "location", new JsViewFunction() {
+        registerJsFunction(scope, "location", new JsViewFunction() {
             @Override
             public Object call(Activity activity, Iterable<View> selectedViews) {
                 return location(firstView(selectedViews));
             }
         });
-        registerJsViewFunction(scope, "center", new JsViewFunction() {
+        registerJsFunction(scope, "center", new JsViewFunction() {
             @Override
             public Object call(Activity activity, Iterable<View> selectedViews) {
                 return center(firstView(selectedViews));
             }
         });
-        registerJsViewFunction(scope, "size", new JsViewFunction() {
+        registerJsFunction(scope, "size", new JsViewFunction() {
             @Override
             public Object call(Activity activity, Iterable<View> selectedViews) {
                 return size(firstView(selectedViews));
@@ -146,7 +146,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
                 return screenshot(activity);
             }
         });
-        registerJsViewFunction(scope, "tap", new JsViewFunction() {
+        registerJsFunction(scope, "tap", new JsViewFunction() {
             @Override
             public Object call(Activity activity, Iterable<View> selectedViews) {
                 final View view = firstView(selectedViews);
@@ -221,6 +221,12 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
                 return null;
             }
         });
+        registerJsFunction(scope, "activity", new JsFunction() {
+            @Override
+            public Object call(final Activity activity, Object[] args) {
+                return activity;
+            }
+        });
         scope.put("wait", scope, new Callable() {
             @Override
             public Object call(org.mozilla.javascript.Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
@@ -244,7 +250,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
 
     @Override
     public Object onStatement(ChetbotServerConnection.Statement stmt, String scriptName) {
-        return mJsContext.evaluateString(mJsScope, stmt.getSource(), scriptName, stmt.getLineNo(), null);
+        return mJsContext.evaluateString(mJsScope, stmt.getSource(), scriptName, stmt.getLine(), null);
     }
 
     @Override
@@ -270,7 +276,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
         });
     }
 
-    private void registerJsViewFunction(Scriptable scope, String name, final JsViewFunction fn) {
+    private void registerJsFunction(Scriptable scope, String name, final JsViewFunction fn) {
         scope.put(name, scope, new Callable() {
             @Override
             public Object call(org.mozilla.javascript.Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
