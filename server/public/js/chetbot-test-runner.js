@@ -49,51 +49,88 @@ function resultHTML(response) {
   return el;
 }
 
-function run(editor) {
+function run(editor, server, device_id) {
   ga('send', 'event', 'button', 'click', 'run');
 
   onTestStart(editor);
 
-  var script = esprima.parse(
+  var statements = esprima.parse(
     editor.getSession().getDocument().getValue(),
     {loc: true}
-  );
+  ).body.map(function(command) {
+    return {
+      source: escodegen.generate(command),
+      line: command.loc.start.line
+    };
+  });
 
-  script.body
-    .reduce(function(previous_promise, command) {
-      return previous_promise.then(function() {
-        var commandStr = escodegen.generate(command);
-        testReportEl.append(
-          $('<li>').text(commandStr)
-        );
-        scrolltestReportToBottom();
-        return Q(eval(commandStr))
-          .then(function(response) {
-            testReportEl.children().last().addClass('success');
-            testReportEl.append(resultHTML(response));
-            scrolltestReportToBottom();
-          });
-      });
-    }, Q(null))
-    .then(function() {
-      ga('send', 'event', 'test-result', 'passed');
-      testReportEl.append(
-        $('<li>').addClass('final-result').addClass('success').text('Test passed.')
-      );
-      scrolltestReportToBottom();
-    })
-    .finally(function() {
-      onTestStop(editor);
-    })
-    .fail(function(e) {
-      ga('send', 'event', 'test-result', 'failed', '' + e.toString());
-      testReportEl.children().last().addClass('error');
-      testReportEl.append(
-        $('<li>').addClass('final-result').addClass('error').text(e)
-      );
-      scrolltestReportToBottom();
-      console.error(e);
-    });
+  statements.forEach(function(stmt) {
+    testReportEl.append(
+      $('<li>')
+        .addClass('line-' + stmt.line)
+        .text(stmt.source)
+        .append('<ul>')
+    );
+  });
+
+  var script = {
+    statements: statements,
+    name: window.location.pathname.replace(/.*\//, ''),
+    device: device_id
+  };
+
+  var ws = new WebSocket('ws://' + server + '/api/client');
+  ws.onopen = function() {
+    ws.send(JSON.stringify(script));
+  };
+  ws.onmessage = function(event) {
+    var message = JSON.parse(event.data);
+    console.log(message);
+
+    if (!message.line) {
+      alert(message.error);
+      return;
+    }
+
+    var lineEl = testReportEl.find('.line-' + message.line)
+
+    if (message.error) {
+      ga('send', 'event', 'test-step', 'error');
+
+      lineEl
+        .addClass('error')
+        .find('ul')
+          .append( $('<li>').text(message.error) );
+    } else {
+      ga('send', 'event', 'test-step', 'success');
+    }
+
+    if (message.hasOwnProperty('result')) {
+      lineEl
+        .addClass('success')
+        .find('ul')
+          .append(resultHTML(message));
+    }
+
+    // TODO: scroll new output into view
+  };
+
+  // TODO: final 'Test passed/failed' message
+
+  // ga('send', 'event', 'test-result', 'passed');
+  // testReportEl.append(
+  //   $('<li>').addClass('final-result').addClass('success').text('Test passed.')
+  // );
+
+  // ga('send', 'event', 'test-result', 'failed', '' + errorString;
+  // testReportEl.append(
+  //   $('<li>').addClass('final-result').addClass('error').text(e)
+  // );
+
+  // TODO only when the test is complete
+  onTestStop(editor);
+
+  // TODO: disconnect from websocket
 }
 
 function showEditor() {
