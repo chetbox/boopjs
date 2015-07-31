@@ -32,7 +32,7 @@ import static com.chetbox.chetbot.android.ViewUtils.*;
 import static com.google.common.collect.Iterables.*;
 import static com.google.common.collect.Lists.*;
 
-public class Chetbot implements ChetbotServerConnection.MessageHandler {
+public class Chetbot implements ChetbotServerConnection.ScriptHandler {
 
     private static final String TAG = Chetbot.class.getSimpleName();
 
@@ -40,6 +40,9 @@ public class Chetbot implements ChetbotServerConnection.MessageHandler {
 
     private final String mPackageName;
     private ChetbotServerConnection mServerConnection = null;
+
+    private org.mozilla.javascript.Context mJsContext;
+    private Scriptable mJsScope;
 
     private Chetbot(Activity activity) {
         mPackageName = activity.getPackageName();
@@ -79,175 +82,175 @@ public class Chetbot implements ChetbotServerConnection.MessageHandler {
         return views;
     }
 
-    public Object onMessage(ChetbotServerConnection.Script script) throws IllegalArgumentException {
-        org.mozilla.javascript.Context jsContext = org.mozilla.javascript.Context.enter();
-        try {
-            jsContext.setOptimizationLevel(-1);
-            ScriptableObject scope = jsContext.initStandardObjects();
+    public void onStartScript() {
+        // Set up JavaScript environment
+        mJsContext = org.mozilla.javascript.Context.enter();
+        mJsContext.setOptimizationLevel(-1);
+        ScriptableObject scope = mJsContext.initStandardObjects();
 
-            registerJsViewFunction(scope, "get_id", new JsViewFunction() {
-                @Override
-                public Object call(Activity activity, Iterable<View> selectedViews) {
-                    View v = firstView(selectedViews);
-                    int id = v.getId();
-                    return id != -1
-                            ? v.getResources().getResourceName(id)
-                            : null;
-                }
-            });
-            registerJsViewFunction(scope, "class_of", new JsViewFunction() {
-                @Override
-                public Object call(Activity activity, Iterable<View> selectedViews) {
-                    return firstView(selectedViews).getClass().getSimpleName();
-                }
-            });
-            registerJsViewFunction(scope, "count", new JsViewFunction() {
-                @Override
-                public Object call(Activity activity, Iterable<View> selectedViews) {
-                    return size(selectedViews);
-                }
-            });
-            registerJsViewFunction(scope, "exists", new JsViewFunction() {
-                @Override
-                public Object call(Activity activity, Iterable<View> selectedViews) {
-                    return !isEmpty(selectedViews);
-                }
-            });
-            registerJsViewFunction(scope, "text", new JsViewFunction() {
-                @Override
-                public Object call(Activity activity, Iterable<View> selectedViews) {
-                    return ((TextView) firstView(selectedViews)).getText().toString();
-                }
-            });
-            registerJsViewFunction(scope, "location", new JsViewFunction() {
-                @Override
-                public Object call(Activity activity, Iterable<View> selectedViews) {
-                    return location(firstView(selectedViews));
-                }
-            });
-            registerJsViewFunction(scope, "center", new JsViewFunction() {
-                @Override
-                public Object call(Activity activity, Iterable<View> selectedViews) {
-                    return center(firstView(selectedViews));
-                }
-            });
-            registerJsViewFunction(scope, "size", new JsViewFunction() {
-                @Override
-                public Object call(Activity activity, Iterable<View> selectedViews) {
-                    return size(firstView(selectedViews));
-                }
-            });
-            registerJsFunction(scope, "screenshot", new JsFunction() {
-                @Override
-                public Object call(Activity activity, Object[] args) {
-                    return screenshot(activity);
-                }
-            });
-            registerJsViewFunction(scope, "tap", new JsViewFunction() {
-                @Override
-                public Object call(Activity activity, Iterable<View> selectedViews) {
-                    final View view = firstView(selectedViews);
-                    final int[] viewCenter = center(view);
-                    final long timestamp = SystemClock.uptimeMillis();
-                    activity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            view.dispatchTouchEvent(MotionEvent.obtain(
-                                    timestamp,
-                                    timestamp,
-                                    MotionEvent.ACTION_DOWN,
-                                    viewCenter[0],
-                                    viewCenter[1],
-                                    0));
-                            view.dispatchTouchEvent(MotionEvent.obtain(
-                                    timestamp,
-                                    timestamp + 20,
-                                    MotionEvent.ACTION_UP,
-                                    viewCenter[0],
-                                    viewCenter[1],
-                                    0));
-                        }
-                    });
-                    return null;
-                }
-            });
-            registerJsFunction(scope, "back", new JsFunction() {
-                @Override
-                public Object call(final Activity activity, Object[] args) {
-                    // TODO: hide keyboard instead if keyboard is showing
-                    activity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            activity.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
-                            activity.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
-                        }
-                    });
-                    return null;
-                }
-            });
-            registerJsFunction(scope, "hide_keyboard", new JsFunction() {
-                @Override
-                public Object call(Activity activity, Object[] args) {
-                    InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.hideSoftInputFromWindow(getRootView(activity).getWindowToken(), 0);
-                    return null;
-                }
-            });
-            registerJsFunction(scope, "home", new JsFunction() {
-                @Override
-                public Object call(Activity activity, Object[] args) {
-                    Intent homeIntent = new Intent(Intent.ACTION_MAIN);
-                    homeIntent.addCategory(Intent.CATEGORY_HOME);
-                    homeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    activity.startActivity(homeIntent);
-                    return null;
-                }
-            });
-            registerJsFunction(scope, "type_text", new JsFunction() {
-                @Override
-                public Object call(final Activity activity, Object[] args) {
-                    final String text = (String) args[0];
-                    activity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            activity.dispatchKeyEvent(
-                                    new KeyEvent(SystemClock.uptimeMillis(), text, 0, 0)
-                            );
-                        }
-                    });
-                    return null;
-                }
-            });
-            scope.put("wait", scope, new Callable() {
-                @Override
-                public Object call(org.mozilla.javascript.Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
-                    Double seconds = (Double) args[0];
-                    try {
-                        Thread.sleep(Math.round(seconds * 1000.0));
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                    return null;
-                }
-            });
-
-            jsContext.evaluateString(scope, "RegExp; getClass; java; Packages; JavaAdapter;", "lazyLoad", 0, null);
-            scope.sealObject();
-
-            Scriptable scriptScope = jsContext.newObject(scope);
-            scriptScope.setPrototype(scope);
-            scriptScope.setParentScope(null);
-
-            for (ChetbotServerConnection.Statement stmt : script.getStatements()) {
-                Log.v(TAG, "src: " + stmt.getSource());
-                Object result = jsContext.evaluateString(scriptScope, stmt.getSource(), script.getName(), stmt.getLineNo(), null);
-                Log.v(TAG, "result: " + result);
+        registerJsViewFunction(scope, "get_id", new JsViewFunction() {
+            @Override
+            public Object call(Activity activity, Iterable<View> selectedViews) {
+                View v = firstView(selectedViews);
+                int id = v.getId();
+                return id != -1
+                        ? v.getResources().getResourceName(id)
+                        : null;
             }
+        });
+        registerJsViewFunction(scope, "class_of", new JsViewFunction() {
+            @Override
+            public Object call(Activity activity, Iterable<View> selectedViews) {
+                return firstView(selectedViews).getClass().getSimpleName();
+            }
+        });
+        registerJsViewFunction(scope, "count", new JsViewFunction() {
+            @Override
+            public Object call(Activity activity, Iterable<View> selectedViews) {
+                return size(selectedViews);
+            }
+        });
+        registerJsViewFunction(scope, "exists", new JsViewFunction() {
+            @Override
+            public Object call(Activity activity, Iterable<View> selectedViews) {
+                return !isEmpty(selectedViews);
+            }
+        });
+        registerJsViewFunction(scope, "text", new JsViewFunction() {
+            @Override
+            public Object call(Activity activity, Iterable<View> selectedViews) {
+                return ((TextView) firstView(selectedViews)).getText().toString();
+            }
+        });
+        registerJsViewFunction(scope, "location", new JsViewFunction() {
+            @Override
+            public Object call(Activity activity, Iterable<View> selectedViews) {
+                return location(firstView(selectedViews));
+            }
+        });
+        registerJsViewFunction(scope, "center", new JsViewFunction() {
+            @Override
+            public Object call(Activity activity, Iterable<View> selectedViews) {
+                return center(firstView(selectedViews));
+            }
+        });
+        registerJsViewFunction(scope, "size", new JsViewFunction() {
+            @Override
+            public Object call(Activity activity, Iterable<View> selectedViews) {
+                return size(firstView(selectedViews));
+            }
+        });
+        registerJsFunction(scope, "screenshot", new JsFunction() {
+            @Override
+            public Object call(Activity activity, Object[] args) {
+                return screenshot(activity);
+            }
+        });
+        registerJsViewFunction(scope, "tap", new JsViewFunction() {
+            @Override
+            public Object call(Activity activity, Iterable<View> selectedViews) {
+                final View view = firstView(selectedViews);
+                final int[] viewCenter = center(view);
+                final long timestamp = SystemClock.uptimeMillis();
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        view.dispatchTouchEvent(MotionEvent.obtain(
+                                timestamp,
+                                timestamp,
+                                MotionEvent.ACTION_DOWN,
+                                viewCenter[0],
+                                viewCenter[1],
+                                0));
+                        view.dispatchTouchEvent(MotionEvent.obtain(
+                                timestamp,
+                                timestamp + 20,
+                                MotionEvent.ACTION_UP,
+                                viewCenter[0],
+                                viewCenter[1],
+                                0));
+                    }
+                });
+                return null;
+            }
+        });
+        registerJsFunction(scope, "back", new JsFunction() {
+            @Override
+            public Object call(final Activity activity, Object[] args) {
+                // TODO: hide keyboard instead if keyboard is showing
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        activity.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
+                        activity.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
+                    }
+                });
+                return null;
+            }
+        });
+        registerJsFunction(scope, "hide_keyboard", new JsFunction() {
+            @Override
+            public Object call(Activity activity, Object[] args) {
+                InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(getRootView(activity).getWindowToken(), 0);
+                return null;
+            }
+        });
+        registerJsFunction(scope, "home", new JsFunction() {
+            @Override
+            public Object call(Activity activity, Object[] args) {
+                Intent homeIntent = new Intent(Intent.ACTION_MAIN);
+                homeIntent.addCategory(Intent.CATEGORY_HOME);
+                homeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                activity.startActivity(homeIntent);
+                return null;
+            }
+        });
+        registerJsFunction(scope, "type_text", new JsFunction() {
+            @Override
+            public Object call(final Activity activity, Object[] args) {
+                final String text = (String) args[0];
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        activity.dispatchKeyEvent(
+                                new KeyEvent(SystemClock.uptimeMillis(), text, 0, 0)
+                        );
+                    }
+                });
+                return null;
+            }
+        });
+        scope.put("wait", scope, new Callable() {
+            @Override
+            public Object call(org.mozilla.javascript.Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
+                Double seconds = (Double) args[0];
+                try {
+                    Thread.sleep(Math.round(seconds * 1000.0));
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                return null;
+            }
+        });
 
-        } finally {
-            jsContext.exit();
-        }
-        return null;
+        mJsContext.evaluateString(scope, "RegExp; getClass; java; Packages; JavaAdapter;", "lazyLoad", 0, null);
+        scope.sealObject();
+
+        mJsScope = mJsContext.newObject(scope);
+        mJsScope.setPrototype(scope);
+        mJsScope.setParentScope(null);
+    }
+
+    @Override
+    public Object onStatement(ChetbotServerConnection.Statement stmt, String scriptName) {
+        return mJsContext.evaluateString(mJsScope, stmt.getSource(), scriptName, stmt.getLineNo(), null);
+    }
+
+    @Override
+    public void onFinishScript() {
+        mJsContext.exit();
+        mJsContext = null;
     }
 
     private interface JsFunction {

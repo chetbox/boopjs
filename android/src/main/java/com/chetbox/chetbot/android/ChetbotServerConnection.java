@@ -3,8 +3,6 @@ package com.chetbox.chetbot.android;
 import android.graphics.Bitmap;
 import android.util.Log;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Iterables;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -19,36 +17,16 @@ public class ChetbotServerConnection {
 
     private static final String TAG = ChetbotServerConnection.class.getSimpleName();
 
-    public interface MessageHandler {
-        Object onMessage(Script script) throws IllegalArgumentException;
+    public interface ScriptHandler {
+        void onStartScript();
+        Object onStatement(Statement stmt, String scriptName);
+        void onFinishScript();
     }
 
     public static class Script {
-
         private Statement[] statements;
         private String name;
         private String device;
-
-        public Script(Statement[] statements, String name, String device) {
-            this.statements = statements;
-            this.name = name;
-            this.device = device;
-        }
-
-        public Script(String[] lines) {
-            this.statements = new Statement[lines.length];
-            for (int i=0; i<lines.length; i++) {
-                this.statements[i] = new Statement(lines[i], i+1);
-            }
-        }
-
-        public Statement[] getStatements() {
-            return statements;
-        }
-
-        public String getName() {
-            return name + "";
-        }
     }
 
     public static class Statement {
@@ -72,11 +50,13 @@ public class ChetbotServerConnection {
 
     private static class Result {
         private String device;
+        private int lineNo;
         private String type;
         private Object result;
 
-        public Result(String device, String type, Object result) {
+        public Result(String device, int lineNo, String type, Object result) {
             this.device = device;
+            this.lineNo = lineNo;
             this.type = type;
             this.result = result;
         }
@@ -84,10 +64,12 @@ public class ChetbotServerConnection {
 
     private static class Error {
         private String device;
+        private int lineNo;
         private String error;
 
-        public Error(String device, String message) {
+        public Error(String device, int lineNo, String message) {
             this.device = device;
+            this.lineNo = lineNo;
             this.error = message;
         }
     }
@@ -116,12 +98,12 @@ public class ChetbotServerConnection {
 
     private final URI mHost;
     private final String mDeviceId;
-    private final MessageHandler mMessageHandler;
+    private final ScriptHandler mScriptHandler;
 
-    public ChetbotServerConnection(String host, String deviceId, MessageHandler messageHandler) {
+    public ChetbotServerConnection(String host, String deviceId, ScriptHandler scriptHandler) {
         mHost = URI.create("ws://" + host + "/api/device");
         mDeviceId = deviceId;
-        mMessageHandler = messageHandler;
+        mScriptHandler = scriptHandler;
         mServerConnection = new ServerConnectionImpl();
         mServerConnection.connect();
     }
@@ -143,14 +125,14 @@ public class ChetbotServerConnection {
                 || o instanceof Bitmap;
     }
 
-    private static Result makeResult(String device, Object data) {
+    private static Result makeResult(String device, int lineNo, Object data) {
         String type = (data != null)
             ? data.getClass().getSimpleName().toUpperCase()
             : "NULL";
         if (data instanceof Bitmap) {
             data = base64Encode(toPNG((Bitmap) data));
         }
-        return new Result(device, type, data);
+        return new Result(device, lineNo, type, data);
     }
 
     private class ServerConnectionImpl extends WebSocketClient {
@@ -170,12 +152,20 @@ public class ChetbotServerConnection {
             Log.v(TAG, "Message received: " + messageStr);
             Script script = sGson.fromJson(messageStr, Script.class);
             try {
-                Object result = mMessageHandler.onMessage(script);
-                sendAsJson(makeResult(script.device, result));
-            } catch (Exception e) {
-                Log.e(TAG, "error: " + sGson.toJson(new Error(script.device, e.getMessage())));
-                e.printStackTrace();
-                sendAsJson(new Error(script.device, e.getMessage()));
+                mScriptHandler.onStartScript();
+                for (Statement stmt : script.statements) {
+                    try {
+                        Object result = mScriptHandler.onStatement(stmt, script.name);
+                        sendAsJson(makeResult(script.device, stmt.lineNo, result));
+                    } catch (Exception e) {
+                        Error error = new Error(script.device, stmt.lineNo, e.getMessage());
+                        Log.e(TAG, "error: " + sGson.toJson(error));
+                        e.printStackTrace();
+                        sendAsJson(error);
+                    }
+                }
+             } finally {
+                mScriptHandler.onFinishScript();
             }
         }
 
