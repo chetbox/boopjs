@@ -4,8 +4,8 @@ exports.add_routes = function(app) {
   var auth = require('./auth');
   var devices = require('./devices');
 
-  var devices_in_use = {};
-  var requires_response = {};
+  var devices_connected = {};
+  var clients_connected = {};
 
   function fail_on_error(ws) {
     return function(e) {
@@ -29,22 +29,31 @@ exports.add_routes = function(app) {
             return;
           }
 
-          devices.check_device_access(message.device, req.user).then(function() {
-            console.log('commands (' + message.device + '): ' + JSON.stringify(message.commands));
-            requires_response[message.device] = ws;
-            var device = devices_in_use[message.device];
-            if (device) {
-              device.send(messageStr);
+          // TODO: fix client authentication
+          // devices.check_device_access(message.device, req.user).then(function() {
+            clients_connected[message.device] = ws;
+            var device_socket = devices_connected[message.device];
+            if (device_socket) {
+              device_socket.send(messageStr);
             } else {
               console.error('Device not in use: ' + message.device);
               ws.send(JSON.stringify({
                 error: 'Device not in use: ' + message.device
               }));
             }
-          })
-          .catch(fail_on_error(ws));
+          // })
+          // .catch(fail_on_error(ws));
         }
-      )
+      );
+      ws.on('close', function() {
+        // TODO: optimise
+        for (var device in clients_connected) {
+          if (clients_connected.hasOwnProperty(device) && clients_connected[device] == ws) {
+            console.log('Client for device ' + device + ' disconnected');
+            delete clients_connected[device];
+          }
+        }
+      });
     }
   );
 
@@ -56,20 +65,27 @@ exports.add_routes = function(app) {
         console.log('registering device: ' + message.register_device);
         devices.check_device_exists(message.register_device)
         .then(function() {
-          devices_in_use[message.register_device] = ws;
+          devices_connected[message.register_device] = ws;
         })
         .catch(fail_on_error(ws));
 
       } else if (message.device && ('result' in message || 'error' in message)) {
         console.log('result (' + message.device + '): ' + (message.result || message.error));
-        requires_response[message.device].send(messageStr);
-        delete requires_response[message.device];
+        clients_connected[message.device].send(messageStr);
 
       } else {
         console.error('dunno what to do with: ' + messageStr);
       }
     });
-    // TODO: remove device from 'devices_in_use' when connection closed
+    ws.on('close', function() {
+      // TODO: optimise
+      for (var device in devices_connected) {
+        if (devices_connected.hasOwnProperty(device) && devices_connected[device] == ws) {
+          console.log('Device ' + device + ' disconnected');
+          delete devices_connected[device];
+        }
+      }
+    });
   });
 
 };
