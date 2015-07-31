@@ -15,6 +15,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.mozilla.javascript.Callable;
+import org.mozilla.javascript.CompilerEnvirons;
+import org.mozilla.javascript.ErrorReporter;
+import org.mozilla.javascript.EvaluatorException;
+import org.mozilla.javascript.Node;
+import org.mozilla.javascript.Parser;
+import org.mozilla.javascript.Script;
+import org.mozilla.javascript.ScriptOrFnNode;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 
@@ -231,7 +238,12 @@ public class Chetbot implements ChetbotServerConnection.MessageHandler {
             scriptScope.setPrototype(scope);
             scriptScope.setParentScope(null);
 
-            jsContext.evaluateString(scriptScope, script.getScript(), script.getScriptName(), script.getLineNo(), null);
+            for (ChetbotServerConnection.Statement stmt : script.getStatements()) {
+                Log.v(TAG, "src: " + stmt.getSource());
+                Object result = jsContext.evaluateString(scriptScope, stmt.getSource(), script.getName(), stmt.getLineNo(), null);
+                Log.v(TAG, "result: " + result);
+            }
+
         } finally {
             jsContext.exit();
         }
@@ -250,9 +262,7 @@ public class Chetbot implements ChetbotServerConnection.MessageHandler {
         scope.put(name, scope, new Callable() {
             @Override
             public Object call(org.mozilla.javascript.Context cx, Scriptable scope, Scriptable thisObj, final Object[] args) {
-                final Activity activity = getActivity();
-                if (activity == null) throw new AssertionError();
-                return fn.call(activity, args);
+                return fn.call(getActivity(), args);
             }
         });
     }
@@ -264,7 +274,6 @@ public class Chetbot implements ChetbotServerConnection.MessageHandler {
                 final Activity activity = getActivity();
                 final View rootView = getRootView(activity);
                 final Iterable<View> selectedViews = selectViews(rootView, args, scope);
-                if (activity == null) throw new AssertionError();
                 return fn.call(activity, selectedViews);
             }
         });
@@ -312,11 +321,7 @@ public class Chetbot implements ChetbotServerConnection.MessageHandler {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        return null;
-
-        // The above code snippet lacks exception handling and naively assumes that the first
-        // running Activity is the one we’re looking for. You might want to add some additional
-        // checks.
+        throw new AssertionError("Activity not found");
     }
 
 }
