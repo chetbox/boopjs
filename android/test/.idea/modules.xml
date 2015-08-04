@@ -2,9 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/android.iml" filepath="$PROJECT_DIR$/android.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/chetbot-library/chetbot-library.iml" filepath="$PROJECT_DIR$/chetbot-library/chetbot-library.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../lib/chetbot-library.iml" filepath="$PROJECT_DIR$/../lib/chetbot-library.iml" />
+      <module fileurl="file://$PROJECT_DIR$/test.iml" filepath="$PROJECT_DIR$/test.iml" />
     </modules>
   </component>
 </project>
