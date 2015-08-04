@@ -1,20 +1,20 @@
 package com.chetbox.chetbot.android;
 
 import android.app.Activity;
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.android.internal.util.Predicate;
 import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 import static com.google.common.collect.Iterables.*;
@@ -31,17 +31,7 @@ public class ViewUtils {
         return activity.getWindow().getDecorView().findViewById(android.R.id.content);
     }
 
-    private static Method getDeclaredMethod(Class clazz, String methodName, Class... args) {
-        try {
-            return clazz.getDeclaredMethod(methodName, args);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static class SubViews implements Function<View, Iterable<View>> {
-
-        private static Method findViewByPredicate = getDeclaredMethod(View.class, "findViewByPredicate", Predicate.class);
+    public static class SubViews implements Function<Iterable<View>, Iterable<View>> {
 
         private final Predicate<View> mViewPredicate;
 
@@ -82,7 +72,13 @@ public class ViewUtils {
                 Predicate<View> typePredicate = new Predicate<View>() {
                     @Override
                     public boolean apply(View input) {
-                        return type.equalsIgnoreCase( input.getClass().getSimpleName() );
+                        if (type.indexOf('.') >= 0) {
+                            // With Java package
+                            return type.equalsIgnoreCase( input.getClass().getName() );
+                        } else {
+                            // Without Java package
+                            return type.equalsIgnoreCase( input.getClass().getSimpleName() );
+                        }
                     }
                 };
 
@@ -112,14 +108,30 @@ public class ViewUtils {
             };
         }
 
-        @Override
-        public Iterable<View> apply(View input) {
-            try {
-                View v = (View) findViewByPredicate.invoke(input, mViewPredicate);
-                return (ArrayList<View>) (v != null ? newArrayList(v) : newArrayList());
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+        private static Function<View, Iterable<View>> sChildViews = new Function<View, Iterable<View>>() {
+            @Override
+            public Iterable<View> apply(View view) {
+                if (view instanceof ViewGroup) {
+                    ViewGroup viewGroup = (ViewGroup) view;
+                    ArrayList<View> children = newArrayList();
+                    for (int i=0; i<viewGroup.getChildCount(); i++) {
+                        children.add(viewGroup.getChildAt(i));
+                    }
+                    return ImmutableList.copyOf(children);
+                } else {
+                    return ImmutableList.of();
+                }
             }
+        };
+
+        @Override
+        public Iterable<View> apply(Iterable<View> views) {
+            if (isEmpty(views)) {
+                return ImmutableList.of();
+            }
+            Iterable<View> matchingViews = filter(views, mViewPredicate);
+            Iterable<View> childViews = concat(transform(views, sChildViews));
+            return concat(matchingViews, apply(childViews));
         }
     }
 
@@ -172,14 +184,6 @@ public class ViewUtils {
                 dyB = centerB[1] - mTarget[1];
             return (dxA * dxA + dyA * dyA) - (dxB * dxB + dyB * dyB);
         }
-    }
-
-    private static int getIdentifier(String idStr, Context context) {
-        int id = context.getResources().getIdentifier(idStr, "id", context.getPackageName());
-        if (id == 0) {
-            throw new RuntimeException("No view with ID \"" + idStr + "\" found in package (" + context.getPackageName() + ")");
-        }
-        return id;
     }
 
     public static String base64Encode(byte[] data) {
