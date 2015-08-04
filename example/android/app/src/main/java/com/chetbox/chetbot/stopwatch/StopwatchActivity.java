@@ -10,9 +10,10 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.chetbox.chetbot.android.Chetbot;
+import com.chetbox.chetbot.android.ChetbotServerConnection;
 
 
-public class Stopwatch extends AppCompatActivity {
+public class StopwatchActivity extends AppCompatActivity {
 
     private Handler mHandler;
     private TextView mMinutesText;
@@ -48,7 +49,6 @@ public class Stopwatch extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Chetbot.start(this);
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.layout_stopwatch);
 
@@ -91,6 +91,19 @@ public class Stopwatch extends AppCompatActivity {
         mRunning = false;
         mResetButton.callOnClick();
 
+        final Chetbot chetbot = Chetbot.getInstance();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    chetbot.onStartScript();
+                    chetbot.onStatement(new ChetbotServerConnection.Statement("wait(2); java.lang.System.out.println(count('00'));", 1), "<Stopwatch>");
+                    chetbot.onFinishScript();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }).start();
     }
 
     @Override

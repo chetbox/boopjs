@@ -14,14 +14,11 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.common.collect.ImmutableList;
+
+import static com.google.common.collect.ImmutableList.copyOf;
+
 import org.mozilla.javascript.Callable;
-import org.mozilla.javascript.CompilerEnvirons;
-import org.mozilla.javascript.ErrorReporter;
-import org.mozilla.javascript.EvaluatorException;
-import org.mozilla.javascript.Node;
-import org.mozilla.javascript.Parser;
-import org.mozilla.javascript.Script;
-import org.mozilla.javascript.ScriptOrFnNode;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 
@@ -30,13 +27,16 @@ import java.lang.reflect.Field;
 import static com.chetbox.chetbot.android.ViewUtils.*;
 
 import static com.google.common.collect.Iterables.*;
-import static com.google.common.collect.Lists.*;
 
 public class Chetbot implements ChetbotServerConnection.ScriptHandler {
 
     private static final String TAG = Chetbot.class.getSimpleName();
 
     private static Chetbot sInstance = null;
+
+    /* For testing only */
+    private static boolean sOfflineMode = false;
+    private static Activity sTestActivity = null;
 
     private final String mPackageName;
     private ChetbotServerConnection mServerConnection = null;
@@ -63,21 +63,45 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
         }
     }
 
+    private static String getStringValue(String key, ScriptableObject object, Scriptable scope) {
+        Object value = object.get(key, scope);
+        return (value == Scriptable.NOT_FOUND)
+            ? null
+            : (String) value;
+    }
+
     private static SubViews subViewsSelector(Object selector, Scriptable scope) {
         if (selector instanceof String) {
             return new SubViews((String) selector, null, null);
         }
 
         return new SubViews(
-                (String) ((Scriptable) selector).get("text", scope),
-                (String) ((Scriptable) selector).get("type", scope),
-                (String) ((Scriptable) selector).get("id", scope));
+                getStringValue("text", (ScriptableObject) selector, scope),
+                getStringValue("type", (ScriptableObject) selector, scope),
+                getStringValue("id",   (ScriptableObject) selector, scope));
     }
 
     private static Iterable<View> selectViews(View srcView, Object[] args, Scriptable scope) {
-        Iterable<View> views = newArrayList(srcView);
-        for (Object arg : args) {
-            views = concat(transform(views, subViewsSelector(arg, scope)));
+        if (args == null) {
+            return null;
+        }
+
+        if (args.length > 0) {
+            if (args[0] instanceof Object[]) {
+                // Assume the first argument is the list of arguments
+                return selectViews(srcView, (Object[]) args[0], scope);
+            } else if (args[0] instanceof Iterable) {
+                // Assume the first argument is the list of arguments
+                return selectViews(srcView, toArray((Iterable) args[0], Object.class), scope);
+            } else if (args[0] instanceof View) {
+                // Get all View instances
+                return filter(copyOf(args), View.class);
+            }
+        }
+
+        Iterable<View> views = ImmutableList.of(srcView);
+        for (Object selector : args) {
+            views = subViewsSelector(selector, scope).apply(views);
         }
         return views;
     }
@@ -227,6 +251,54 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
                 return activity;
             }
         });
+        registerJsFunction(scope, "view", new JsViewFunction() {
+            @Override
+            public Object call(Activity activity, Iterable<View> selectedViews) {
+                return firstView(selectedViews);
+            }
+        });
+        registerJsFunction(scope, "leftmost", new JsViewFunction() {
+            @Override
+            public Object call(Activity activity, Iterable<View> selectedViews) {
+                return ImmutableList.of(horizontalOrdering.min(selectedViews));
+            }
+        });
+        registerJsFunction(scope, "rightmost", new JsViewFunction() {
+            @Override
+            public Object call(Activity activity, Iterable<View> selectedViews) {
+                return ImmutableList.of(horizontalOrdering.max(selectedViews));
+            }
+        });
+        registerJsFunction(scope, "topmost", new JsViewFunction() {
+            @Override
+            public Object call(Activity activity, Iterable<View> selectedViews) {
+                return ImmutableList.of(verticalOrdering.min(selectedViews));
+            }
+        });
+        registerJsFunction(scope, "bottommost", new JsViewFunction() {
+            @Override
+            public Object call(Activity activity, Iterable<View> selectedViews) {
+                return ImmutableList.of(verticalOrdering.max(selectedViews));
+            }
+        });
+        scope.put("closest_to", scope, new Callable() {
+            @Override
+            public Object call(org.mozilla.javascript.Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
+                View rootView = getRootView(getActivity());
+                View target = firstView(selectViews(rootView, new Object[]{args[0]}, scope));
+                Iterable<View> views = selectViews(rootView, new Object[]{args[1]}, scope);
+                return ImmutableList.of(new EuclidianDistanceOrdering(center(target)).min(views));
+            }
+        });
+        scope.put("furthest_from", scope, new Callable() {
+            @Override
+            public Object call(org.mozilla.javascript.Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
+                View rootView = getRootView(getActivity());
+                View target = firstView(selectViews(rootView, new Object[]{args[0]}, scope));
+                Iterable<View> views = selectViews(rootView, new Object[]{args[1]}, scope);
+                return ImmutableList.of(new EuclidianDistanceOrdering(center(target)).max(views));
+            }
+        });
         scope.put("wait", scope, new Callable() {
             @Override
             public Object call(org.mozilla.javascript.Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
@@ -255,7 +327,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
 
     @Override
     public void onFinishScript() {
-        mJsContext.exit();
+        org.mozilla.javascript.Context.exit();
         mJsContext = null;
     }
 
@@ -291,7 +363,9 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
     public static void start(Activity activity) {
         if (sInstance == null) {
             sInstance = new Chetbot(activity);
-            sInstance.connect(activity);
+            if (!sOfflineMode) {
+                sInstance.connect(activity);
+            }
         }
     }
 
@@ -302,8 +376,20 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
         return sInstance;
     }
 
+    public static void setOfflineMode(boolean offlineMode) {
+        sOfflineMode = offlineMode;
+    }
+
+    public static void setTestActivity(Activity testActivity) {
+        sTestActivity = testActivity;
+    }
+
     // based on https://androidreclib.wordpress.com/2014/11/22/getting-the-current-activity/
-    private Activity getActivity(){
+    private Activity getActivity() {
+        if (sTestActivity != null) {
+            return sTestActivity;
+        }
+
         try {
             Class activityThreadClass = Class.forName("android.app.ActivityThread");
             Object activityThread = activityThreadClass.getMethod("currentActivityThread").invoke(null);
@@ -312,6 +398,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
             // TODO: handle API < 19
             // (ArrayMap is new for API 19)
             ArrayMap activities = (ArrayMap) activitiesField.get(activityThread);
+            Log.v("CHETAN", "activities: " + activities);
             for (Object activityRecord : activities.values()) {
                 Class activityRecordClass = activityRecord.getClass();
                 Field pausedField = activityRecordClass.getDeclaredField("paused");
