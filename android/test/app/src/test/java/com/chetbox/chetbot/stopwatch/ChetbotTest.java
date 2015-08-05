@@ -18,6 +18,8 @@ import org.robolectric.annotation.Config;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 
@@ -164,6 +166,38 @@ public class ChetbotTest {
     @Test public void countViewsWithText() {
         assertThat((Integer) exec("count('00')"),
                 equalTo(2));
+    }
+
+    @Test public void locationOfHorizontalButtons() {
+        int[] startStopLocation = (int[]) exec("location(_startStopButton_)");
+        int[] resetLocation = (int[]) exec("location(_resetButton_)");
+
+        assertTrue("startStop left of reset", startStopLocation[0] < resetLocation[0]);
+        assertEquals("Same vertical alignment", startStopLocation[1], resetLocation[1]);
+    }
+
+    @Test public void centerOfHorizontalButtons() {
+        int[] startStopCenter = (int[]) exec("center(_startStopButton_)");
+        int[] resetCenter = (int[]) exec("center(_resetButton_)");
+
+        assertTrue("startStop left of reset", startStopCenter[0] < resetCenter[0]);
+        assertEquals("Same vertical alignment", startStopCenter[1], resetCenter[1]);
+    }
+
+    @Test public void sizeOfButton() {
+        int[] resetSize = (int[]) exec("size(_resetButton_)");
+
+        assertTrue(resetSize[0] > 0);
+        assertTrue(resetSize[1] > 0);
+    }
+
+    @Test public void location_center_size() {
+        int[] resetSize = (int[]) exec("size(_resetButton_)");
+        int[] resetCenter = (int[]) exec("center(_resetButton_)");
+        int[] resetLocation = (int[]) exec("location(_resetButton_)");
+
+        assertEquals(resetCenter[0], resetLocation[0] + resetSize[0] / 2);
+        assertEquals(resetCenter[1], resetLocation[1] + resetSize[1] / 2);
     }
 
 }
