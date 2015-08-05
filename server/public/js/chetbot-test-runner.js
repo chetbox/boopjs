@@ -36,11 +36,11 @@ function resultHTML(response) {
       $('<a>')
         .attr({
           target: '_blank',
-          href: 'data:image/png;base64,' + response.result
+          href: response.result
         })
         .append(
           $('<img>')
-            .attr('src', 'data:image/png;base64,' + response.result)
+            .attr('src', response.result)
         )
     );
   } else {
