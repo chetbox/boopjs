@@ -1,6 +1,7 @@
 package com.chetbox.chetbot.stopwatch;
 
-import android.widget.Button;
+import android.graphics.Bitmap;
+import android.view.View;
 
 import com.chetbox.chetbot.android.Chetbot;
 import com.chetbox.chetbot.android.ChetbotServerConnection;
@@ -18,9 +19,6 @@ import org.robolectric.annotation.Config;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 
 @RunWith(RobolectricGradleTestRunner.class)
@@ -35,8 +33,11 @@ public class ChetbotTest {
 
     StopwatchActivity activity;
     Chetbot chetbot;
-    Button resetButton;
-    Button startStopButton;
+    View resetButton;
+    View startStopButton;
+    View minutesText;
+    View secondsText;
+    View millisecondsText;
 
     int linesExecuted = 0;
 
@@ -47,8 +48,11 @@ public class ChetbotTest {
         activity = Robolectric.setupActivity(StopwatchActivity.class);
         Chetbot.setTestActivity(activity);
 
-        resetButton = (Button) activity.findViewById(R.id.reset);
-        startStopButton = (Button) activity.findViewById(R.id.start_stop);
+        resetButton = activity.findViewById(R.id.reset);
+        startStopButton = activity.findViewById(R.id.start_stop);
+        minutesText = activity.findViewById(R.id.minutes);
+        secondsText = activity.findViewById(R.id.seconds);
+        millisecondsText = activity.findViewById(R.id.milliseconds);
 
         chetbot = Chetbot.getInstance();
         chetbot.onStartScript();
@@ -56,6 +60,9 @@ public class ChetbotTest {
         // Handy references to views in the layout
         exec("var _startStopButton_ = view({id: 'start_stop'});");
         exec("var _resetButton_ = view({id: 'reset'});");
+        exec("var _minutesText_ = view({id: 'minutes'});");
+        exec("var _secondsText_ = view({id: 'seconds'});");
+        exec("var _millisecondsText_ = view({id: 'milliseconds'});");
     }
 
     @After
@@ -68,22 +75,22 @@ public class ChetbotTest {
     }
 
     @Test public void viewReturnsInstance() {
-        assertThat((Button) exec("view(_startStopButton_)"),
+        assertThat((View) exec("view(_startStopButton_)"),
                 sameInstance(startStopButton));
     }
 
     @Test public void viewReturnsFirstInstance() {
-        assertThat((Button) exec("view(_resetButton_, _startStopButton_)"),
+        assertThat((View) exec("view(_resetButton_, _startStopButton_)"),
                 sameInstance(resetButton));
     }
 
     @Test public void findViewByTextIsDefault() {
-        assertThat((Button) exec("view('start')"),
+        assertThat((View) exec("view('start')"),
                 sameInstance(startStopButton));
     }
 
     @Test public void findViewByText() {
-        assertThat((Button) exec("view({text: 'start'})"),
+        assertThat((View) exec("view({text: 'start'})"),
                 sameInstance(startStopButton));
     }
 
@@ -93,7 +100,7 @@ public class ChetbotTest {
     }
 
     @Test public void findViewByShortId() {
-        assertThat((Button) exec("view({id: 'start_stop'})"),
+        assertThat((View) exec("view({id: 'start_stop'})"),
                 sameInstance(startStopButton));
     }
 
@@ -103,7 +110,7 @@ public class ChetbotTest {
     }
 
     @Test public void findViewByLongId() {
-        assertThat((Button) exec("view({id: 'com.chetbox.chetbot.stopwatch:id/reset'})"),
+        assertThat((View) exec("view({id: 'com.chetbox.chetbot.stopwatch:id/reset'})"),
                 sameInstance(resetButton));
     }
 
@@ -113,18 +120,18 @@ public class ChetbotTest {
     }
 
     @Test public void findViewsByClassName() {
-        assertThat((Button) exec("view({type: 'android.support.v7.widget.AppCompatButton', text: 'start'})"),
+        assertThat((View) exec("view({type: 'android.support.v7.widget.AppCompatButton', text: 'start'})"),
                 sameInstance(startStopButton));
 
-        assertThat((Button) exec("view({type: 'android.support.v7.widget.AppCompatButton', text: 'reset'})"),
+        assertThat((View) exec("view({type: 'android.support.v7.widget.AppCompatButton', text: 'reset'})"),
                 sameInstance(resetButton));
     }
 
     @Test public void findViewsByClassSimpleName() {
-        assertThat((Button) exec("view({type: 'AppCompatButton', text: 'start'})"),
+        assertThat((View) exec("view({type: 'AppCompatButton', text: 'start'})"),
                 sameInstance(startStopButton));
 
-        assertThat((Button) exec("view({type: 'AppCompatButton', text: 'reset'})"),
+        assertThat((View) exec("view({type: 'AppCompatButton', text: 'reset'})"),
                 sameInstance(resetButton));
     }
 
@@ -172,23 +179,29 @@ public class ChetbotTest {
         int[] startStopLocation = (int[]) exec("location(_startStopButton_)");
         int[] resetLocation = (int[]) exec("location(_resetButton_)");
 
-        assertTrue("startStop left of reset", startStopLocation[0] < resetLocation[0]);
-        assertEquals("Same vertical alignment", startStopLocation[1], resetLocation[1]);
+        assertThat("[start] left of [reset]",
+                startStopLocation[0], lessThan(resetLocation[0]));
+
+        assertThat("Same vertical alignment",
+                startStopLocation[1], equalTo(resetLocation[1]));
     }
 
     @Test public void centerOfHorizontalButtons() {
         int[] startStopCenter = (int[]) exec("center(_startStopButton_)");
         int[] resetCenter = (int[]) exec("center(_resetButton_)");
 
-        assertTrue("startStop left of reset", startStopCenter[0] < resetCenter[0]);
-        assertEquals("Same vertical alignment", startStopCenter[1], resetCenter[1]);
+        assertThat("[start] left of [reset]",
+                startStopCenter[0], lessThan(resetCenter[0]));
+
+        assertThat("Same vertical alignment",
+                startStopCenter[1], equalTo(resetCenter[1]));
     }
 
     @Test public void sizeOfButton() {
         int[] resetSize = (int[]) exec("size(_resetButton_)");
 
-        assertTrue(resetSize[0] > 0);
-        assertTrue(resetSize[1] > 0);
+        assertThat(resetSize[0], greaterThan(1));
+        assertThat(resetSize[1], greaterThan(1));
     }
 
     @Test public void location_center_size() {
@@ -196,8 +209,44 @@ public class ChetbotTest {
         int[] resetCenter = (int[]) exec("center(_resetButton_)");
         int[] resetLocation = (int[]) exec("location(_resetButton_)");
 
-        assertEquals(resetCenter[0], resetLocation[0] + resetSize[0] / 2);
-        assertEquals(resetCenter[1], resetLocation[1] + resetSize[1] / 2);
+        assertThat(resetCenter[0], equalTo(resetLocation[0] + resetSize[0] / 2));
+        assertThat(resetCenter[1], equalTo(resetLocation[1] + resetSize[1] / 2));
+    }
+
+    @Test public void screenshotPngDataUrl() {
+        assertThat((Bitmap) exec("screenshot()"), isA(Bitmap.class));
+    }
+
+    @Test public void tapToggleButton() {
+        exec("tap(_startStopButton_)");
+        assertThat((String) exec("text(_startStopButton_)"), equalToIgnoringCase("stop"));
+
+        exec("tap(_startStopButton_)");
+        assertThat((String) exec("text(_startStopButton_)"), equalToIgnoringCase("start"));
+    }
+
+    @Test public void getActivity() {
+        assertThat((StopwatchActivity) exec("activity()"), sameInstance(activity));
+    }
+
+    @Test public void leftmostView() {
+        assertThat((View) exec("leftmost(_startStopButton_, _resetButton_)"),
+                sameInstance(startStopButton));
+    }
+
+    @Test public void rightmostView() {
+        assertThat((View) exec("rightmost(_startStopButton_, _resetButton_)"),
+                sameInstance(resetButton));
+    }
+
+    @Test public void topmostView() {
+        assertThat((View) exec("topmost(_startStopButton_, _minutesText_)"),
+                sameInstance(minutesText));
+    }
+
+    @Test public void bottommostView() {
+        assertThat((View) exec("bottommost(_startStopButton_, _minutesText_)"),
+                sameInstance(startStopButton));
     }
 
 }

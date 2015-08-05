@@ -174,25 +174,10 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
             @Override
             public Object call(Activity activity, Iterable<View> selectedViews) {
                 final View view = firstView(selectedViews);
-                final int[] viewCenter = center(view);
-                final long timestamp = SystemClock.uptimeMillis();
                 activity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        view.dispatchTouchEvent(MotionEvent.obtain(
-                                timestamp,
-                                timestamp,
-                                MotionEvent.ACTION_DOWN,
-                                viewCenter[0],
-                                viewCenter[1],
-                                0));
-                        view.dispatchTouchEvent(MotionEvent.obtain(
-                                timestamp,
-                                timestamp + 20,
-                                MotionEvent.ACTION_UP,
-                                viewCenter[0],
-                                viewCenter[1],
-                                0));
+                        view.performClick();
                     }
                 });
                 return null;
@@ -260,25 +245,25 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
         registerJsFunction(scope, "leftmost", new JsViewFunction() {
             @Override
             public Object call(Activity activity, Iterable<View> selectedViews) {
-                return ImmutableList.of(horizontalOrdering.min(selectedViews));
+                return horizontalOrdering.min(selectedViews);
             }
         });
         registerJsFunction(scope, "rightmost", new JsViewFunction() {
             @Override
             public Object call(Activity activity, Iterable<View> selectedViews) {
-                return ImmutableList.of(horizontalOrdering.max(selectedViews));
+                return horizontalOrdering.max(selectedViews);
             }
         });
         registerJsFunction(scope, "topmost", new JsViewFunction() {
             @Override
             public Object call(Activity activity, Iterable<View> selectedViews) {
-                return ImmutableList.of(verticalOrdering.min(selectedViews));
+                return verticalOrdering.min(selectedViews);
             }
         });
         registerJsFunction(scope, "bottommost", new JsViewFunction() {
             @Override
             public Object call(Activity activity, Iterable<View> selectedViews) {
-                return ImmutableList.of(verticalOrdering.max(selectedViews));
+                return verticalOrdering.max(selectedViews);
             }
         });
         scope.put("closest_to", scope, new Callable() {
@@ -287,7 +272,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
                 View rootView = getRootView(getActivity());
                 View target = firstView(selectViews(rootView, new Object[]{args[0]}, scope));
                 Iterable<View> views = selectViews(rootView, new Object[]{args[1]}, scope);
-                return ImmutableList.of(new EuclidianDistanceOrdering(center(target)).min(views));
+                return new EuclidianDistanceOrdering(center(target)).min(views);
             }
         });
         scope.put("furthest_from", scope, new Callable() {
@@ -296,7 +281,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
                 View rootView = getRootView(getActivity());
                 View target = firstView(selectViews(rootView, new Object[]{args[0]}, scope));
                 Iterable<View> views = selectViews(rootView, new Object[]{args[1]}, scope);
-                return ImmutableList.of(new EuclidianDistanceOrdering(center(target)).max(views));
+                return new EuclidianDistanceOrdering(center(target)).max(views);
             }
         });
         scope.put("wait", scope, new Callable() {
