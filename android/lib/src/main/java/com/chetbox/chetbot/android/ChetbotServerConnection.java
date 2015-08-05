@@ -130,7 +130,8 @@ public class ChetbotServerConnection {
             ? data.getClass().getSimpleName().toUpperCase()
             : "NULL";
         if (data instanceof Bitmap) {
-            data = base64Encode(toPNG((Bitmap) data));
+            // Convert to base64 representation for browser rendering
+            data = "data:image/png;base64," + base64Encode(toPNG((Bitmap) data));
         }
         return new Result(device, lineNo, type, data);
     }
