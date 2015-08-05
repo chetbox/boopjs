@@ -398,7 +398,6 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
             // TODO: handle API < 19
             // (ArrayMap is new for API 19)
             ArrayMap activities = (ArrayMap) activitiesField.get(activityThread);
-            Log.v("CHETAN", "activities: " + activities);
             for (Object activityRecord : activities.values()) {
                 Class activityRecordClass = activityRecord.getClass();
                 Field pausedField = activityRecordClass.getDeclaredField("paused");
