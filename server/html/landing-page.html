@@ -138,17 +138,17 @@
                 <div class="col-lg-5 col-lg-offset-2 col-sm-6">
                     <pre class="img-responsive">
 
-__('Username').tap()
-keyboard.type_text('alice')
+tap('Username');
+type_text('alice');
 
-__('Password').tap()
-keyboard.type_text('ilovebob')
+tap('Password');
+type_text('ilovebob');
 
-keyboard.dismiss()
+hide_keyboard();
 
-__({class: 'CheckBox'}).closest_to('Notifications').tap()
+tap(topmost({type: 'CheckBox'}));
 
-__('Sign in').tap()
+tap('Sign in');
                     </pre>
                 </div>
             </div>
