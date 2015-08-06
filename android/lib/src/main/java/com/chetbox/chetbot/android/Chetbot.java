@@ -172,26 +172,27 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
         });
         registerJsFunction(scope, "tap", new JsViewFunction() {
             @Override
-            public Object call(Activity activity, Iterable<View> selectedViews) {
-                final View view = firstView(selectedViews);
+            public Object call(final Activity activity, Iterable<View> selectedViews) {
+                View view = firstView(selectedViews);
+                final int[] viewCenter = center(view);
+                final long timestamp = SystemClock.uptimeMillis();
                 activity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        view.performClick();
-                    }
-                });
-                return null;
-            }
-        });
-        registerJsFunction(scope, "back", new JsFunction() {
-            @Override
-            public Object call(final Activity activity, Object[] args) {
-                // TODO: hide keyboard instead if keyboard is showing
-                activity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        activity.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
-                        activity.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
+                        activity.dispatchTouchEvent(MotionEvent.obtain(
+                                timestamp,
+                                timestamp,
+                                MotionEvent.ACTION_DOWN,
+                                viewCenter[0],
+                                viewCenter[1],
+                                0));
+                        activity.dispatchTouchEvent(MotionEvent.obtain(
+                                timestamp,
+                                timestamp + 20,
+                                MotionEvent.ACTION_UP,
+                                viewCenter[0],
+                                viewCenter[1],
+                                0));
                     }
                 });
                 return null;
@@ -215,6 +216,36 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
                 return null;
             }
         });
+        registerJsFunction(scope, "press", new JsFunction() {
+            @Override
+            public Object call(final Activity activity, Object[] args) {
+                int _keycode;
+                String keyArg = (String) args[0];
+                if ("enter".equalsIgnoreCase(keyArg)
+                        || "return".equalsIgnoreCase(keyArg)
+                        || "\n".equals(keyArg)) {
+                    _keycode = KeyEvent.KEYCODE_ENTER;
+                } else if ("back".equalsIgnoreCase(keyArg)) {
+                    // TODO: hide keyboard instead if keyboard is showing
+                    _keycode = KeyEvent.KEYCODE_BACK;
+                } else if ("backspace".equalsIgnoreCase(keyArg)
+                        || "\b".equals(keyArg)) {
+                    _keycode = KeyEvent.KEYCODE_DEL;
+                } else {
+                    throw new IllegalArgumentException("Unrecognised key: " + args[0]);
+                }
+                final int keycode = _keycode;
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        activity.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, keycode));
+                        activity.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, keycode));
+                    }
+                });
+                return null;
+            }
+        });
+
         registerJsFunction(scope, "type_text", new JsFunction() {
             @Override
             public Object call(final Activity activity, Object[] args) {
@@ -297,7 +328,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
             }
         });
 
-        mJsContext.evaluateString(scope, "RegExp; getClass; java; Packages; JavaAdapter;", "lazyLoad", 0, null);
+        mJsContext.evaluateString(scope, "RegExp; getClass; java; Packages; JavaAdapter;", "<lazyLoad>", 0, null);
         scope.sealObject();
 
         mJsScope = mJsContext.newObject(scope);
