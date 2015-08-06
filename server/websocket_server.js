@@ -69,8 +69,8 @@ exports.add_routes = function(app) {
         })
         .catch(fail_on_error(ws));
 
-      } else if (message.device && ('result' in message || 'error' in message)) {
-        console.log('result (' + message.device + '): ' + (message.result || message.error));
+      } else if (message.device && ('result' in message || 'error' in message || 'success' in message)) {
+        console.log('response:', messageStr);
         clients_connected[message.device].send(messageStr);
 
       } else {

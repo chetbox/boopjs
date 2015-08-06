@@ -81,6 +81,10 @@ function run(editor, server, device_id) {
   };
 
   var ws = new WebSocket('ws://' + server + '/api/client');
+  function end_test() {
+    onTestStop(editor);
+    ws.close();
+  }
   ws.onopen = function() {
     ws.send(JSON.stringify(script));
   };
@@ -94,50 +98,50 @@ function run(editor, server, device_id) {
   };
   ws.onmessage = function(event) {
     var message = JSON.parse(event.data);
-    if (!message.line) {
+    if (message.error && !message.line) {
       alert(message.error);
+      end_test();
       return;
     }
 
     var lineEl = testReportEl.find('.line-' + message.line)
 
-    if (message.error) {
+    if ('error' in message) {
       ga('send', 'event', 'test-step', 'error');
 
       lineEl
         .addClass('error')
         .find('ol')
-          .append( $('<li>').text(message.error) );
+          .append(
+            $('<li>')
+              .text(message.error)
+              .append( $('<pre>').text(message.stacktrace) )
+          );
     } else {
       ga('send', 'event', 'test-step', 'success');
     }
 
-    if (message.hasOwnProperty('result')) {
+    if ('result' in message) {
       lineEl
         .addClass('success')
         .find('ol')
           .append(resultHTML(message));
     }
 
+    if ('success' in message) {
+      ga('send', 'event', 'test-result', message.success ? 'passed' : 'failed');
+      testReportEl.append(
+        $('<li>')
+          .addClass('final-result')
+          .addClass(message.success ? 'success' : 'error')
+          .text(message.success ? 'Test passed.' : 'Test failed.')
+      );
+
+      end_test();
+    }
+
     // TODO: scroll new output into view
   };
-
-  // TODO: final 'Test passed/failed' message
-
-  // ga('send', 'event', 'test-result', 'passed');
-  // testReportEl.append(
-  //   $('<li>').addClass('final-result').addClass('success').text('Test passed.')
-  // );
-
-  // ga('send', 'event', 'test-result', 'failed', '' + errorString;
-  // testReportEl.append(
-  //   $('<li>').addClass('final-result').addClass('error').text(e)
-  // );
-
-  // TODO only when the test is complete
-  onTestStop(editor);
-
-  // TODO: disconnect from websocket
 }
 
 function showEditor() {
