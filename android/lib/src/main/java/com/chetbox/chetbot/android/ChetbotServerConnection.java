@@ -3,6 +3,7 @@ package com.chetbox.chetbot.android;
 import android.graphics.Bitmap;
 import android.util.Log;
 
+import com.google.common.base.Throwables;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -66,11 +67,23 @@ public class ChetbotServerConnection {
         private String device;
         private int line;
         private String error;
+        private String stacktrace;
 
-        public Error(String device, int line, String message) {
+        public Error(String device, int line, Throwable error) {
             this.device = device;
             this.line = line;
-            this.error = message;
+            this.error = error.getMessage();
+            this.stacktrace = Throwables.getStackTraceAsString(error);
+        }
+    }
+
+    private static class Success {
+        private String device;
+        private boolean success;
+
+        public Success(String device, boolean success) {
+            this.device = device;
+            this.success = success;
         }
     }
 
@@ -126,6 +139,9 @@ public class ChetbotServerConnection {
     }
 
     private static Result makeResult(String device, int lineNo, Object data) {
+        if (!isSupportedResultType(data)) {
+            data = null;
+        }
         String type = (data != null)
             ? data.getClass().getSimpleName().toUpperCase()
             : "NULL";
@@ -152,20 +168,24 @@ public class ChetbotServerConnection {
         public void onMessage(String messageStr) {
             Log.v(TAG, "Message received: " + messageStr);
             Script script = sGson.fromJson(messageStr, Script.class);
+            boolean success = true;
             try {
                 mScriptHandler.onStartScript();
                 for (Statement stmt : script.statements) {
                     try {
                         Object result = mScriptHandler.onStatement(stmt, script.name);
                         sendAsJson(makeResult(script.device, stmt.line, result));
-                    } catch (Exception e) {
-                        Error error = new Error(script.device, stmt.line, e.getMessage());
+                    } catch (Throwable e) {
+                        success = false;
+                        Error error = new Error(script.device, stmt.line, e);
                         Log.e(TAG, "error: " + sGson.toJson(error));
                         e.printStackTrace();
                         sendAsJson(error);
+                        break;
                     }
                 }
              } finally {
+                sendAsJson(new Success(script.device, success));
                 mScriptHandler.onFinishScript();
             }
         }
