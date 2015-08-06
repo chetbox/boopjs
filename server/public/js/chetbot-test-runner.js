@@ -36,11 +36,11 @@ function resultHTML(response) {
       $('<a>')
         .attr({
           target: '_blank',
-          href: 'data:image/png;base64,' + response.result
+          href: response.result
         })
         .append(
           $('<img>')
-            .attr('src', 'data:image/png;base64,' + response.result)
+            .attr('src', response.result)
         )
     );
   } else {
@@ -49,51 +49,99 @@ function resultHTML(response) {
   return el;
 }
 
-function run(editor) {
+function run(editor, server, device_id) {
   ga('send', 'event', 'button', 'click', 'run');
 
   onTestStart(editor);
 
-  var script = esprima.parse(
+  var statements = esprima.parse(
     editor.getSession().getDocument().getValue(),
     {loc: true}
-  );
+  ).body.map(function(command) {
+    return {
+      source: escodegen.generate(command),
+      line: command.loc.start.line
+    };
+  });
 
-  script.body
-    .reduce(function(previous_promise, command) {
-      return previous_promise.then(function() {
-        var commandStr = escodegen.generate(command);
-        testReportEl.append(
-          $('<li>').text(commandStr)
-        );
-        scrolltestReportToBottom();
-        return Q(eval(commandStr))
-          .then(function(response) {
-            testReportEl.children().last().addClass('success');
-            testReportEl.append(resultHTML(response));
-            scrolltestReportToBottom();
-          });
-      });
-    }, Q(null))
-    .then(function() {
-      ga('send', 'event', 'test-result', 'passed');
+  statements.forEach(function(stmt) {
+    testReportEl.append(
+      $('<li>')
+        .addClass('line')
+        .addClass('line-' + stmt.line)
+        .text(stmt.source)
+        .append('<ol>')
+    );
+  });
+
+  var script = {
+    statements: statements,
+    name: window.location.pathname.replace(/.*\//, ''),
+    device: device_id
+  };
+
+  var ws = new WebSocket('ws://' + server + '/api/client');
+  function end_test() {
+    onTestStop(editor);
+    ws.close();
+  }
+  ws.onopen = function() {
+    ws.send(JSON.stringify(script));
+  };
+  ws.onerror = function(e) {
+    console.error(error);
+    testReportEl.append(
+      $('<li>')
+        .addClass('error')
+        .text(e.toString())
+    )
+  };
+  ws.onmessage = function(event) {
+    var message = JSON.parse(event.data);
+    if (message.error && !message.line) {
+      alert(message.error);
+      end_test();
+      return;
+    }
+
+    var lineEl = testReportEl.find('.line-' + message.line)
+
+    if ('error' in message) {
+      ga('send', 'event', 'test-step', 'error');
+
+      lineEl
+        .addClass('error')
+        .find('ol')
+          .append(
+            $('<li>')
+              .text(message.error)
+              .append( $('<pre>').text(message.stacktrace) )
+          );
+    } else {
+      ga('send', 'event', 'test-step', 'success');
+    }
+
+    if ('result' in message) {
+      lineEl
+        .addClass('success')
+        .find('ol')
+          .append(resultHTML(message));
+    }
+
+    if ('success' in message) {
+      ga('send', 'event', 'test-result', message.success ? 'passed' : 'failed');
       testReportEl.append(
-        $('<li>').addClass('final-result').addClass('success').text('Test passed.')
+        $('<li>')
+          .addClass('final-result')
+          .addClass(message.success ? 'success' : 'error')
+          .text(message.success ? 'Test passed.' : 'Test failed.')
       );
-      scrolltestReportToBottom();
-    })
-    .finally(function() {
-      onTestStop(editor);
-    })
-    .fail(function(e) {
-      ga('send', 'event', 'test-result', 'failed', '' + e.toString());
-      testReportEl.children().last().addClass('error');
-      testReportEl.append(
-        $('<li>').addClass('final-result').addClass('error').text(e)
-      );
-      scrolltestReportToBottom();
-      console.error(e);
-    });
+
+      end_test();
+    }
+
+    // TODO: scroll new output into view
+  };
 }
 
 function showEditor() {

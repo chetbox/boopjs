@@ -132,13 +132,24 @@
       padding: 0;
     }
 
-    #test-report ol > li {
+    #test-report li.line {
       margin: 0;
+      margin-bottom: 1em;
     }
 
-    #test-report li.result::before {
+    #test-report li.line > ol {
+      color: rgba(0,0,0,0.87);
+    }
+
+    #test-report li.line > ol > li {
+      display: inline;
+    }
+
+    #test-report li.line > ol::before {
       content: '\21AA';
+      margin-left: 2em;
       margin-right: 1em;
+      opacity: 0.25;
     }
 
     #test-report li.final-result {
@@ -153,13 +164,19 @@
       border: none;
     }
 
-    #test-report li.result {
-      margin-bottom: 1em;
-      display: inline-block;
-    }
-
     #test-report .success {
       color: #43A047;
+    }
+
+    #test-report .line::before {
+      content: ' ';
+      display: inline-block;
+      width: 1em;
+      margin-right: 1em;
+    }
+
+    #test-report .line.success::before {
+      content: '\2713'
     }
 
     #test-report .error {
@@ -213,7 +230,7 @@
             <a class="back" href="javascript:showEditor();" title="Back to editor">
               <paper-icon-button icon="create"></paper-icon-button>
             </a>
-            <a class="run" href="javascript:run(editor);" title="Run test">
+            <a class="run" href="javascript:run(editor, '{{server}}', '{{device.id}}');" title="Run test">
               <paper-icon-button icon="av:play-arrow"></paper-icon-button>
               <span class="hint">&#8592; Press me</span>
             </a>
@@ -234,15 +251,7 @@
   </body>
 
   <!-- JavaScript API -->
-  <script src="/js/reconnecting-websocket.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/q.js/1.4.1/q.min.js"></script>
-  <script src="/js/chetbot-client.js"></script>
-  {{#autosave}}
-  <script src="/js/chetbot-autosave.js"></script>
-  {{/autosave}}
-  <script>
-    __.connect('{{server}}', '{{device.id}}');
-  </script>
+  <script src="/components/jquery/dist/jquery.min.js"></script>
 
   <!-- code editor -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.1.9/ace.js" charset="utf-8"></script>
@@ -250,13 +259,24 @@
     var editor = ace.edit('editor');
     editor.setTheme('ace/theme/tomorrow_night');
     editor.getSession().setMode('ace/mode/javascript');
-    {{#autosave}}
+  </script>
+
+  {{#autosave}}
+  <script src="/js/chetbot-autosave.js"></script>
+  <script>
     autosave(editor);
-    {{/autosave}}
+  </script>
+  {{/autosave}}
+
+  <!-- heartbeat to prevent device timing out -->
+  <script>
+  var device_iframe = document.querySelector('iframe');
+  setInterval(function() {
+    device_iframe.contentWindow.postMessage('heartbeat', '*');
+  }, 15 * 1000);
   </script>
 
   <!-- test runner -->
-  <script src="/components/jquery/dist/jquery.min.js"></script>
   <script src="/js/esprima.min.js" charset="utf-8"></script>
   <script src="/js/escodegen.min.js" charset="utf-8"></script>
   <script src="/js/chetbot-test-runner.js"></script>
