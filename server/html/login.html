@@ -1,48 +1,60 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>ChetBot login</title>
+    <title>Login - ChetBot</title>
     <link rel="icon" href="/favicon.ico">
+
+    {{> material-design}}
+
     <style type="text/css">
-      html {
-        font-family: sans-serif;
-        background-color: #f9f9f9;
-        color: rgba(0,0,0,0.87);
-        text-align: center;
-      }
-      body > *:not(script) {
-        display: block;
-        margin: 1em auto;
-      }
-      #main-logo {
-        width: 8em;
-      }
-      a.login {
-        max-width: 10em;
-        padding: 1em;
-        background-position: 12px center;
-        background-repeat: no-repeat;
-        color: rgba(255,255,255,0.87);
-        background-color: rgba(0,0,0,0.87);
-        text-decoration: none;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-      }
-      a.github {
-        padding-left: 52px;
-        background-image: url(/images/GitHub-Mark-32px.png);
-      }
-      p {
-        display: block;
-        margin: auto;
-        font-size: 0.8em;
-        max-width: 20em;
-      }
+    div.content {
+      text-align: center;
+    }
+    div.content > * {
+      display: block;
+      margin: 1em auto;
+    }
+    #main-logo {
+      margin-top: 4em;
+      width: 12em;
+    }
+    a.login {
+      max-width: 10em;
+      padding: 1em;
+      background-position: 12px center;
+      background-repeat: no-repeat;
+      color: rgba(255,255,255,0.87);
+      background-color: #303F9F;
+      text-decoration: none;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+      display: inline-block;
+    }
+    a.github {
+      padding-left: 58px;
+      background-image: url(/images/GitHub-Mark-32px.png);
+    }
+    p {
+      display: block;
+      margin: auto;
+      font-size: 0.8em;
+      max-width: 20em;
+      text-align: center;
+      font-weight: 300;
+      opacity: 0.75;
+    }
     </style>
   </head>
-  <body>
-    <img id="main-logo" src="/images/bot.png" title="ChetBot"/>
-    <a class="login github" href="/auth/github">Login with GitHub</a>
-    <p>Signing in with GitHub is for authentication purposes only. We will not have access to your code.</p>
+  <body class="fullbleed">
+    <paper-header-panel class="cyan">
+      <paper-toolbar>
+        <div class="title">ChetBot</div>
+      </paper-toolbar>
+      <div class="content">
+        <img id="main-logo" src="/images/bot.png" title="ChetBot"/>
+        <a class="login github" href="/auth/github">Login with GitHub</a>
+        <p>Signing in with GitHub is for authentication purposes only. We do not have access to your code.</p>
+      </div>
+    </paper-header-panel>
   </body>
 
   {{> google-analytics}}
