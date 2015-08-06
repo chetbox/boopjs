@@ -19,6 +19,7 @@ exports.add_routes = function(app) {
         },
         server: host_address,
         app: {
+          icon: '/favicon.ico',
           publicKey: 'w00ru87r17568t5uznyhhu423w'
         },
         autosave: false,
