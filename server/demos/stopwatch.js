@@ -1,15 +1,17 @@
 // Reset the timer
-__('reset').tap();
+tap('reset');
 
 // Tap the start button
-__('start').tap();
+tap('start');
 
 // Stop after 3 seconds
 wait(3);
-__('stop').tap();
+tap('stop');
 
 // Take a screenshot
 screenshot();
 
 // Check that 3 seconds have been counted
-assert_equals('03', __({id: 'seconds'}).text());
+if (text({id: 'seconds'}) !== '03') {
+    throw 'Expected 3 seconds counted';
+}
