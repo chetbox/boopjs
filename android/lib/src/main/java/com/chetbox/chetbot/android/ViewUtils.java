@@ -16,6 +16,7 @@ import com.google.common.collect.Ordering;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
 
 import static com.google.common.collect.Iterables.*;
 import static com.google.common.collect.Lists.*;
@@ -198,16 +199,30 @@ public class ViewUtils {
         }
     }
 
-    public static Bitmap screenshot(Activity activity) {
-        View decorView = activity.getWindow().getDecorView();
-        decorView.destroyDrawingCache();
-        decorView.setDrawingCacheEnabled(true);
+    public static Bitmap screenshot(final Activity activity) {
+        final Container<Bitmap> screenshotContainer = new Container<>();
+        final CountDownLatch latch = new CountDownLatch(1);
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                View decorView = activity.getWindow().getDecorView();
+                decorView.destroyDrawingCache();
+                decorView.setDrawingCacheEnabled(true);
+                try {
+                    Bitmap screenshot = decorView.getDrawingCache();
+                    screenshotContainer.contents = screenshot.copy(screenshot.getConfig(), false);
+                } finally {
+                    decorView.setDrawingCacheEnabled(false);
+                    latch.countDown();
+                }
+            }
+        });
         try {
-            Bitmap screenshot = decorView.getDrawingCache();
-            return screenshot.copy(screenshot.getConfig(), false);
-        } finally {
-            decorView.setDrawingCacheEnabled(false);
+            latch.await();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
+        return screenshotContainer.contents;
     }
 
     public static byte[] toPNG(Bitmap bitmap) {
