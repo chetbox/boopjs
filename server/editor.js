@@ -226,6 +226,7 @@ exports.add_routes = function(app) {
           },
           server: host_address,
           app: {
+            icon: app.icon,
             publicKey: app.publicKey
           },
           autosave: true,
