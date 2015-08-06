@@ -19,7 +19,7 @@ exports.add_routes = function(app) {
         },
         server: host_address,
         app: {
-          publicKey: 'z8460qxgdyrfe8c2ag1z6bqyw0'
+          publicKey: 'w00ru87r17568t5uznyhhu423w'
         },
         autosave: false,
         code: {
