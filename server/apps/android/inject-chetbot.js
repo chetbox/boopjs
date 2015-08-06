@@ -15,15 +15,17 @@ exports.find_main_activity = function(apk_file) {
   var manifest_file = path.join(tmp, 'AndroidManifest.xml');
   java('-jar', apk_parser, apk_file).to(manifest_file);
 
+  var is_main_activity_xpath = '[intent-filter/category/@android:name="android.intent.category.LAUNCHER" and' +
+                               ' intent-filter/action/@android:name="android.intent.action.MAIN"]';
+  var main_activity_alias_xpath = '/manifest/application/activity-alias' + is_main_activity_xpath;
+  var main_activity_xpath = '/manifest/application/activity' + is_main_activity_xpath;
+
   // TODO: port to node XML processing
-  var main_activity = xmlstarlet('sel', '-t', '-v',
-      '/manifest' +
-      '/application' +
-      '/activity[' +
-        'intent-filter/category/@android:name="android.intent.category.LAUNCHER" ' +
-        'and ' +
-        'intent-filter/action/@android:name="android.intent.action.MAIN"]' +
-      '/@android:name',
+  var main_activity = xmlstarlet('sel', '-t',
+    '--if', main_activity_alias_xpath,
+      '-v', main_activity_alias_xpath + '/@android:targetActivity',
+    '--else',
+      '-v', main_activity_xpath + '/@android:name',
     manifest_file
   );
 
