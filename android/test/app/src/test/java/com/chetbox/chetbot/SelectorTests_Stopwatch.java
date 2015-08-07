@@ -8,6 +8,7 @@ import com.chetbox.chetbot.android.ChetbotServerConnection;
 import com.chetbox.chetbot.stopwatch.BuildConfig;
 import com.chetbox.chetbot.stopwatch.R;
 import com.chetbox.chetbot.stopwatch.StopwatchActivity;
+import com.google.common.collect.ImmutableList;
 
 import org.junit.After;
 import org.junit.Before;
@@ -244,4 +245,24 @@ public class SelectorTests_Stopwatch {
                 sameInstance(startStopButton));
     }
 
+    @Test public void allViewIds() {
+        assertThat(ImmutableList.copyOf((String[]) exec("view_ids()")),
+                contains("com.chetbox.chetbot.stopwatch:id/stopwatch_container",
+                        "com.chetbox.chetbot.stopwatch:id/center",
+                        "com.chetbox.chetbot.stopwatch:id/minutes",
+                        "com.chetbox.chetbot.stopwatch:id/seconds",
+                        "com.chetbox.chetbot.stopwatch:id/milliseconds",
+                        "com.chetbox.chetbot.stopwatch:id/start_stop",
+                        "com.chetbox.chetbot.stopwatch:id/reset"));
+    }
+
+    @Test public void subViewIds() {
+        assertThat(ImmutableList.copyOf((String[]) exec("view_ids({id: 'stopwatch_container'})")),
+                contains("com.chetbox.chetbot.stopwatch:id/center",
+                        "com.chetbox.chetbot.stopwatch:id/minutes",
+                        "com.chetbox.chetbot.stopwatch:id/seconds",
+                        "com.chetbox.chetbot.stopwatch:id/milliseconds",
+                        "com.chetbox.chetbot.stopwatch:id/start_stop",
+                        "com.chetbox.chetbot.stopwatch:id/reset"));
+    }
 }
