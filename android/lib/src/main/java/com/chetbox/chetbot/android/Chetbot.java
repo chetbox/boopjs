@@ -14,6 +14,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.chetbox.chetbot.android.js.Assert;
 import com.google.common.collect.ImmutableList;
 
 import static com.google.common.collect.ImmutableList.copyOf;
@@ -45,7 +46,12 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
     private Scriptable mJsScope;
 
     private Chetbot(Activity activity) {
-        mPackageName = activity.getPackageName();
+        if (activity != null) {
+            mPackageName = activity.getPackageName();
+        } else {
+            // Running in testing mode
+            mPackageName = null;
+        }
     }
 
     private void connect(Activity activity) {
@@ -329,6 +335,8 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
         });
 
         mJsContext.evaluateString(scope, "RegExp; getClass; java; Packages; JavaAdapter;", "<lazyLoad>", 0, null);
+        mJsContext.evaluateString(scope, Assert.source(), Assert.class.getName(), 0, null);
+        mJsContext.evaluateString(scope, "var assert_exists = function() { assert_true(view(arguments)); }", "<assert_exists>", 0, null);
         scope.sealObject();
 
         mJsScope = mJsContext.newObject(scope);
