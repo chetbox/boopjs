@@ -1,10 +1,13 @@
-package com.chetbox.chetbot.stopwatch;
+package com.chetbox.chetbot;
 
 import android.graphics.Bitmap;
 import android.view.View;
 
 import com.chetbox.chetbot.android.Chetbot;
 import com.chetbox.chetbot.android.ChetbotServerConnection;
+import com.chetbox.chetbot.stopwatch.BuildConfig;
+import com.chetbox.chetbot.stopwatch.R;
+import com.chetbox.chetbot.stopwatch.StopwatchActivity;
 
 import org.junit.After;
 import org.junit.Before;
@@ -23,7 +26,7 @@ import static org.hamcrest.Matchers.*;
 
 @RunWith(RobolectricGradleTestRunner.class)
 @Config(constants = BuildConfig.class)
-public class ChetbotTest {
+public class SelectorTests_Stopwatch {
 
     @Rule
     public TestName name = new TestName();
@@ -215,14 +218,6 @@ public class ChetbotTest {
 
     @Test public void screenshotPngDataUrl() {
         assertThat((Bitmap) exec("screenshot()"), isA(Bitmap.class));
-    }
-
-    @Test public void tapToggleButton() {
-        exec("tap(_startStopButton_)");
-        assertThat((String) exec("text(_startStopButton_)"), equalToIgnoringCase("stop"));
-
-        exec("tap(_startStopButton_)");
-        assertThat((String) exec("text(_startStopButton_)"), equalToIgnoringCase("start"));
     }
 
     @Test public void getActivity() {
