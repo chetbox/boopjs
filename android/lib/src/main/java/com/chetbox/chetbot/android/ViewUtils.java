@@ -32,6 +32,33 @@ public class ViewUtils {
         return activity.getWindow().getDecorView().findViewById(android.R.id.content);
     }
 
+    public static Function<View, Iterable<View>> ChildViews = new Function<View, Iterable<View>>() {
+        @Override
+        public Iterable<View> apply(View view) {
+            if (view instanceof ViewGroup) {
+                ViewGroup viewGroup = (ViewGroup) view;
+                ArrayList<View> children = newArrayList();
+                for (int i=0; i<viewGroup.getChildCount(); i++) {
+                    children.add(viewGroup.getChildAt(i));
+                }
+                return ImmutableList.copyOf(children);
+            } else {
+                return ImmutableList.of();
+            }
+        }
+    };
+
+    private static Function<View, String> IdStr = new Function<View, String>() {
+        @Override
+        public String apply(View view) {
+            int inputId = view.getId();
+            if (inputId == -1 || inputId == 0) {
+                return null;
+            }
+            return view.getResources().getResourceName(inputId);
+        }
+    };
+
     public static class SubViews implements Function<Iterable<View>, Iterable<View>> {
 
         private final Predicate<View> mViewPredicate;
@@ -86,11 +113,7 @@ public class ViewUtils {
                 Predicate<View> idPredicate = new Predicate<View>() {
                     @Override
                     public boolean apply(View input) {
-                        int inputId = input.getId();
-                        if (inputId == -1) {
-                            return false;
-                        }
-                        String inputIdStr = input.getResources().getResourceName(inputId);
+                        String inputIdStr = IdStr.apply(input);
                         if (id.contains("/")) {
                             return id.equalsIgnoreCase(inputIdStr);
                         } else {
@@ -109,32 +132,31 @@ public class ViewUtils {
             };
         }
 
-        private static Function<View, Iterable<View>> sChildViews = new Function<View, Iterable<View>>() {
-            @Override
-            public Iterable<View> apply(View view) {
-                if (view instanceof ViewGroup) {
-                    ViewGroup viewGroup = (ViewGroup) view;
-                    ArrayList<View> children = newArrayList();
-                    for (int i=0; i<viewGroup.getChildCount(); i++) {
-                        children.add(viewGroup.getChildAt(i));
-                    }
-                    return ImmutableList.copyOf(children);
-                } else {
-                    return ImmutableList.of();
-                }
-            }
-        };
-
         @Override
         public Iterable<View> apply(Iterable<View> views) {
             if (isEmpty(views)) {
                 return ImmutableList.of();
             }
             Iterable<View> matchingViews = filter(views, mViewPredicate);
-            Iterable<View> childViews = concat(transform(views, sChildViews));
+            Iterable<View> childViews = concat(transform(views, ChildViews));
             return concat(matchingViews, apply(childViews));
         }
     }
+
+    public static Function<Iterable<View>, Iterable<String>> ViewIds = new Function<Iterable<View>, Iterable<String>>() {
+        @Override
+        public Iterable<String> apply(Iterable<View> views) {
+            ArrayList<String> ids = newArrayList();
+            for (View view : views) {
+                String id = IdStr.apply(view);
+                if (id != null) {
+                    ids.add(id);
+                }
+                addAll(ids, apply(ChildViews.apply(view)));
+            }
+            return ImmutableList.copyOf(ids);
+        }
+    };
 
     public static int[] location(View v) {
         int[] location = new int[2];

@@ -128,6 +128,12 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
                         : null;
             }
         });
+        registerJsFunction(scope, "view_ids", new JsViewFunction() {
+            @Override
+            public Object call(Activity activity, Iterable<View> selectedViews) {
+                return toArray(ViewIds.apply(concat(transform(selectedViews, ChildViews))), String.class);
+            }
+        });
         registerJsFunction(scope, "class_of", new JsViewFunction() {
             @Override
             public Object call(Activity activity, Iterable<View> selectedViews) {
