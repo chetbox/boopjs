@@ -121,6 +121,10 @@ public class ChetbotServerConnection {
         mServerConnection.connect();
     }
 
+    public void close() {
+        mServerConnection.close();
+    }
+
     public static boolean isSupportedResultType(Object o) {
         return o == null
                 || o instanceof String

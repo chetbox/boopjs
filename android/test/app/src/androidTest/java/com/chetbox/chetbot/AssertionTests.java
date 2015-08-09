@@ -1,5 +1,7 @@
 package com.chetbox.chetbot;
 
+import android.support.test.runner.AndroidJUnit4;
+
 import com.chetbox.chetbot.android.Chetbot;
 import com.chetbox.chetbot.android.ChetbotServerConnection;
 
@@ -9,7 +11,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TestName;
+import org.junit.runner.RunWith;
 
+@RunWith(AndroidJUnit4.class)
 public class AssertionTests {
 
     Chetbot chetbot;
@@ -33,6 +37,7 @@ public class AssertionTests {
     @After
     public void tearDown() {
         chetbot.onFinishScript();
+        chetbot.reset();
     }
 
     Object exec(String stmt) {

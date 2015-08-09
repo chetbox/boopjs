@@ -2,8 +2,10 @@ package com.chetbox.chetbot.android;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
+import android.graphics.Point;
 import android.text.TextUtils;
 import android.util.Base64;
+import android.view.Display;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -170,9 +172,17 @@ public class ViewUtils {
 
     public static int[] center(View v) {
         int[] location = location(v),
-              size = size(v);
+                size = size(v);
+        return center(location, size);
+    }
+
+    public static int[] center(int[] location, int[] size) {
         return new int[]{location[0] + size[0]/2,
-                         location[1] + size[1]/2};
+                location[1] + size[1]/2};
+    }
+
+    public static int[] center(int[] size) {
+        return center(new int[]{0, 0}, size);
     }
 
     public static Ordering<View> horizontalOrdering = new Ordering<View>() {
@@ -251,6 +261,13 @@ public class ViewUtils {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG, 0, outputStream);
         return outputStream.toByteArray();
+    }
+
+    public static int[] screenSize(Activity activity) {
+        Display display = activity.getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        return new int[]{size.x, size.y};
     }
 
 }
