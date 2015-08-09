@@ -309,6 +309,18 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
                 return verticalOrdering.max(selectedViews);
             }
         });
+        registerJsFunction(scope, "centermost", new JsViewFunction() {
+            @Override
+            public Object call(Activity activity, Iterable<View> selectedViews) {
+                return new EuclidianDistanceOrdering(center(screenSize(activity))).min(selectedViews);
+            }
+        });
+        registerJsFunction(scope, "outermost", new JsViewFunction() {
+            @Override
+            public Object call(Activity activity, Iterable<View> selectedViews) {
+                return new EuclidianDistanceOrdering(center(screenSize(activity))).max(selectedViews);
+            }
+        });
         scope.put("closest_to", scope, new Callable() {
             @Override
             public Object call(org.mozilla.javascript.Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
@@ -397,6 +409,17 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
                 sInstance.connect(activity);
             }
         }
+    }
+
+    public static void reset() {
+        if (sInstance != null) {
+            if (sInstance.mServerConnection != null) {
+                sInstance.mServerConnection.close();
+            }
+        }
+        sTestActivity = null;
+        sInstance = null;
+        sOfflineMode = false;
     }
 
     /**

@@ -1,33 +1,29 @@
 package com.chetbox.chetbot;
 
 import android.graphics.Bitmap;
+import android.support.test.rule.ActivityTestRule;
+import android.support.test.runner.AndroidJUnit4;
 import android.view.View;
 
 import com.chetbox.chetbot.android.Chetbot;
 import com.chetbox.chetbot.android.ChetbotServerConnection;
-import com.chetbox.chetbot.stopwatch.BuildConfig;
 import com.chetbox.chetbot.stopwatch.R;
 import com.chetbox.chetbot.stopwatch.StopwatchActivity;
 import com.google.common.collect.ImmutableList;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
-import org.robolectric.RobolectricGradleTestRunner;
-import org.robolectric.annotation.Config;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
+@RunWith(AndroidJUnit4.class)
+public class SelectorTests {
 
-@RunWith(RobolectricGradleTestRunner.class)
-@Config(constants = BuildConfig.class)
-public class SelectorTests_Stopwatch {
+    @Rule
+    public ActivityTestRule<StopwatchActivity> mActivityRule = new ActivityTestRule(StopwatchActivity.class);
 
     @Rule
     public TestName name = new TestName();
@@ -47,11 +43,12 @@ public class SelectorTests_Stopwatch {
 
     @Before
     public void setUp() {
-        // These 3 lines have to be done in this order
+        // These lines have to be done in this order
         Chetbot.setOfflineMode(true);
-        activity = Robolectric.setupActivity(StopwatchActivity.class);
         Chetbot.setTestActivity(activity);
+        activity = mActivityRule.getActivity();
 
+        StopwatchActivity activity = mActivityRule.getActivity();
         resetButton = activity.findViewById(R.id.reset);
         startStopButton = activity.findViewById(R.id.start_stop);
         minutesText = activity.findViewById(R.id.minutes);
@@ -72,6 +69,7 @@ public class SelectorTests_Stopwatch {
     @After
     public void tearDown() {
         chetbot.onFinishScript();
+        chetbot.reset();
     }
 
     Object exec(String stmt) {
@@ -221,7 +219,7 @@ public class SelectorTests_Stopwatch {
         assertThat((Bitmap) exec("screenshot()"), isA(Bitmap.class));
     }
 
-    @Test public void getActivity() {
+    @Test public void activity() {
         assertThat((StopwatchActivity) exec("activity()"), sameInstance(activity));
     }
 
@@ -243,6 +241,16 @@ public class SelectorTests_Stopwatch {
     @Test public void bottommostView() {
         assertThat((View) exec("bottommost(_startStopButton_, _minutesText_)"),
                 sameInstance(startStopButton));
+    }
+
+    @Test public void centermostView() {
+        assertThat((View) exec("centermost(_minutesText_, _secondsText_, _millisecondsText_)"),
+                sameInstance(secondsText));
+    }
+
+    @Test public void outermostView() {
+        assertThat((View) exec("outermost(_minutesText_, _secondsText_, _millisecondsText_)"),
+                anyOf(sameInstance(minutesText), sameInstance(millisecondsText)));
     }
 
     @Test public void allViewIds() {
