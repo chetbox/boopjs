@@ -28,7 +28,9 @@ passport.use(new GitHubStrategy(
     console.log('User authenticated: ' + user.username);
     // TODO: generate internal user ID for session serialisation
     var serializable_user = _.extend(
-      _.pick(user, 'id', 'username', 'displayName', 'profileUrl', 'provider'),
+      _.pick(user, function(val, key) {
+        return val && _.contains(['id', 'username', 'displayName', 'profileUrl', 'provider'], key)
+      }),
       {
         avatarUrl: user._json.avatar_url,
         emails: user.emails.map(function(i) { return i.value; })
