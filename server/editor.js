@@ -198,7 +198,10 @@ exports.add_routes = function(app) {
         res.render('app', {
           user: req.user,
           app: app,
-          code: code
+          code: code.map(function(c) {
+            c.name = c.name || c.id;
+            return c;
+          })
         });
       })
       .catch(fail_on_error(res));
@@ -249,8 +252,31 @@ exports.add_routes = function(app) {
             publicKey: app.publicKey
           },
           autosave: true,
-          code: code
+          code: _.extend(code, {
+            name: code.name || code.id
+          })
         });
+      })
+      .catch(fail_on_error(res));
+    }
+  );
+
+  app.put('/app/:app_id/edit/:code_id',
+    auth.login_required,
+    ensure_user_can_access_app,
+    ensure_code_belongs_to_app,
+    function(req, res) {
+      if (!req.body.name) {
+        res.status(400).send('"name" required');
+        return;
+      }
+      db.code().find({hash: req.params.app_id, range: req.params.code_id})
+      .then(function(code) {
+        code.name = req.body.name;
+        return db.code().update(code);
+      })
+      .then(function() {
+        res.status(200).send('');
       })
       .catch(fail_on_error(res));
     }
