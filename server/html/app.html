@@ -123,13 +123,18 @@
             {{#code}}
             <tr>
               <td>
-                <a href="/app/{{app_id}}/edit/{{id}}">Edit Code ({{id}})</a>
+                <a href="/app/{{app_id}}/edit/{{id}}">{{name}}</a>
               </td>
               <td>
-                <a href="javascript:ajax_delete('/app/{{app_id}}/edit/{{id}}', '{{id}}');">
-                  <paper-icon-button class="compact" icon="delete"></paper-icon-button>
+                <a href="javascript:rename('/app/{{app_id}}/edit/{{id}}', '{{id}}');">
+                  <paper-icon-button class="compact" icon="create"></paper-icon-button>
                 </a>
               </td>
+            <td>
+              <a href="javascript:ajax_delete('/app/{{app_id}}/edit/{{id}}', '{{id}}');">
+                <paper-icon-button class="compact" icon="delete"></paper-icon-button>
+              </a>
+            </td>
             </tr>
             {{/code}}
           </tbody>
@@ -165,6 +170,20 @@
       }
       $.ajax(url, {
         method: 'DELETE'
+      }).done(function() {
+        location.reload();
+      })
+    }
+
+    function rename(url, current_name) {
+      var new_name = prompt('Rename "' + current_name + '" to:', current_name);
+      if (!new_name) {
+        return;
+      }
+
+      $.ajax(url, {
+        method: 'PUT',
+        data: {name: new_name}
       }).done(function() {
         location.reload();
       })
