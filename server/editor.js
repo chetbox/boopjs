@@ -14,6 +14,8 @@ exports.add_routes = function(app) {
   var inject_chetbot = require('./apps/android/inject-chetbot');
   var android_app_info = require('./apps/android/info');
 
+  var NEW_TEST_TEMPLATE = '// Write your test here\n\n';
+
   function fail_on_error(res) {
     return function(e) {
       console.error(e.stack || e);
@@ -126,7 +128,7 @@ exports.add_routes = function(app) {
           db.code().insert({
             id: new_code_id,
             app_id: new_app_id,
-            content: '// Write your test here\n\n'
+            content: NEW_TEST_TEMPLATE
           })
         ]);
       })
@@ -198,6 +200,24 @@ exports.add_routes = function(app) {
           app: app,
           code: code
         });
+      })
+      .catch(fail_on_error(res));
+    }
+  );
+
+  app.post('/app/:app_id/edit/',
+    auth.login_required,
+    ensure_user_can_access_app,
+    function(req, res) {
+      var new_code_id = shortid.generate();
+      db.code().insert({
+        id: new_code_id,
+        app_id: req.params.app_id,
+        content: NEW_TEST_TEMPLATE
+      })
+      .then(function(new_code) {
+        console.log('added', new_code)
+        res.redirect('/app/' + req.params.app_id + '/edit/' + new_code_id);
       })
       .catch(fail_on_error(res));
     }
