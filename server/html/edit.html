@@ -50,6 +50,14 @@
       height: 597px;
     }
 
+    #device-controls {
+      position: absolute;
+      text-align: right;
+      top: 15px;
+      left: 40px;
+      width: 320px;
+    }
+
     #controls {
       padding: 0 12px;
       height: 64px;
@@ -225,6 +233,9 @@
       {{/user}}
       <div class="content">
         <iframe id="device" src="https://appetize.io/embed/{{app.publicKey}}?device={{device.model}}&amp;scale=75&amp;autoplay=true&amp;orientation={{device.orientation}}&amp;deviceColor=black&amp;xdocMsg=true&amp;params=%7b%22chetbot.server%22%3a%22{{server}}%22%2c%22chetbot.device%22%3a%22{{device.id}}%22%7d" frameborder="0" scrolling="no"></iframe>
+        <div id="device-controls">
+          <paper-fab mini title="Restart app" icon="refresh" class="secondary" onclick="document.getElementById('device').contentWindow.postMessage('restartApp', '*');"></paper-fab>
+        </div>
         <div id="editor-container" class="editing">
           <div id="controls">
             <a class="back" href="javascript:showEditor();" title="Back to editor">
