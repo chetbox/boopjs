@@ -111,6 +111,11 @@
           {{/code}}
         </ul>
       </div>
+      <div id="fab">
+        <form id="add_test" method="POST" action="/app/{{app.id}}/edit">
+          <paper-fab title="Add test" icon="add" onclick="document.getElementById('add_test').submit();"></paper-fab>
+        </form>
+      </div>
     </paper-header-panel>
   </body>
 
