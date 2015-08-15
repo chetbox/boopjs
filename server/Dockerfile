@@ -31,6 +31,7 @@ RUN keytool -genkey -v -keystore /root/.android/debug.keystore -alias androiddeb
 
 # Configure project
 RUN npm update
+RUN npm install --unsafe-perm
 ENV NODE_ENV production
 ENV PORT 80
 EXPOSE 80
