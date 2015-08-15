@@ -215,8 +215,7 @@ exports.add_routes = function(app) {
         app_id: req.params.app_id,
         content: NEW_TEST_TEMPLATE
       })
-      .then(function(new_code) {
-        console.log('added', new_code)
+      .then(function() {
         res.redirect('/app/' + req.params.app_id + '/edit/' + new_code_id);
       })
       .catch(fail_on_error(res));
@@ -252,6 +251,19 @@ exports.add_routes = function(app) {
           autosave: true,
           code: code
         });
+      })
+      .catch(fail_on_error(res));
+    }
+  );
+
+  app.delete('/app/:app_id/edit/:code_id',
+    auth.login_required,
+    ensure_user_can_access_app,
+    ensure_code_belongs_to_app,
+    function(req, res) {
+      db.code().remove({hash: req.params.app_id, range: req.params.code_id})
+      .then(function() {
+        res.status(200).send('');
       })
       .catch(fail_on_error(res));
     }
