@@ -9,15 +9,23 @@ function save(editor) {
     console.log('Saving');
     var code = editor.getSession().getDocument().getValue();
     save_timeout = null;
-    $.ajax(window.location.pathname + '/code', {
+    $.ajax(location.pathname + '/code', {
       method: 'PUT',
       contentType: 'text/plain; charset=UTF-8',
       data: code,
       beforeSend: function() {
-        $('body').addClass('saving');
+        $('body')
+          .removeClass('save-error')
+          .addClass('saving');
       },
-      complete: function() {
+      success: function() {
         $('body').removeClass('saving');
+      },
+      error: function(e) {
+        $('body').addClass('save-error');
+
+        // Try saving again
+        setTimeout(function() { save(editor); }, 5000);
       }
     });
   }, SAVE_AFTER_MS);
