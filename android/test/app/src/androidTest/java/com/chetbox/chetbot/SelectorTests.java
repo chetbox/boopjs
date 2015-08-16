@@ -1,98 +1,41 @@
 package com.chetbox.chetbot;
 
 import android.graphics.Bitmap;
-import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
 import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
 
-import com.chetbox.chetbot.android.Chetbot;
-import com.chetbox.chetbot.android.ChetbotServerConnection;
-import com.chetbox.chetbot.stopwatch.R;
+import com.chetbox.chetbot.base.StopwatchActivityTest;
 import com.chetbox.chetbot.stopwatch.StopwatchActivity;
 import com.google.common.collect.ImmutableList;
 
 import org.junit.*;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 @RunWith(AndroidJUnit4.class)
-public class SelectorTests {
-
-    @Rule
-    public ActivityTestRule<StopwatchActivity> mActivityRule = new ActivityTestRule(StopwatchActivity.class);
-
-    @Rule
-    public TestName name = new TestName();
-
-    @Rule
-    public final ExpectedException exception = ExpectedException.none();
-
-    StopwatchActivity activity;
-    Chetbot chetbot;
-    View resetButton;
-    View startStopButton;
-    View minutesText;
-    View secondsText;
-    View millisecondsText;
-
-    int linesExecuted = 0;
-
-    @Before
-    public void setUp() {
-        // These lines have to be done in this order
-        Chetbot.setOfflineMode(true);
-        Chetbot.setTestActivity(activity);
-        activity = mActivityRule.getActivity();
-
-        StopwatchActivity activity = mActivityRule.getActivity();
-        resetButton = activity.findViewById(R.id.reset);
-        startStopButton = activity.findViewById(R.id.start_stop);
-        minutesText = activity.findViewById(R.id.minutes);
-        secondsText = activity.findViewById(R.id.seconds);
-        millisecondsText = activity.findViewById(R.id.milliseconds);
-
-        chetbot = Chetbot.getInstance();
-        chetbot.onStartScript();
-
-        // Handy references to views in the layout
-        exec("var _startStopButton_ = view({id: 'start_stop'});");
-        exec("var _resetButton_ = view({id: 'reset'});");
-        exec("var _minutesText_ = view({id: 'minutes'});");
-        exec("var _secondsText_ = view({id: 'seconds'});");
-        exec("var _millisecondsText_ = view({id: 'milliseconds'});");
-    }
-
-    @After
-    public void tearDown() {
-        chetbot.onFinishScript();
-        chetbot.reset();
-    }
-
-    Object exec(String stmt) {
-        return chetbot.onStatement(new ChetbotServerConnection.Statement(stmt, ++linesExecuted), name.getMethodName());
-    }
+public class SelectorTests extends StopwatchActivityTest {
 
     @Test public void viewReturnsInstance() {
-        assertThat((View) exec("view(_startStopButton_)"),
+        assertThat((Button) exec("view(_startStopButton_)"),
                 sameInstance(startStopButton));
     }
 
     @Test public void viewReturnsFirstInstance() {
-        assertThat((View) exec("view(_resetButton_, _startStopButton_)"),
+        assertThat((Button) exec("view(_resetButton_, _startStopButton_)"),
                 sameInstance(resetButton));
     }
 
     @Test public void findViewByTextIsDefault() {
-        assertThat((View) exec("view('start')"),
+        assertThat((Button) exec("view('start')"),
                 sameInstance(startStopButton));
     }
 
     @Test public void findViewByText() {
-        assertThat((View) exec("view({text: 'start'})"),
+        assertThat((Button) exec("view({text: 'start'})"),
                 sameInstance(startStopButton));
     }
 
@@ -102,7 +45,7 @@ public class SelectorTests {
     }
 
     @Test public void findViewByShortId() {
-        assertThat((View) exec("view({id: 'start_stop'})"),
+        assertThat((Button) exec("view({id: 'start_stop'})"),
                 sameInstance(startStopButton));
     }
 
@@ -112,7 +55,7 @@ public class SelectorTests {
     }
 
     @Test public void findViewByLongId() {
-        assertThat((View) exec("view({id: 'com.chetbox.chetbot.stopwatch:id/reset'})"),
+        assertThat((Button) exec("view({id: 'com.chetbox.chetbot.stopwatch:id/reset'})"),
                 sameInstance(resetButton));
     }
 
@@ -122,18 +65,18 @@ public class SelectorTests {
     }
 
     @Test public void findViewsByClassName() {
-        assertThat((View) exec("view({type: 'android.support.v7.widget.AppCompatButton', text: 'start'})"),
+        assertThat((Button) exec("view({type: 'android.support.v7.widget.AppCompatButton', text: 'start'})"),
                 sameInstance(startStopButton));
 
-        assertThat((View) exec("view({type: 'android.support.v7.widget.AppCompatButton', text: 'reset'})"),
+        assertThat((Button) exec("view({type: 'android.support.v7.widget.AppCompatButton', text: 'reset'})"),
                 sameInstance(resetButton));
     }
 
     @Test public void findViewsByClassSimpleName() {
-        assertThat((View) exec("view({type: 'AppCompatButton', text: 'start'})"),
+        assertThat((Button) exec("view({type: 'AppCompatButton', text: 'start'})"),
                 sameInstance(startStopButton));
 
-        assertThat((View) exec("view({type: 'AppCompatButton', text: 'reset'})"),
+        assertThat((Button) exec("view({type: 'AppCompatButton', text: 'reset'})"),
                 sameInstance(resetButton));
     }
 
@@ -224,32 +167,32 @@ public class SelectorTests {
     }
 
     @Test public void leftmostView() {
-        assertThat((View) exec("leftmost(_startStopButton_, _resetButton_)"),
+        assertThat((Button) exec("leftmost(_startStopButton_, _resetButton_)"),
                 sameInstance(startStopButton));
     }
 
     @Test public void rightmostView() {
-        assertThat((View) exec("rightmost(_startStopButton_, _resetButton_)"),
+        assertThat((Button) exec("rightmost(_startStopButton_, _resetButton_)"),
                 sameInstance(resetButton));
     }
 
     @Test public void topmostView() {
-        assertThat((View) exec("topmost(_startStopButton_, _minutesText_)"),
+        assertThat((TextView) exec("topmost(_startStopButton_, _minutesText_)"),
                 sameInstance(minutesText));
     }
 
     @Test public void bottommostView() {
-        assertThat((View) exec("bottommost(_startStopButton_, _minutesText_)"),
+        assertThat((Button) exec("bottommost(_startStopButton_, _minutesText_)"),
                 sameInstance(startStopButton));
     }
 
     @Test public void centermostView() {
-        assertThat((View) exec("centermost(_minutesText_, _secondsText_, _millisecondsText_)"),
+        assertThat((TextView) exec("centermost(_minutesText_, _secondsText_, _millisecondsText_)"),
                 sameInstance(secondsText));
     }
 
     @Test public void outermostView() {
-        assertThat((View) exec("outermost(_minutesText_, _secondsText_, _millisecondsText_)"),
+        assertThat((TextView) exec("outermost(_minutesText_, _secondsText_, _millisecondsText_)"),
                 anyOf(sameInstance(minutesText), sameInstance(millisecondsText)));
     }
 
