@@ -96,15 +96,10 @@
     <paper-header-panel class="cyan">
       {{#user}}
       <paper-toolbar>
-        <!--
-        <a href="/account" alt="Apps">
-          <paper-icon-button icon="arrow-back"></paper-icon-button>
-        </a>
-        -->
         <div class="title">Apps</div>
-        <a class="account" href="/account" alt="{{displayName}}">
-          <img src="{{avatarUrl}}"/>
-        </a>
+
+        {{> feedback-button}}
+        {{> account-button}}
       </paper-toolbar>
       {{/user}}
       <div class="content">
