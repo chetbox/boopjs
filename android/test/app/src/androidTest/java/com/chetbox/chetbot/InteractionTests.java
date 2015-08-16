@@ -28,5 +28,14 @@ public class InteractionTests extends StopwatchActivityTest {
         assertThat(startStopButton.getText().toString(),
                 equalToIgnoringCase("start"));
     }
-    
+
+    @Test public void waitSeconds() {
+        long start = System.currentTimeMillis();
+        exec("wait(0.5)");
+        long stop = System.currentTimeMillis();
+
+        assertThat((double) (stop - start),
+                closeTo(500.0, 50.0));
+    }
+
 }
