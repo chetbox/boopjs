@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.SystemClock;
 import android.text.TextUtils;
-import android.util.ArrayMap;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -23,9 +22,8 @@ import org.mozilla.javascript.Callable;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 
-import java.lang.reflect.Field;
-
 import static com.chetbox.chetbot.android.ViewUtils.*;
+import static com.chetbox.chetbot.android.ActivityUtils.*;
 
 import static com.google.common.collect.Iterables.*;
 
@@ -207,6 +205,8 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
                                 0));
                     }
                 });
+                sleep(0.05);
+                waitUntilIdle(activity);
                 return null;
             }
         });
@@ -215,6 +215,8 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
             public Object call(Activity activity, Object[] args) {
                 InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(getRootView(activity).getWindowToken(), 0);
+                sleep(0.05);
+                waitUntilIdle(activity);
                 return null;
             }
         });
@@ -225,6 +227,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
                 homeIntent.addCategory(Intent.CATEGORY_HOME);
                 homeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 activity.startActivity(homeIntent);
+                sleep(0.5);
                 return null;
             }
         });
@@ -254,6 +257,8 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
                         activity.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, keycode));
                     }
                 });
+                sleep(0.05);
+                waitUntilIdle(activity);
                 return null;
             }
         });
@@ -270,6 +275,8 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
                         );
                     }
                 });
+                sleep(0.05);
+                waitUntilIdle(activity);
                 return null;
             }
         });
@@ -342,12 +349,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
         scope.put("wait", scope, new Callable() {
             @Override
             public Object call(org.mozilla.javascript.Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
-                Double seconds = (Double) args[0];
-                try {
-                    Thread.sleep(Math.round(seconds * 1000.0));
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
+                sleep((Double) args[0]);
                 return null;
             }
         });
@@ -443,33 +445,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
             return sTestActivity;
         }
 
-        try {
-            Class activityThreadClass = Class.forName("android.app.ActivityThread");
-            Object activityThread = activityThreadClass.getMethod("currentActivityThread").invoke(null);
-            Field activitiesField = activityThreadClass.getDeclaredField("mActivities");
-            activitiesField.setAccessible(true);
-            // TODO: handle API < 19
-            // (ArrayMap is new for API 19)
-            ArrayMap activities = (ArrayMap) activitiesField.get(activityThread);
-            for (Object activityRecord : activities.values()) {
-                Class activityRecordClass = activityRecord.getClass();
-                Field pausedField = activityRecordClass.getDeclaredField("paused");
-                pausedField.setAccessible(true);
-                if (!pausedField.getBoolean(activityRecord)) {
-                    Field activityField = activityRecordClass.getDeclaredField("activity");
-                    activityField.setAccessible(true);
-                    Activity activity = (Activity) activityField.get(activityRecord);
-                    if (activity.getPackageName().equals(mPackageName)) {
-                        return activity;
-                    } else {
-                        Log.w(TAG, "Found activity for different package: " + activity.getPackageName());
-                    }
-                }
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        throw new AssertionError("Activity not found");
+        return ActivityUtils.getActivity(mPackageName);
     }
 
 }

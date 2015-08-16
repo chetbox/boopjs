@@ -19,16 +19,14 @@ public class InteractionTests extends StopwatchActivityTest {
                 equalToIgnoringCase("start"));
 
         exec("tap(_startStopButton_)");
-        exec("wait(1)"); // TODO: this should not be necessary
 
         assertThat(startStopButton.getText().toString(),
                 equalToIgnoringCase("stop"));
 
         exec("tap(_startStopButton_)");
-        exec("wait(1)"); // TODO: this should not be necessary
 
         assertThat(startStopButton.getText().toString(),
                 equalToIgnoringCase("start"));
     }
-
+    
 }
