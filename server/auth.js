@@ -57,7 +57,18 @@ function login_required(req, res, next) {
   res.redirect('/auth/github?redirect=' + encodeURIComponent(req.url));
 }
 
-function setup(app) {
+function setup(app, options) {
+
+  var options = options || {};
+
+  function login_redirect(req) {
+    return _.last(req.flash('redirect')) || options.logged_in_homepage || '/';
+  }
+
+  function logout_redirect(req) {
+    return logged_out_homepage || '/';
+  }
+
   app.use(expressSession({secret: 'f7417279-09ce-4ee9-9476-cd7d49668137'}));
   app.use(passport.initialize());
   app.use(passport.session());
@@ -73,7 +84,11 @@ function setup(app) {
   );
 
   app.get('/login', function(req, res) {
-    res.render('login');
+    if (req.user) {
+      res.redirect(login_redirect(req));
+    } else {
+      res.render('login');
+    }
   });
 
   app.get('/auth/github',
@@ -87,13 +102,13 @@ function setup(app) {
   app.get('/auth/github/callback',
     passport.authenticate('github', {failureRedirect: '/login'}),
     function (req, res) {
-      res.redirect(_.last(req.flash('redirect')) || '/apps');
+      res.redirect(login_redirect(req));
     }
   );
 
   app.get('/logout', function(req, res) {
     req.logout();
-    res.redirect('/');
+    res.redirect(logout_redirect(req));
   });
 
 }
