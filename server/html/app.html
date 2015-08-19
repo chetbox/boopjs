@@ -183,9 +183,10 @@
         return;
       }
 
-      $.ajax(url, {
+      $.ajax(url + '/name', {
         method: 'PUT',
-        data: {name: new_name}
+        contentType: 'text/plain; charset=UTF-8',
+        data: new_name,
       }).done(function() {
         location.reload();
       })
