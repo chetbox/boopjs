@@ -64,6 +64,16 @@ exports.add_routes = function(app) {
     });
   }
 
+  function check_allowed_code_update(key) {
+    return function(req, res, next) {
+      if (_.contains(['name', 'content'], req.params[key])) {
+        next();
+      } else {
+        res.status(400).send('Cannot update code key: ' + req.params[key]);
+      };
+    }
+  }
+
   app.get('/sign_s3',
     auth.login_required,
     function(req, res) {
@@ -261,27 +271,6 @@ exports.add_routes = function(app) {
     }
   );
 
-  app.put('/app/:app_id/edit/:code_id',
-    auth.login_required,
-    ensure_user_can_access_app,
-    ensure_code_belongs_to_app,
-    function(req, res) {
-      if (!req.body.name) {
-        res.status(400).send('"name" required');
-        return;
-      }
-      db.code().find({hash: req.params.app_id, range: req.params.code_id})
-      .then(function(code) {
-        code.name = req.body.name;
-        return db.code().update(code);
-      })
-      .then(function() {
-        res.status(200).send('');
-      })
-      .catch(fail_on_error(res));
-    }
-  );
-
   app.delete('/app/:app_id/edit/:code_id',
     auth.login_required,
     ensure_user_can_access_app,
@@ -313,15 +302,19 @@ exports.add_routes = function(app) {
     }
   );
 
-  app.put('/app/:app_id/edit/:code_id/code',
+  app.put('/app/:app_id/edit/:code_id/:code_key',
     auth.login_required, // TODO: return forbidden if no access
     ensure_user_can_access_app,
     ensure_code_belongs_to_app,
+    check_allowed_code_update('code_key'),
     function(req, res) {
-      db.code().update({
-        id: req.params.code_id,
-        app_id: req.params.app_id,
-        content: req.body || null
+      db.code().find({
+        hash: req.params.app_id,
+        range: req.params.code_id
+      })
+      .then(function(code) {
+        code[req.params.code_key] = req.body;
+        return db.code().update(code);
       })
       .then(function() {
         res.sendStatus(200);

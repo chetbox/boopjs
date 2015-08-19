@@ -9,7 +9,7 @@ function save(editor) {
     console.log('Saving');
     var code = editor.getSession().getDocument().getValue();
     save_timeout = null;
-    $.ajax(location.pathname + '/code', {
+    $.ajax(location.pathname + '/content', {
       method: 'PUT',
       contentType: 'text/plain; charset=UTF-8',
       data: code,
