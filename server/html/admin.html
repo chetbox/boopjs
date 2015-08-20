@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Admin - ChetBot</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="/favicon.ico">
+
+    {{> material-design}}
+
+    <style is="custom-style">
+      paper-toolbar {
+        --paper-toolbar-background: #607D8B;
+      }
+    </style>
+    <style type="text/css">
+      #users {
+        margin: 1em auto;
+      }
+
+      #users tr.type1 .id { /*admin*/
+        color: #F44336;
+      }
+
+      #users thead {
+        font-weight: 300;
+      }
+
+      #users td {
+        vertical-align: top;
+        padding-right: 1em;
+        padding-top: 0.5em;
+      }
+
+      #users td.apps ul {
+        padding: 0;
+        margin: 0;
+        list-style: none;
+      }
+    </style>
+  </head>
+  <body class="fullbleed">
+    <paper-header-panel class="cyan">
+      {{#user}}
+      <paper-toolbar>
+        <div class="title">Admin</div>
+
+        {{> feedback-button}}
+        {{> account-button}}
+      </paper-toolbar>
+      {{/user}}
+      <div class="content">
+        <table id="users">
+          <thead>
+            <tr>
+              <td>ID</td>
+              <td>GitHub profile</td>
+              <td>Apps</td>
+            </tr>
+          </thead>
+          <tbody>
+            {{#all_users}}
+            <tr class="type{{admin}}">
+              <td class="id">{{id}}</td>
+              <td class="github-user">
+                <a target="_blank" href="{{profileUrl}}" title="{{username}} on GitHub">{{username}}</a>
+              </td>
+              <td class="apps">
+                <ul>
+                  {{#apps}}<li><a href="/app/{{.}}">{{.}}</a></li>{{/apps}}
+                </ul>
+              </td>
+            </tr>
+            {{/all_users}}
+          </tbody>
+        </table>
+      </div>
+    </paper-header-panel>
+  </body>
+
+  {{> google-analytics}}
+
+  <script src="/components/jquery/dist/jquery.min.js"></script>
+</html>
