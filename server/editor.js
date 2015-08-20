@@ -10,18 +10,12 @@ exports.add_routes = function(app) {
   var auth = require('./auth');
   var devices = require('./devices');
   var s3 = require('./s3');
+  var fail_on_error = require('./util').fail_on_error;
   var appetizeio = require('./apps/appetizeio');
   var inject_chetbot = require('./apps/android/inject-chetbot');
   var android_app_info = require('./apps/android/info');
 
   var NEW_TEST_TEMPLATE = '// Write your test here\n\n';
-
-  function fail_on_error(res) {
-    return function(e) {
-      console.error(e.stack || e);
-      res.status(500).send(e.toString());
-    }
-  }
 
   function ensure_code_belongs_to_app(req, res, next) {
     db.code().find({hash: req.params.app_id, range: req.params.code_id})

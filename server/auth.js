@@ -37,6 +37,11 @@ passport.use(new GitHubStrategy(
       }
     );
 
+    // Make Chet an admin
+    if (serializable_user.username == 'chetbox') {
+      serializable_user.admin = 1;
+    }
+
     // TODO: fix grossness ('apps' stored as part of user object)
     db.users()
     .find(user.id)
@@ -55,6 +60,14 @@ function login_required(req, res, next) {
     return next();
   }
   res.redirect('/auth/github?redirect=' + encodeURIComponent(req.url));
+}
+
+function ensure_user_is_admin(req, res, next) {
+  if (req.user && req.user.admin) {
+    next();
+  } else {
+    res.sendStatus(403);
+  }
 }
 
 function setup(app, options) {
@@ -84,7 +97,7 @@ function setup(app, options) {
   );
 
   app.get('/login', function(req, res) {
-    if (req.user) {
+    if (req.isAuthenticated()) {
       res.redirect(login_redirect(req));
     } else {
       res.render('login');
@@ -115,3 +128,4 @@ function setup(app, options) {
 
 exports.setup = setup;
 exports.login_required = login_required;
+exports.ensure_user_is_admin = ensure_user_is_admin;
