@@ -218,7 +218,10 @@
           <paper-icon-button icon="arrow-back"></paper-icon-button>
         </a>
 
-        <div class="title">{{../code.name}}</div>
+        <div class="title">
+          <span class="name">{{../code.name}}</span>
+          {{> rename-button ../code}}
+        </div>
 
         {{> save-indicator}}
         {{> documentation-button}}
@@ -273,6 +276,8 @@
     autosave(editor);
   </script>
   {{/autosave}}
+
+  <script src="/js/rename-test.js"></script>
 
   <!-- heartbeat to prevent device timing out -->
   <script>
