@@ -105,7 +105,8 @@ function setup(app, options) {
       db.users().find(req.params.user_id)
       .then(function(user) {
         res.render('account', {
-          user: user
+          user: req.user,
+          requested_user: user
         });
       })
       .catch(fail_on_error(res));

@@ -39,18 +39,19 @@
           <paper-icon-button icon="arrow-back"></paper-icon-button>
         </a>
         <div class="title">My Account</div>
-        <a class="account" href="/account" alt="{{displayName}}">
-          <img src="{{avatarUrl}}"/>
-        </a>
+
+        {{> feedback-button}}
+        {{> admin-button}}
+        {{> account-button}}
       </paper-toolbar>
       {{/user}}
       <div class="content">
-        {{#user}}
+        {{#requested_user}}
         <div id="header">
           <img id="avatar" src="{{avatarUrl}}" title="{{displayName}} ({{username}})"/>
           <h2>{{displayName}}<br><span class="username">(<a target="_blank" href="{{profileUrl}}" title="{{username}} on GitHub">{{username}}</a>)</span></h2>
         </div>
-        {{/user}}
+        {{/requested_user}}
       </div>
     </paper-header-panel>
   </body>
