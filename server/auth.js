@@ -6,6 +6,7 @@ var _ = require('underscore');
 var flash = require('connect-flash');
 
 var db = require('./db');
+var fail_on_error = require('./util').fail_on_error;
 
 passport.serializeUser(function(user, done) {
   done(null, user.id);
@@ -70,6 +71,16 @@ function ensure_user_is_admin(req, res, next) {
   }
 }
 
+function ensure_logged_in_user(key) {
+  return function(req, res, next) {
+    if (req.user && (req.user.id === req.params[key] || req.user.admin)) {
+      next();
+    } else {
+      res.sendStatus(403);
+    }
+  }
+}
+
 function setup(app, options) {
 
   var options = options || {};
@@ -87,12 +98,17 @@ function setup(app, options) {
   app.use(passport.session());
   app.use(flash());
 
-  app.get('/account',
+  app.get('/account/:user_id',
     login_required,
+    ensure_logged_in_user('user_id'),
     function(req, res) {
-      res.render('account', {
-        user: req.user
-      });
+      db.users().find(req.params.user_id)
+      .then(function(user) {
+        res.render('account', {
+          user: user
+        });
+      })
+      .catch(fail_on_error(res));
     }
   );
 
