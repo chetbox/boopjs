@@ -218,6 +218,26 @@ exports.add_routes = function(app) {
     }
   );
 
+  app.delete('/app/:app_id',
+    auth.login_required,
+    ensure_user_can_access_app,
+    function(req, res) {
+      db.code().findAll(req.params.app_id)
+      .then(function(code) {
+        return code.map(function(c) {
+          return db.code().remove({hash: c.app_id, range: c.id});
+        });
+      })
+      .spread(function() {
+        return db.apps().remove(req.params.app_id);
+      })
+      .then(function() {
+        res.status(200).send('');
+      })
+      .catch(fail_on_error(res));
+    }
+  );
+
   app.post('/app/:app_id/edit/',
     auth.login_required,
     ensure_user_can_access_app,
