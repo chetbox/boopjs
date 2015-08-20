@@ -127,6 +127,7 @@ exports.add_routes = function(app) {
           db.apps().insert(
             _.extend({
               id: new_app_id,
+              admins: [req.user.id],
               platform: 'android',
               user_app_url: user_apk_url,
               app_url: modified_apk_url,
