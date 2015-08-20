@@ -17,7 +17,7 @@
         margin: 1em auto;
       }
 
-      #users tr.type1 .id { /*admin*/
+      #users tr.type1 .id * { /*admin*/
         color: #F44336;
       }
 
@@ -60,7 +60,9 @@
           <tbody>
             {{#all_users}}
             <tr class="type{{admin}}">
-              <td class="id">{{id}}</td>
+              <td class="id">
+                <a href="/account/{{id}}">{{id}}</a>
+              </td>
               <td class="github-user">
                 <a target="_blank" href="{{profileUrl}}" title="{{username}} on GitHub">{{username}}</a>
               </td>
