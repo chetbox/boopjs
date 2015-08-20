@@ -100,7 +100,10 @@
           <paper-icon-button icon="arrow-back"></paper-icon-button>
         </a>
 
-        <div class="title">{{../app.name}}</div>
+        <div class="title">
+          {{../app.name}}
+          {{> delete-button app}}
+        </div>
 
         {{> feedback-button}}
         {{> admin-button}}
@@ -167,15 +170,25 @@
     });
   </script>
   <script>
-    function ajax_delete(url, description) {
+    function ajax_delete(url, description, redirect) {
       if (!confirm('Are you sure you want to delete "' + description + '"?')) {
         return;
       }
       $.ajax(url, {
         method: 'DELETE'
       }).done(function() {
-        location.reload();
-      })
+        if (redirect) {
+          location.href = redirect;
+        } else {
+          location.reload();
+        }
+      }).fail(function(xhr, status, e) {
+        alert(e.toString());
+      });
+    }
+
+    function delete_this() {
+      return ajax_delete('/app/{{app.id}}', '{{app.name}}', '/apps');
     }
 
     function rename(url, current_name) {
