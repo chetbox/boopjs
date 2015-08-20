@@ -169,6 +169,9 @@
       google_analytics: ga
     });
   </script>
+
+  <script src="/js/rename-test.js"></script>
+  
   <script>
     function ajax_delete(url, description, redirect) {
       if (!confirm('Are you sure you want to delete "' + description + '"?')) {
@@ -189,21 +192,6 @@
 
     function delete_this() {
       return ajax_delete('/app/{{app.id}}', '{{app.name}}', '/apps');
-    }
-
-    function rename(url, current_name) {
-      var new_name = prompt('Rename "' + current_name + '" to:', current_name);
-      if (!new_name) {
-        return;
-      }
-
-      $.ajax(url + '/name', {
-        method: 'PUT',
-        contentType: 'text/plain; charset=UTF-8',
-        data: new_name,
-      }).done(function() {
-        location.reload();
-      })
     }
   </script>
 </html>
