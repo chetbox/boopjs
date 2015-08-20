@@ -93,7 +93,10 @@ function setup(app, options) {
     return logged_out_homepage || '/';
   }
 
-  app.use(expressSession({secret: 'f7417279-09ce-4ee9-9476-cd7d49668137'}));
+  app.use(expressSession({
+    secret: 'f7417279-09ce-4ee9-9476-cd7d49668137',
+    resave: false
+  }));
   app.use(passport.initialize());
   app.use(passport.session());
   app.use(flash());
