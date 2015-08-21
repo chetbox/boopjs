@@ -63,7 +63,7 @@ public class InteractionTests extends StopwatchActivityTest {
 
     @Test public void arbitraryUiThreadExecution() {
         exec("activity().runOnUiThread(function() {\n" +
-             "   Packages.android.widget.Toast.makeText(activity(), '" + name.getMethodName() + "', 1).show();\n" +
+             "   Packages.android.widget.Toast.makeText(activity(), '" + name.getMethodName() + "', 0).show();\n" +
              "})");
     }
 }

@@ -27,9 +27,7 @@ public class AssertionTests {
 
     @Before
     public void setUp() {
-        Chetbot.setOfflineMode(true);
-        Chetbot.start(null);
-        chetbot = Chetbot.getInstance();
+        chetbot = Chetbot.getInstance(null);
         chetbot.onStartScript();
         linesExecuted = 0;
     }
