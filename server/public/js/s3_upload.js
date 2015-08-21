@@ -42,7 +42,7 @@ function s3_upload(file_input, target_input, opts) {
         if (xhr.status === 200) {
           ga('send', 'event', 'app-upload', 'uploaded');
 
-          progress('Done. Please wait...');
+          progress('Processing...');
           $(target_input).val(req.url);
           $(target_input).closest('form').submit();
         } else {
