@@ -19,6 +19,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import static com.google.common.collect.Iterables.*;
 import static com.google.common.collect.Lists.*;
@@ -242,19 +243,14 @@ public class ViewUtils {
                 decorView.setDrawingCacheEnabled(true);
                 try {
                     Bitmap screenshot = decorView.getDrawingCache();
-                    screenshotContainer.contents = screenshot.copy(screenshot.getConfig(), false);
+                    screenshotContainer.setContent(screenshot.copy(screenshot.getConfig(), false));
                 } finally {
                     decorView.setDrawingCacheEnabled(false);
                     latch.countDown();
                 }
             }
         });
-        try {
-            latch.await();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        return screenshotContainer.contents;
+        return screenshotContainer.waitForContent(10, TimeUnit.SECONDS);
     }
 
     public static byte[] toPNG(Bitmap bitmap) {
