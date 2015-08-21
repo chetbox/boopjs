@@ -42,4 +42,9 @@ public class InteractionTests extends StopwatchActivityTest {
         exec("toast('This should show something')");
     }
 
+    @Test public void arbitraryJavaExecution() {
+        assertThat((Integer) exec("java.util.Random().nextInt()"),
+                isA(Integer.class));
+    }
+
 }
