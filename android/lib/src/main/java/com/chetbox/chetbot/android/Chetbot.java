@@ -286,6 +286,18 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
                 return activity;
             }
         });
+        registerJsFunction(scope, "toast", new JsFunction() {
+            @Override
+            public Object call(final Activity activity, final Object[] args) {
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(activity, (String) args[0], Toast.LENGTH_SHORT).show();
+                    }
+                });
+                return null;
+            }
+        });
         registerJsFunction(scope, "view", new JsViewFunction() {
             @Override
             public Object call(Activity activity, Iterable<View> selectedViews) {
