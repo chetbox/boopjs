@@ -38,4 +38,8 @@ public class InteractionTests extends StopwatchActivityTest {
                 closeTo(500.0, 50.0));
     }
 
+    @Test public void toast() {
+        exec("toast('This should show something')");
+    }
+
 }
