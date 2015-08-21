@@ -36,11 +36,12 @@ app.use(body_parser.urlencoded());
 // Application setup
 
 app.use(express.static(__dirname + '/public'));
-require('./auth')             .setup(app);
+require('./auth')             .setup(app, {logged_in_homepage: '/apps'});
 require('./index')            .add_routes(app);
 require('./editor_demo')      .add_routes(app);
 require('./editor')           .add_routes(app);
 require('./websocket_server') .add_routes(app);
+require('./admin')            .add_routes(app);
 
 
 // Launch

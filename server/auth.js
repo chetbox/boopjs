@@ -6,6 +6,7 @@ var _ = require('underscore');
 var flash = require('connect-flash');
 
 var db = require('./db');
+var fail_on_error = require('./util').fail_on_error;
 
 passport.serializeUser(function(user, done) {
   done(null, user.id);
@@ -37,6 +38,11 @@ passport.use(new GitHubStrategy(
       }
     );
 
+    // Make Chet an admin
+    if (serializable_user.username == 'chetbox') {
+      serializable_user.admin = 1;
+    }
+
     // TODO: fix grossness ('apps' stored as part of user object)
     db.users()
     .find(user.id)
@@ -57,23 +63,65 @@ function login_required(req, res, next) {
   res.redirect('/auth/github?redirect=' + encodeURIComponent(req.url));
 }
 
-function setup(app) {
-  app.use(expressSession({secret: 'f7417279-09ce-4ee9-9476-cd7d49668137'}));
+function ensure_user_is_admin(req, res, next) {
+  if (req.user && req.user.admin) {
+    next();
+  } else {
+    res.sendStatus(403);
+  }
+}
+
+function ensure_logged_in_user(key) {
+  return function(req, res, next) {
+    if (req.user && (req.user.id === req.params[key] || req.user.admin)) {
+      next();
+    } else {
+      res.sendStatus(403);
+    }
+  }
+}
+
+function setup(app, options) {
+
+  var options = options || {};
+
+  function login_redirect(req) {
+    return _.last(req.flash('redirect')) || options.logged_in_homepage || '/';
+  }
+
+  function logout_redirect(req) {
+    return logged_out_homepage || '/';
+  }
+
+  app.use(expressSession({
+    secret: 'f7417279-09ce-4ee9-9476-cd7d49668137',
+    resave: false
+  }));
   app.use(passport.initialize());
   app.use(passport.session());
   app.use(flash());
 
-  app.get('/account',
+  app.get('/account/:user_id',
     login_required,
+    ensure_logged_in_user('user_id'),
     function(req, res) {
-      res.render('account', {
-        user: req.user
-      });
+      db.users().find(req.params.user_id)
+      .then(function(user) {
+        res.render('account', {
+          user: req.user,
+          requested_user: user
+        });
+      })
+      .catch(fail_on_error(res));
     }
   );
 
   app.get('/login', function(req, res) {
-    res.render('login');
+    if (req.isAuthenticated()) {
+      res.redirect(login_redirect(req));
+    } else {
+      res.render('login');
+    }
   });
 
   app.get('/auth/github',
@@ -87,16 +135,17 @@ function setup(app) {
   app.get('/auth/github/callback',
     passport.authenticate('github', {failureRedirect: '/login'}),
     function (req, res) {
-      res.redirect(_.last(req.flash('redirect')) || '/apps');
+      res.redirect(login_redirect(req));
     }
   );
 
   app.get('/logout', function(req, res) {
     req.logout();
-    res.redirect('/');
+    res.redirect(logout_redirect(req));
   });
 
 }
 
 exports.setup = setup;
 exports.login_required = login_required;
+exports.ensure_user_is_admin = ensure_user_is_admin;

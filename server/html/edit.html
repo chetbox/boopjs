@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Edit - ChetBot</title>
+    <title>{{code.name}} - ChetBot</title>
     <link rel="icon" href="{{app.icon}}">
 
     {{> material-design}}
@@ -79,15 +79,7 @@
       color: #fff;
     }
 
-    #controls .status {
-      float: right;
-      font-size: 0.67em;
-      padding-top: 0.33em;
-      transition: opacity 400ms ease-out;
-      opacity: 0;
-    }
-
-    body.saving #controls .status {
+    body.saving #controls .status.saving {
       opacity: 1;
     }
 
@@ -225,10 +217,17 @@
         <a href="/app/{{../code.app_id}}" alt="Apps">
           <paper-icon-button icon="arrow-back"></paper-icon-button>
         </a>
-        <div class="title">{{../code.name}}</div>
-        <a href="/account" class="account" alt="{{displayName}}">
-          <img src="{{avatarUrl}}"/>
-        </a>
+
+        <div class="title">
+          <span class="name">{{../code.name}}</span>
+          {{> rename-button ../code}}
+        </div>
+
+        {{> save-indicator}}
+        {{> documentation-button}}
+        {{> feedback-button}}
+        {{> admin-button}}
+        {{> account-button}}
       </paper-toolbar>
       {{/user}}
       <div class="content">
@@ -250,7 +249,6 @@
               <paper-icon-button icon="av:stop" alt="Run test"></paper-icon-button>
             </a>
             -->
-            <span class="saved status">Saving...</span>
           </div>
           <div id="editor">{{code.content}}</div>
           <div id="test-report">
@@ -278,6 +276,8 @@
     autosave(editor);
   </script>
   {{/autosave}}
+
+  <script src="/js/rename-test.js"></script>
 
   <!-- heartbeat to prevent device timing out -->
   <script>

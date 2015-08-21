@@ -99,10 +99,15 @@
         <a href="/apps" alt="Apps">
           <paper-icon-button icon="arrow-back"></paper-icon-button>
         </a>
-        <div class="title">{{../app.name}}</div>
-        <a class="account" href="/account" alt="{{displayName}}">
-          <img src="{{avatarUrl}}"/>
-        </a>
+
+        <div class="title">
+          {{../app.name}}
+          {{> delete-button app}}
+        </div>
+
+        {{> feedback-button}}
+        {{> admin-button}}
+        {{> account-button}}
       </paper-toolbar>
       {{/user}}
       <div class="content">
@@ -164,30 +169,29 @@
       google_analytics: ga
     });
   </script>
+
+  <script src="/js/rename-test.js"></script>
+  
   <script>
-    function ajax_delete(url, description) {
+    function ajax_delete(url, description, redirect) {
       if (!confirm('Are you sure you want to delete "' + description + '"?')) {
         return;
       }
       $.ajax(url, {
         method: 'DELETE'
       }).done(function() {
-        location.reload();
-      })
+        if (redirect) {
+          location.href = redirect;
+        } else {
+          location.reload();
+        }
+      }).fail(function(xhr, status, e) {
+        alert(e.toString());
+      });
     }
 
-    function rename(url, current_name) {
-      var new_name = prompt('Rename "' + current_name + '" to:', current_name);
-      if (!new_name) {
-        return;
-      }
-
-      $.ajax(url, {
-        method: 'PUT',
-        data: {name: new_name}
-      }).done(function() {
-        location.reload();
-      })
+    function delete_this() {
+      return ajax_delete('/app/{{app.id}}', '{{app.name}}', '/apps');
     }
   </script>
 </html>
