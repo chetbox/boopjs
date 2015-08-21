@@ -10,18 +10,12 @@ exports.add_routes = function(app) {
   var auth = require('./auth');
   var devices = require('./devices');
   var s3 = require('./s3');
+  var fail_on_error = require('./util').fail_on_error;
   var appetizeio = require('./apps/appetizeio');
   var inject_chetbot = require('./apps/android/inject-chetbot');
   var android_app_info = require('./apps/android/info');
 
   var NEW_TEST_TEMPLATE = '// Write your test here\n\n';
-
-  function fail_on_error(res) {
-    return function(e) {
-      console.error(e.stack || e);
-      res.status(500).send(e.toString());
-    }
-  }
 
   function ensure_code_belongs_to_app(req, res, next) {
     db.code().find({hash: req.params.app_id, range: req.params.code_id})
@@ -35,6 +29,12 @@ exports.add_routes = function(app) {
   }
 
   function ensure_user_can_access_app(req, res, next) {
+    // Admins always have access
+    if (req.user.admin) {
+      next();
+      return;
+    }
+
     if (!req.user.apps || req.user.apps.indexOf(req.params.app_id) === -1) {
       res.status(403).send('You don\'t have access to this app');
     } else {
@@ -127,6 +127,7 @@ exports.add_routes = function(app) {
           db.apps().insert(
             _.extend({
               id: new_app_id,
+              admins: [req.user.id],
               platform: 'android',
               user_app_url: user_apk_url,
               app_url: modified_apk_url,
@@ -213,6 +214,26 @@ exports.add_routes = function(app) {
             return c;
           })
         });
+      })
+      .catch(fail_on_error(res));
+    }
+  );
+
+  app.delete('/app/:app_id',
+    auth.login_required,
+    ensure_user_can_access_app,
+    function(req, res) {
+      db.code().findAll(req.params.app_id)
+      .then(function(code) {
+        return code.map(function(c) {
+          return db.code().remove({hash: c.app_id, range: c.id});
+        });
+      })
+      .spread(function() {
+        return db.apps().remove(req.params.app_id);
+      })
+      .then(function() {
+        res.status(200).send('');
       })
       .catch(fail_on_error(res));
     }

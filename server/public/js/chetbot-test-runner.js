@@ -89,7 +89,7 @@ function run(editor, server, device_id) {
     ws.send(JSON.stringify(script));
   };
   ws.onerror = function(e) {
-    console.error(error);
+    console.error(e);
     testReportEl.append(
       $('<li>')
         .addClass('error')

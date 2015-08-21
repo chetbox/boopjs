@@ -41,6 +41,7 @@ require('./index')            .add_routes(app);
 require('./editor_demo')      .add_routes(app);
 require('./editor')           .add_routes(app);
 require('./websocket_server') .add_routes(app);
+require('./admin')            .add_routes(app);
 
 
 // Launch
