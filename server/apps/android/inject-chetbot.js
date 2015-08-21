@@ -2,48 +2,12 @@ var os = require('os');
 var fs = require('fs');
 var path = require('path');
 var shortid = require('shortid');
-var zip_utils = require('./zip-utils')
+var zip_utils = require('./zip-utils');
+var xml2js = require('xml2js');
 
 require('./tools').global();
 require('shelljs/global');
 config.silent = true;
-
-exports.find_main_activity = function(apk_file) {
-  var tmp = path.join(os.tmpdir(), shortid.generate());
-  mkdir('-p', tmp);
-
-  var manifest_file = path.join(tmp, 'AndroidManifest.xml');
-  java('-jar', apk_parser, apk_file).to(manifest_file);
-
-  var is_main_activity_xpath = '[intent-filter/category/@android:name="android.intent.category.LAUNCHER" and' +
-                               ' intent-filter/action/@android:name="android.intent.action.MAIN"]';
-  var main_activity_alias_xpath = '/manifest/application/activity-alias' + is_main_activity_xpath;
-  var main_activity_xpath = '/manifest/application/activity' + is_main_activity_xpath;
-
-  // TODO: port to node XML processing
-  var main_activity = xmlstarlet('sel', '-t',
-    '--if', main_activity_alias_xpath,
-      '-v', main_activity_alias_xpath + '/@android:targetActivity',
-    '--else',
-      '-v', main_activity_xpath + '/@android:name',
-    manifest_file
-  );
-
-  // Clean up
-  fs.unlinkSync(manifest_file);
-  fs.rmdirSync(tmp);
-
-  return main_activity;
-}
-
-exports.add_chetbot_to_oncreate = function(smali_src) {
-  return String(smali_src).replace(
-    /^(\.method protected onCreate\(Landroid\/os\/Bundle;\)V[\s\S]*?\.prologue\b)/m,
-    '$1' +
-    '\n\n' +
-    '    # Injected by Chetbot\n' +
-    '    invoke-static {p0}, Lcom/chetbox/chetbot/android/Chetbot;->start(Landroid/app/Activity;)V\n');
-}
 
 function get_output(exec_obj) {
   check_succeeds(exec_obj);
@@ -61,6 +25,22 @@ function tmp_dir() {
   }
 }
 
+function set_application_class(manifest_file, application_class) {
+  var manifest;
+  xml2js.parseString(fs.readFileSync(manifest_file), function(err, xml) {
+    // parseString is synchronous by default
+    manifest = xml;
+  });
+
+  if (manifest.manifest.application[0]['$']['android:name']) {
+    throw 'Apps with a custom Application class are not yet supported';
+  }
+  manifest.manifest.application[0]['$']['android:name'] = application_class;
+
+  var xml_builder = new xml2js.Builder();
+  fs.writeFileSync(manifest_file, xml_builder.buildObject(manifest));
+}
+
 exports.add_chetbot_to_apk = function(input_apk, output_apk) {
 
   output_apk = output_apk || input_apk;
@@ -76,39 +56,23 @@ exports.add_chetbot_to_apk = function(input_apk, output_apk) {
   console.log('  ' + input_apk);
   cp(input_apk, tmp('app.apk'));
 
-  console.log('Extracting classes.dex');
-  fs.writeFileSync(
-    tmp('classes.dex'),
-    zip_utils.extract_file(tmp('app.apk'), 'classes.dex'),
-    {encoding :null}
-  );
+  console.log('Extracting resources from APK');
+  java('-jar', apktool, 'decode', '--no-src', tmp('app.apk'), '-o', tmp('app'));
 
-  console.log('Decompiling');
-  java('-jar', baksmali, '-x', tmp('classes.dex'), '-o', tmp('app-smali'));
+  console.log('Modifying AndroidManifest.xml');
+  set_application_class(tmp('app/AndroidManifest.xml'), 'com.chetbox.chetbot.android.ChetbotApplication');
 
-  console.log('Finding main activity');
-  var main_activity = exports.find_main_activity(tmp('app.apk'));
-  console.log('  ' + main_activity);
+  console.log('Shuffling classes?.dex files');
+  var dex_files = ls(tmp('app'))
+    .filter(function(f) { return f.match(/classes[0-9]*\.dex/); })
+    .sort();
+  mv(tmp('app/classes.dex'), tmp('app/classes' + (dex_files.length + 1) + '.dex'));
 
-  console.log('Injecting "Chetbot.start( );"');
-  var main_activity_smali = path.join(tmp('app-smali'), main_activity.replace(/\./g, '/') + '.smali');
-  fs.writeFileSync(
-    main_activity_smali,
-    exports.add_chetbot_to_oncreate(fs.readFileSync(main_activity_smali))
-  );
+  console.log('Adding Chetbot dex');
+  cp(chetbot_dex, tmp('app'));
 
-  console.log('Adding Chetbot sources');
-  cp('-R', chetbot_smali, tmp('app-smali'));
-
-  console.log('Recompiling');
-  rm(tmp('classes.dex'));
-  java('-jar', smali, tmp('app-smali'), '-o', tmp('classes.dex'));
-
-  console.log('Updating APK');
-  zip('-j', tmp('app.apk'), tmp('classes.dex'));
-
-  console.log('Removing old signing info');
-  zip('-d', tmp('app.apk'), 'META-INF/*');
+  console.log('Re-packaging APK');
+  java('-jar', apktool, '-o', tmp('app.chetbot.apk'), 'build', tmp('app'));
 
   console.log('Signing');
   jarsigner(
@@ -117,17 +81,17 @@ exports.add_chetbot_to_apk = function(input_apk, output_apk) {
       '-keystore', android_debug_keystore,
       '-storepass', 'android',
       '-keypass', 'android',
-      tmp('app.apk'),
+      tmp('app.chetbot.apk'),
       'androiddebugkey'
   );
-  jarsigner('-verify', '-certs', tmp('app.apk'));
+  jarsigner('-verify', '-certs', tmp('app.chetbot.apk'));
 
   console.log('Zip-aligning');
-  zipalign('4', tmp('app.apk'), tmp('app-aligned.apk'));
+  zipalign('4', tmp('app.chetbot.apk'), tmp('app-aligned.chetbot.apk'));
 
   console.log('Copying APK to destination');
   console.log('  -> ' + output_apk);
-  mv('-f', tmp('app-aligned.apk'), output_apk);
+  mv('-f', tmp('app-aligned.chetbot.apk'), output_apk);
 
   console.log('Cleaning up');
   rm('-r', tmp());
