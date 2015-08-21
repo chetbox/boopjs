@@ -368,7 +368,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
 
         mJsContext.evaluateString(scope, "RegExp; getClass; java; Packages; JavaAdapter;", "<lazyLoad>", 0, null);
         mJsContext.evaluateString(scope, Assert.source(), Assert.class.getName(), 0, null);
-        mJsContext.evaluateString(scope, "var assert_exists = function() { assert_true(view(arguments)); }", "<assert_exists>", 0, null);
+        mJsContext.evaluateString(scope, "var assert_exists = function() { assert_true(exists(arguments)); }", "<assert_exists>", 0, null);
         scope.sealObject();
 
         mJsScope = mJsContext.newObject(scope);
