@@ -47,4 +47,9 @@ public class InteractionTests extends StopwatchActivityTest {
                 isA(Integer.class));
     }
 
+    @Test public void arbitraryUiThreadExecution() {
+        exec("activity().runOnUiThread(function() {\n" +
+             "   Packages.android.widget.Toast.makeText(activity(), '" + name.getMethodName() + "', 1).show();\n" +
+             "})");
+    }
 }
