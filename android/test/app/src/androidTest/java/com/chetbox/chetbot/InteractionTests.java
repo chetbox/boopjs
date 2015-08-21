@@ -1,8 +1,8 @@
 package com.chetbox.chetbot;
 
 import android.support.test.runner.AndroidJUnit4;
-import android.view.View;
 
+import com.chetbox.chetbot.android.ActivityUtils;
 import com.chetbox.chetbot.base.StopwatchActivityTest;
 
 import org.junit.Test;
@@ -27,6 +27,20 @@ public class InteractionTests extends StopwatchActivityTest {
 
         assertThat(startStopButton.getText().toString(),
                 equalToIgnoringCase("start"));
+    }
+
+    @Test public void waitUntilIdle() {
+        exec("tap(_startStopButton_)");
+        exec("tap(_startStopButton_)");
+
+        exec("wait_until_idle()");
+    }
+
+    @Test public void waitUntilIdleTimeout() {
+        exec("tap(_startStopButton_)");
+
+        exception.expect(ActivityUtils.TimeoutException.class);
+        exec("wait_until_idle({timeout: 2})");
     }
 
     @Test public void waitSeconds() {

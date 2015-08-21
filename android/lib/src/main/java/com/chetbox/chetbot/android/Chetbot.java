@@ -22,6 +22,8 @@ import org.mozilla.javascript.Callable;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 
+import java.util.concurrent.TimeUnit;
+
 import static com.chetbox.chetbot.android.ViewUtils.*;
 import static com.chetbox.chetbot.android.ActivityUtils.*;
 
@@ -70,8 +72,15 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
     private static String getStringValue(String key, ScriptableObject object, Scriptable scope) {
         Object value = object.get(key, scope);
         return (value == Scriptable.NOT_FOUND)
-            ? null
-            : (String) value;
+                ? null
+                : (String) value;
+    }
+
+    private static Double getDoubleValue(String key, ScriptableObject object, Scriptable scope) {
+        Object value = object.get(key, scope);
+        return (value == Scriptable.NOT_FOUND)
+                ? null
+                : (Double) value;
     }
 
     private static SubViews subViewsSelector(Object selector, Scriptable scope) {
@@ -206,7 +215,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
                     }
                 });
                 sleep(0.05);
-                waitUntilIdle(activity);
+                waitUntilSettled(activity);
                 return null;
             }
         });
@@ -216,7 +225,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
                 InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(getRootView(activity).getWindowToken(), 0);
                 sleep(0.05);
-                waitUntilIdle(activity);
+                waitUntilSettled(activity);
                 return null;
             }
         });
@@ -258,7 +267,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
                     }
                 });
                 sleep(0.05);
-                waitUntilIdle(activity);
+                waitUntilSettled(activity);
                 return null;
             }
         });
@@ -276,7 +285,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
                     }
                 });
                 sleep(0.05);
-                waitUntilIdle(activity);
+                waitUntilSettled(activity);
                 return null;
             }
         });
@@ -362,6 +371,17 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
             @Override
             public Object call(org.mozilla.javascript.Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
                 sleep((Double) args[0]);
+                return null;
+            }
+        });
+        registerJsFunction(scope, "wait_until_idle", new JsFunction() {
+            @Override
+            public Object call(Activity activity, Object[] args) {
+                long timeout = 10;
+                if (args.length > 0 && args[0] instanceof ScriptableObject) {
+                    timeout = Math.round(getDoubleValue("timeout", (ScriptableObject) args[0], (ScriptableObject) args[0]));
+                }
+                waitUntilIdle(activity, timeout, TimeUnit.SECONDS);
                 return null;
             }
         });
