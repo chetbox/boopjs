@@ -1,34 +1,54 @@
 var assert = require('assert');
 var path = require('path');
 var fs = require('fs');
+var shortid = require('shortid');
+var xml2js = require('xml2js');
 
-describe('Inject Chetbot into Android APK', function() {
+describe('Inject Chetbot (Android)', function() {
 
   var inject = require('../../../apps/android/inject-chetbot');
 
-  var stopwatch_apk = path.join(__dirname, 'fixtures', 'stopwatch-debug.apk');
-  var mubi_apk = path.join(__dirname, 'fixtures', 'com.mubi.apk');
-  var myapp_smali = fs.readFileSync(path.join(__dirname, 'fixtures', 'myapp-smali', 'myapp', 'MyMainActivity.smali'));
-  var myapp_smali_with_chetbot = String(fs.readFileSync(path.join(__dirname, 'fixtures', 'myapp-chetbot-smali', 'myapp', 'MyMainActivity.smali')));
+  var stopwatch_manifest_default_application = path.join(__dirname, 'fixtures', 'StopwatchManifestDefaultApplication.xml');
+  var stopwatch_manifest_custom_application = path.join(__dirname, 'fixtures', 'StopwatchManifestCustomApplication.xml');
+  var twitter_application_smali_default_application = path.join(__dirname, 'fixtures', 'twitter-smali', 'com', 'chetbox', 'twitter', 'android', 'TwitterApplication.smali');
+  var twitter_application_smali_custom_application = path.join(__dirname, 'fixtures', 'TwitterApplicationWithCustomApplication.smali');
+  var twitter_smali_dir = path.join(__dirname, 'fixtures', 'twitter-smali');
 
-  it('finds the launcher <activity>', function() {
-    assert.equal(
-      inject.find_main_activity(stopwatch_apk),
-      'com.chetbox.chetbot.stopwatch.Stopwatch'
+  function parseXML(str) {
+    var xml;
+    xml2js.parseString(str, function(err, parsed_content) {
+      // synchronous
+      if (err) throw err;
+      xml = parsed_content;
+    })
+    return xml;
+  }
+
+  it('sets an application/@android:name AndroidManifest.xml definition', function() {
+    assert.deepEqual(
+      parseXML(inject.set_manifest_application_class(stopwatch_manifest_default_application, 'com.domain.CustomApplication')),
+      parseXML(fs.readFileSync(stopwatch_manifest_custom_application, 'utf-8'))
     );
   });
 
-  it('finds the launcher <activity-alias>', function() {
+  it('cannot alter the application/@android:name AndroidManifest.xml definition', function() {
     assert.equal(
-      inject.find_main_activity(mubi_apk),
-      'com.mubi.browse.BrowseActivity'
+      inject.set_manifest_application_class(stopwatch_manifest_custom_application, 'com.domain.SomeOtherApplication'),
+      false
     );
   });
 
-  it('injects "Chetbot.start(...)" smali into onCreate', function() {
+  it('sets the superclass in a smali file', function() {
     assert.equal(
-      inject.add_chetbot_to_oncreate(myapp_smali),
-      myapp_smali_with_chetbot
+      inject.set_smali_application_class(twitter_application_smali_default_application, 'com.domain.CustomApplication'),
+      fs.readFileSync(twitter_application_smali_custom_application, 'utf-8')
+    );
+  });
+
+  it('finds classes extending com.android.Application', function() {
+    assert.deepEqual(
+      inject.find_application_subclasses(twitter_smali_dir),
+      ['com/chetbox/twitter/android/TwitterApplication.smali']
     );
   });
 
