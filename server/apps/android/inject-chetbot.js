@@ -8,7 +8,6 @@ var xml2js = require('xml2js');
 var CHETBOT_APPLICATION_CLASS = 'com.chetbox.chetbot.android.ChetbotApplication';
 
 require('shelljs/global');
-global.grep = undefined; // use "grep" from "./tools"
 require('./tools').global();
 config.silent = true;
 
