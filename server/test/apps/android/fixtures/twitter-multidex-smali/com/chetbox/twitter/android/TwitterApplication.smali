@@ -1,5 +1,5 @@
 .class public Lcom/chetbox/twitter/android/TwitterApplication;
-.super Lcom/domain/CustomApplication;
+.super Landroid/support/multidex/MultiDexApplication;
 .source "TwitterApplication.java"
 
 
@@ -15,7 +15,7 @@
 
     .prologue
     .line 10
-    invoke-direct {p0}, Lcom/domain/CustomApplication;-><init>()V
+    invoke-direct {p0}, Landroid/support/multidex/MultiDexApplication;-><init>()V
 
     return-void
 .end method
@@ -27,7 +27,7 @@
 
     .prologue
     .line 18
-    invoke-super {p0}, Lcom/domain/CustomApplication;->onCreate()V
+    invoke-super {p0}, Landroid/support/multidex/MultiDexApplication;->onCreate()V
 
     .line 20
     new-instance v0, Lcom/twitter/sdk/android/core/TwitterAuthConfig;

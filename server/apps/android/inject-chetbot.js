@@ -28,35 +28,63 @@ function tmp_dir() {
   }
 }
 
-exports.set_manifest_application_class = function(src_manifest_file, application_class) {
-  var manifest;
-  xml2js.parseString(fs.readFileSync(src_manifest_file), function(err, xml) {
+exports.get_manifest_application_class = function(manifest_xml) {
+  return manifest_xml.manifest.application[0]['$']['android:name'];
+}
+
+exports.set_manifest_application_class = function(manifest_xml, value) {
+  manifest_xml.manifest.application[0]['$']['android:name'] = value;
+}
+
+// TODO: bust this out into an XML utils file
+
+exports.parseXML = function(str) {
+  var xml;
+  xml2js.parseString(str, function(err, _xml) {
     // parseString is synchronous by default
-    manifest = xml;
+    xml = _xml;
   });
+  return xml;
+}
 
-  if (manifest.manifest.application[0]['$']['android:name']) {
-    return false;
-  }
-  manifest.manifest.application[0]['$']['android:name'] = application_class;
-
+exports.stringifyXML = function(xml) {
   var xml_builder = new xml2js.Builder();
-  return xml_builder.buildObject(manifest);
+  return xml_builder.buildObject(xml);
 }
 
-exports.set_smali_application_class = function(src_smali_file, application_class) {
-  var replacement = '.super L' + application_class.replace(/\./g, '/') + ';';
-  var src = fs.readFileSync(src_smali_file, 'utf-8');
-  return src.replace(/^\.super Landroid\/app\/Application;$/m, replacement);
+// TODO: bust this out into smali-utils file
+
+exports.set_smali_application_class = function(src, java_class) {
+  // TODO: pass parameter to choose which of Application or MultiDexApplication to replace
+  return src.replace(/\bL(android\/app\/Application|android\/support\/multidex\/MultiDexApplication);/g, exports.smali_class(java_class));
 }
 
-exports.find_application_subclasses = function(smali_dir) {
-  return grep('-l', '^\\.super Landroid/app/Application;$', '-r', smali_dir)
-    .trim()
-    .split('\n')
-    .map(function(abs_path) {
-      return path.relative(smali_dir, abs_path);
-    });
+exports.smali_class = function(java_class) {
+  return 'L' + java_class.replace(/\./g, path.sep) + ';';
+}
+
+exports.smali_path = function(java_class) {
+  return java_class.replace(/\./g, path.sep) + '.smali';
+}
+
+exports.java_class = function(smali_class) {
+  return smali_class.replace(/^L/, '').replace(/;$/, '').replace(/\//g, '.');
+}
+
+exports.smali_superclass = function(smali_src) {
+  return smali_src.match(/^\.super ([^;]*;)$/m)[1];
+}
+
+exports.classes_implementing_application = function(smali_dir, application_class) {
+  var smali_file = path.join(smali_dir, exports.smali_path(application_class));
+  var smali_src = fs.readFileSync(smali_file, 'utf-8');
+  var superclass = exports.java_class(exports.smali_superclass(smali_src));
+  if (superclass === 'android.app.Application' ||
+      superclass === 'android.support.multidex.MultiDexApplication') {
+    return [application_class];
+  } else {
+    return exports.classes_implementing_application(smali_dir, superclass).concat([application_class]);
+  }
 }
 
 exports.add_chetbot_to_apk = function(input_apk, output_apk) {
@@ -77,47 +105,58 @@ exports.add_chetbot_to_apk = function(input_apk, output_apk) {
   java('-jar', apktool, 'decode', '--no-src', tmp('app.apk'), '-o', tmp('app'));
 
   console.log('Attempting to set custom Application in AndroidManifest.xml');
-  var manifest_with_custom_application = exports.set_manifest_application_class(tmp('app/AndroidManifest.xml'), CHETBOT_APPLICATION_CLASS);
+  var manifest = exports.parseXML(fs.readFileSync(tmp('app/AndroidManifest.xml')));
+  var application_custom_class = exports.get_manifest_application_class(manifest);
 
-  if (manifest_with_custom_application) {
+  if (!application_custom_class) {
     console.log('Custom application/@android:name set');
-    fs.writeFileSync(tmp('app/AndroidManifest.xml'), manifest_with_custom_application);
+    exports.set_manifest_application_class(manifest, CHETBOT_APPLICATION_CLASS);
+    fs.writeFileSync(tmp('app/AndroidManifest.xml'), exports.stringifyXML(manifest));
+
   } else {
     console.info('App has custom Application. Updating...');
 
     console.log('Decompiling classes.dex');
-    java('-jar', baksmali, '-o', tmp('classes-smali'), tmp('app/classes.dex'));
+    java('-jar', baksmali, tmp('app/classes.dex'), '-o', tmp('classes-smali'));
 
-    console.log('Converting Application sublasses to ' + CHETBOT_APPLICATION_CLASS);
+    console.log('Converting (MultiDex)Application to ' + CHETBOT_APPLICATION_CLASS);
     mkdir('-p', tmp('classes-chetbot-smali'));
     cp('-r', path.join(chetbot_smali, '*'), tmp('classes-chetbot-smali'));
-    var application_subclasses = exports.find_application_subclasses(tmp('classes-smali'));
-    if (!application_subclasses) {
-      throw 'No sublasses of android.app.Application found';
-    }
-    application_subclasses.forEach(function(relpath) {
-      var srcpath = path.join(tmp('classes-smali'), relpath);
-      var destpath = path.join(tmp('classes-chetbot-smali'), relpath);
-      console.log(srcpath, '~>', destpath);
+
+    // Copy the classes implementing (MultiDex)Application
+    var classes_implementing_application = exports.classes_implementing_application(tmp('classes-smali'), application_custom_class);
+    for (var i=0; i<classes_implementing_application.length; i++) {
+      var java_class = classes_implementing_application[i];
+      var srcpath = path.join(tmp('classes-smali'), exports.smali_path(java_class));
+      var destpath = path.join(tmp('classes-chetbot-smali'), exports.smali_path(java_class));
       mkdir('-p', path.dirname(destpath));
-      fs.writeFileSync(destpath, exports.set_smali_application_class(srcpath, CHETBOT_APPLICATION_CLASS));
-    });
+
+      if (i === 0) {
+        // This is the class that subclasses (MultiDex)Application, so we modify it
+        console.log(' ', srcpath, '~>', destpath);
+        var src_smali = fs.readFileSync(srcpath, 'utf-8');
+        var new_smali = exports.set_smali_application_class(src_smali, CHETBOT_APPLICATION_CLASS);
+        fs.writeFileSync(destpath, new_smali);
+      } else {
+        console.log(' ', srcpath, '->', destpath);
+        cp(srcpath, destpath);
+      }
+    }
 
     console.log('Generating new classes.dex');
-    rm(tmp('app/classes.dex'));
-    java('-jar', smali, '-o', tmp('classes-chetbot.dex'), tmp('classes-chetbot-smali'));
+    java('-jar', smali, tmp('classes-chetbot-smali'), '-o', tmp('classes-chetbot.dex'));
   }
 
   console.log('Shuffling classes[N].dex files');
-  var dex_files = ls(tmp('app'))
-    .filter(function(f) { return f.match(/classes[0-9]*\.dex/); })
-    .sort();
+  var dex_files = ls(tmp('app/classes*.dex'));
+  console.log(tmp('app/classes.dex'), '->', tmp('app/classes' + (dex_files.length + 1) + '.dex'));
   mv(tmp('app/classes.dex'), tmp('app/classes' + (dex_files.length + 1) + '.dex'));
 
-  console.log('Adding Chetbot dex');
-  if (manifest_with_custom_application) {
+  if (!application_custom_class) {
+    console.log('Adding Chetbot dex');
     cp(chetbot_dex, tmp('app/classes.dex'));
   } else {
+    console.log('Adding customised Chetbot dex');
     mv(tmp('classes-chetbot.dex'), tmp('app/classes.dex'));
   }
 
@@ -139,12 +178,12 @@ exports.add_chetbot_to_apk = function(input_apk, output_apk) {
   console.log('Zip-aligning');
   zipalign('4', tmp('app.chetbot.apk'), tmp('app-aligned.chetbot.apk'));
 
-  console.log('Copying APK to destination');
+  console.log('Moving APK to destination');
   console.log('  -> ' + output_apk);
   mv('-f', tmp('app-aligned.chetbot.apk'), output_apk);
 
-  console.log('Cleaning up');
-  rm('-r', tmp());
+  // console.log('Cleaning up');
+  // rm('-r', tmp());
 
   return output_apk;
 }

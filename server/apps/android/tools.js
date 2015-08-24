@@ -16,8 +16,8 @@ shell.config.silent = true;
 });
 
 exports.apktool = path.join(__dirname, 'deps', 'apktool_2.0.1.jar');
-exports.chetbot_dex = path.join(__dirname, 'deps', 'classes.dex');
-exports.chetbot_smali = path.join(__dirname, 'deps', 'classes');
+exports.chetbot_dex = path.join(__dirname, 'deps', 'classes-chetbot.dex');
+exports.chetbot_smali = path.join(__dirname, 'deps', 'classes-chetbot');
 exports.smali = path.join(__dirname, 'deps', 'smali-2.0.6.jar');
 exports.baksmali = path.join(__dirname, 'deps', 'baksmali-2.0.6.jar');
 
