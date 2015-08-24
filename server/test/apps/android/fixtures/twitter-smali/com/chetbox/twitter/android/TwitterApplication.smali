@@ -1,5 +1,5 @@
 .class public Lcom/chetbox/twitter/android/TwitterApplication;
-.super Landroid/app/Application;
+.super Lcom/chetbox/twitter/android/YetAnotherApplication;
 .source "TwitterApplication.java"
 
 
@@ -14,8 +14,8 @@
     .registers 1
 
     .prologue
-    .line 10
-    invoke-direct {p0}, Landroid/app/Application;-><init>()V
+    .line 8
+    invoke-direct {p0}, Lcom/chetbox/twitter/android/YetAnotherApplication;-><init>()V
 
     return-void
 .end method
@@ -26,10 +26,10 @@
     .registers 5
 
     .prologue
-    .line 18
-    invoke-super {p0}, Landroid/app/Application;->onCreate()V
+    .line 16
+    invoke-super {p0}, Lcom/chetbox/twitter/android/YetAnotherApplication;->onCreate()V
 
-    .line 20
+    .line 18
     new-instance v0, Lcom/twitter/sdk/android/core/TwitterAuthConfig;
 
     const-string v1, "etuz0S4EzzLsMSt0sPVPKRZBh"
@@ -38,7 +38,7 @@
 
     invoke-direct {v0, v1, v2}, Lcom/twitter/sdk/android/core/TwitterAuthConfig;-><init>(Ljava/lang/String;Ljava/lang/String;)V
 
-    .line 21
+    .line 19
     .local v0, "authConfig":Lcom/twitter/sdk/android/core/TwitterAuthConfig;
     const/4 v1, 0x1
 
@@ -54,6 +54,6 @@
 
     invoke-static {p0, v1}, Lio/fabric/sdk/android/Fabric;->with(Landroid/content/Context;[Lio/fabric/sdk/android/Kit;)Lio/fabric/sdk/android/Fabric;
 
-    .line 22
+    .line 20
     return-void
 .end method
