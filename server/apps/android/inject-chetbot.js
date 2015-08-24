@@ -182,8 +182,8 @@ exports.add_chetbot_to_apk = function(input_apk, output_apk) {
   console.log('  -> ' + output_apk);
   mv('-f', tmp('app-aligned.chetbot.apk'), output_apk);
 
-  // console.log('Cleaning up');
-  // rm('-r', tmp());
+  console.log('Cleaning up');
+  rm('-r', tmp());
 
   return output_apk;
 }
