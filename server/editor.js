@@ -115,6 +115,39 @@ exports.add_routes = function(app) {
       var new_app_id = shortid.generate();
       var new_code_id = shortid.generate();
 
+      // Allow admins to create a new app
+      if (req.body.as_user) {
+        if (!req.user.admin) {
+          res.sendStatus(403);
+          return;
+        }
+
+        console.log('Creating app ' + new_app_id + 'for user ' + req.body.as_user + ' (admin)');
+        var as_user = null;
+        db.users().find(req.body.as_user)
+        .then(function(u) {
+          if (!u) throw 'User not found: ' + req.body.as_user;
+          as_user = u;
+        })
+        .then(function() {
+          return db.apps().insert({
+            id: new_app_id,
+            admins: [as_user.id],
+            platform: 'android'
+          });
+        })
+        .then(function() {
+          // Keep existing info (dynasty's .update is broken)
+          as_user.apps.push(new_app_id);
+          return db.users().update(as_user);
+        })
+        .then(function() {
+          res.redirect('/app/' + new_app_id);
+        })
+        .catch(fail_on_error(res));
+        return;
+      }
+
       create_and_upload_chetbot_apk(user_apk_url)
       .spread(function(apk_info, modified_apk_url) {
         console.log('Creating appetize.io app', modified_apk_url);
@@ -223,7 +256,20 @@ exports.add_routes = function(app) {
     auth.login_required,
     ensure_user_can_access_app,
     function(req, res) {
-      db.code().findAll(req.params.app_id)
+      db.apps().find(req.params.app_id)
+      .then(function(app) {
+        return app.admins || [];
+      })
+      .map(function(user_id) {
+        return db.users().find(user_id);
+      })
+      .map(function(user) {
+        user.apps = _.without(user.apps || [], req.params.app_id);
+        return db.users().insert(user);
+      })
+      .then(function() {
+        return db.code().findAll(req.params.app_id);
+      })
       .then(function(code) {
         return code.map(function(c) {
           return db.code().remove({hash: c.app_id, range: c.id});
