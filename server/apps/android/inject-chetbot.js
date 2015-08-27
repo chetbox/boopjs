@@ -67,7 +67,7 @@ exports.add_chetbot_to_apk = function(input_apk, output_apk) {
   cp(input_apk, tmp('app.apk'));
 
   console.log('Extracting resources from APK');
-  java('-jar', apktool, 'decode', '--no-src', tmp('app.apk'), '-o', tmp('app'));
+  java('-Xmx1024m', '-jar', apktool, 'decode', '--no-src', tmp('app.apk'), '-o', tmp('app'));
 
   console.log('Attempting to set custom Application in AndroidManifest.xml');
   var manifest = exports.parseXML(fs.readFileSync(tmp('app/AndroidManifest.xml')));
@@ -82,7 +82,7 @@ exports.add_chetbot_to_apk = function(input_apk, output_apk) {
     console.info('App has custom Application. Updating...');
 
     console.log('Decompiling classes.dex');
-    java('-jar', baksmali, tmp('app/classes.dex'), '-o', tmp('classes-smali'));
+    java('-Xmx1024m', '-jar', baksmali, tmp('app/classes.dex'), '-o', tmp('classes-smali'));
 
     console.log('Converting (MultiDex)Application to ' + CHETBOT_APPLICATION_CLASS);
     mkdir('-p', tmp('classes-chetbot-smali'));
@@ -109,7 +109,7 @@ exports.add_chetbot_to_apk = function(input_apk, output_apk) {
     }
 
     console.log('Generating new classes.dex');
-    java('-jar', smali, tmp('classes-chetbot-smali'), '-o', tmp('classes-chetbot.dex'));
+    java('-Xmx1024m', '-jar', smali, tmp('classes-chetbot-smali'), '-o', tmp('classes-chetbot.dex'));
   }
 
   console.log('Shuffling classes[N].dex files');
@@ -126,7 +126,7 @@ exports.add_chetbot_to_apk = function(input_apk, output_apk) {
   }
 
   console.log('Re-packaging APK');
-  java('-jar', apktool, '-o', tmp('app.chetbot.apk'), 'build', tmp('app'));
+  java('-Xmx1024m', '-jar', apktool, '-o', tmp('app.chetbot.apk'), 'build', tmp('app'));
 
   console.log('Signing');
   jarsigner(
