@@ -1,4 +1,5 @@
 function rename(url, current_name, update_el) {
+  current_name = current_name || $(update_el).not('title').first().text();
   var new_name = prompt('Rename "' + current_name + '" to:', current_name);
   if (!new_name) {
     return;
