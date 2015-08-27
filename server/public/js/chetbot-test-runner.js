@@ -44,7 +44,7 @@ function resultHTML(response) {
         )
     );
   } else {
-    el.text(JSON.stringify(response.result));
+    el.text(JSON.stringify(response.result, null, 2));
   }
   return el;
 }
