@@ -173,22 +173,21 @@ public class ChetbotServerConnection {
             Log.v(TAG, "Message received: " + messageStr);
             Script script = sGson.fromJson(messageStr, Script.class);
             boolean success = true;
+            int line = 0;
             try {
                 mScriptHandler.onStartScript();
                 for (Statement stmt : script.statements) {
-                    try {
-                        Object result = mScriptHandler.onStatement(stmt, script.name);
-                        sendAsJson(makeResult(script.device, stmt.line, result));
-                    } catch (Throwable e) {
-                        success = false;
-                        Error error = new Error(script.device, stmt.line, e);
-                        Log.e(TAG, "error: " + sGson.toJson(error));
-                        e.printStackTrace();
-                        sendAsJson(error);
-                        break;
-                    }
+                    line = stmt.line;
+                    Object result = mScriptHandler.onStatement(stmt, script.name);
+                    sendAsJson(makeResult(script.device, line, result));
                 }
-             } finally {
+            } catch (Throwable e) {
+                success = false;
+                Error error = new Error(script.device, line, e);
+                Log.e(TAG, "error: " + sGson.toJson(error));
+                e.printStackTrace();
+                sendAsJson(error);
+            } finally {
                 sendAsJson(new Success(script.device, success));
                 mScriptHandler.onFinishScript();
             }
