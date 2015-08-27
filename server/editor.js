@@ -257,7 +257,24 @@ exports.add_routes = function(app) {
     auth.login_required,
     ensure_user_can_access_app,
     function(req, res) {
-      db.code().findAll(req.params.app_id)
+      db.apps().find(req.params.app_id)
+      .then(function(app) {
+        console.log('app admins', app.admins);
+        return app.admins || [];
+      })
+      .map(function(user_id) {
+        console.log('app admin', user_id);
+        return db.users().find(user_id);
+      })
+      .map(function(user) {
+        console.log('removing app ' + req.params.app_id + ' for user ' + user);
+        user.apps = _.without(user.apps || [], req.params.app_id);
+        console.log(user.apps);
+        return db.users().insert(user);
+      })
+      .then(function() {
+        return db.code().findAll(req.params.app_id);
+      })
       .then(function(code) {
         return code.map(function(c) {
           return db.code().remove({hash: c.app_id, range: c.id});
@@ -270,8 +287,6 @@ exports.add_routes = function(app) {
         res.status(200).send('');
       })
       .catch(fail_on_error(res));
-
-      // TODO: Also remove app from db.users().find(_).apps
     }
   );
 
