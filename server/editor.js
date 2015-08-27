@@ -216,6 +216,8 @@ exports.add_routes = function(app) {
         }
         existing_app.user_app_url = user_apk_url;
         existing_app.app_url = modified_apk_url;
+        existing_app.privateKey = appetize_resp.privateKey; // ensure this is set
+        existing_app.publicKey = appetize_resp.publicKey; // ensure this is set
         existing_app = _.extend(existing_app, apk_info);
         return db.apps().update(existing_app);
       })
