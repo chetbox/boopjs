@@ -2,8 +2,8 @@ var os = require('os');
 var fs = require('fs');
 var path = require('path');
 var shortid = require('shortid');
-var xml2js = require('xml2js');
 
+var xml_utils = require('./utils/xml');
 var smali_utils = require('./utils/smali');
 
 var CHETBOT_APPLICATION_CLASS = 'lgzmrmbhly.com.chetbox.chetbot.android.ChetbotApplication';
@@ -28,30 +28,6 @@ function tmp_dir() {
   }
 }
 
-exports.get_manifest_application_class = function(manifest_xml) {
-  return manifest_xml.manifest.application[0]['$']['android:name'];
-}
-
-exports.set_manifest_application_class = function(manifest_xml, value) {
-  manifest_xml.manifest.application[0]['$']['android:name'] = value;
-}
-
-// TODO: bust this out into an XML utils file
-
-exports.parseXML = function(str) {
-  var xml;
-  xml2js.parseString(str, function(err, _xml) {
-    // parseString is synchronous by default
-    xml = _xml;
-  });
-  return xml;
-}
-
-exports.stringifyXML = function(xml) {
-  var xml_builder = new xml2js.Builder();
-  return xml_builder.buildObject(xml);
-}
-
 exports.add_chetbot_to_apk = function(input_apk, output_apk) {
 
   output_apk = output_apk || input_apk;
@@ -70,13 +46,13 @@ exports.add_chetbot_to_apk = function(input_apk, output_apk) {
   java('-Xmx1024m', '-jar', apktool, 'decode', '--no-src', tmp('app.apk'), '-o', tmp('app'));
 
   console.log('Attempting to set custom Application in AndroidManifest.xml');
-  var manifest = exports.parseXML(fs.readFileSync(tmp('app/AndroidManifest.xml')));
-  var application_custom_class = exports.get_manifest_application_class(manifest);
+  var manifest = xml_utils.parseXML(fs.readFileSync(tmp('app/AndroidManifest.xml')));
+  var application_custom_class = xml_utils.get_manifest_application_class(manifest);
 
   if (!application_custom_class) {
     console.log('Custom application/@android:name set');
-    exports.set_manifest_application_class(manifest, CHETBOT_APPLICATION_CLASS);
-    fs.writeFileSync(tmp('app/AndroidManifest.xml'), exports.stringifyXML(manifest));
+    xml_utils.set_manifest_application_class(manifest, CHETBOT_APPLICATION_CLASS);
+    fs.writeFileSync(tmp('app/AndroidManifest.xml'), xml_utils.stringifyXML(manifest));
 
   } else {
     console.info('App has custom Application. Updating...');
