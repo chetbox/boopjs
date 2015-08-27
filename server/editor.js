@@ -208,10 +208,10 @@ exports.add_routes = function(app) {
       })
       .spread(function(apk_info, modified_apk_url, existing_app, appetize_resp) {
         console.log('Updating app', app_id);
-        if (existing_app.privateKey !== appetize_resp.privateKey) {
+        if (existing_app.privateKey && existing_app.privateKey !== appetize_resp.privateKey) {
           throw new Error('New private key does not match existing');
         }
-        if (existing_app.publicKey !== appetize_resp.publicKey) {
+        if (existing_app.publicKey && existing_app.publicKey !== appetize_resp.publicKey) {
           throw new Error('New public key does not match existing');
         }
         existing_app.user_app_url = user_apk_url;
