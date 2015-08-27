@@ -2,8 +2,9 @@ var os = require('os');
 var fs = require('fs');
 var path = require('path');
 var shortid = require('shortid');
-var zip_utils = require('./zip-utils');
 var xml2js = require('xml2js');
+
+var smali_utils = require('./utils/smali');
 
 var CHETBOT_APPLICATION_CLASS = 'lgzmrmbhly.com.chetbox.chetbot.android.ChetbotApplication';
 
@@ -51,41 +52,6 @@ exports.stringifyXML = function(xml) {
   return xml_builder.buildObject(xml);
 }
 
-// TODO: bust this out into smali-utils file
-
-exports.set_smali_application_class = function(src, java_class) {
-  // TODO: pass parameter to choose which of Application or MultiDexApplication to replace
-  return src.replace(/\bL(android\/app\/Application|android\/support\/multidex\/MultiDexApplication);/g, exports.smali_class(java_class));
-}
-
-exports.smali_class = function(java_class) {
-  return 'L' + java_class.replace(/\./g, path.sep) + ';';
-}
-
-exports.smali_path = function(java_class) {
-  return java_class.replace(/\./g, path.sep) + '.smali';
-}
-
-exports.java_class = function(smali_class) {
-  return smali_class.replace(/^L/, '').replace(/;$/, '').replace(/\//g, '.');
-}
-
-exports.smali_superclass = function(smali_src) {
-  return smali_src.match(/^\.super ([^;]*;)$/m)[1];
-}
-
-exports.classes_implementing_application = function(smali_dir, application_class) {
-  var smali_file = path.join(smali_dir, exports.smali_path(application_class));
-  var smali_src = fs.readFileSync(smali_file, 'utf-8');
-  var superclass = exports.java_class(exports.smali_superclass(smali_src));
-  if (superclass === 'android.app.Application' ||
-      superclass === 'android.support.multidex.MultiDexApplication') {
-    return [application_class];
-  } else {
-    return exports.classes_implementing_application(smali_dir, superclass).concat([application_class]);
-  }
-}
-
 exports.add_chetbot_to_apk = function(input_apk, output_apk) {
 
   output_apk = output_apk || input_apk;
@@ -123,18 +89,18 @@ exports.add_chetbot_to_apk = function(input_apk, output_apk) {
     cp('-r', path.join(chetbot_smali, '*'), tmp('classes-chetbot-smali'));
 
     // Copy the classes implementing (MultiDex)Application
-    var classes_implementing_application = exports.classes_implementing_application(tmp('classes-smali'), application_custom_class);
+    var classes_implementing_application = smali_utils.classes_implementing_application(tmp('classes-smali'), application_custom_class);
     for (var i=0; i<classes_implementing_application.length; i++) {
       var java_class = classes_implementing_application[i];
-      var srcpath = path.join(tmp('classes-smali'), exports.smali_path(java_class));
-      var destpath = path.join(tmp('classes-chetbot-smali'), exports.smali_path(java_class));
+      var srcpath = path.join(tmp('classes-smali'), smali_utils.smali_path(java_class));
+      var destpath = path.join(tmp('classes-chetbot-smali'), smali_utils.smali_path(java_class));
       mkdir('-p', path.dirname(destpath));
 
       if (i === 0) {
         // This is the class that subclasses (MultiDex)Application, so we modify it
         console.log(' ', srcpath, '~>', destpath);
         var src_smali = fs.readFileSync(srcpath, 'utf-8');
-        var new_smali = exports.set_smali_application_class(src_smali, CHETBOT_APPLICATION_CLASS);
+        var new_smali = smali_utils.set_smali_application_class(src_smali, CHETBOT_APPLICATION_CLASS);
         fs.writeFileSync(destpath, new_smali);
       } else {
         console.log(' ', srcpath, '->', destpath);
