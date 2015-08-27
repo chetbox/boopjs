@@ -5,7 +5,7 @@ var shortid = require('shortid');
 var zip_utils = require('./zip-utils');
 var xml2js = require('xml2js');
 
-var CHETBOT_APPLICATION_CLASS = 'com.chetbox.chetbot.android.ChetbotApplication';
+var CHETBOT_APPLICATION_CLASS = 'lgzmrmbhly.com.chetbox.chetbot.android.ChetbotApplication';
 
 require('shelljs/global');
 require('./tools').global();
