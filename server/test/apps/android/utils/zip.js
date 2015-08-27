@@ -4,8 +4,8 @@ var fs = require('fs');
 
 describe('Zip utils', function() {
 
-  var zip_utils = require('../../../apps/android/zip-utils');
-  var apk = path.join(__dirname, 'fixtures', 'stopwatch-debug.apk');
+  var zip_utils = require('../../../../apps/android/utils/zip');
+  var apk = path.join(__dirname, '..', 'fixtures', 'stopwatch-debug.apk');
   var mdpi_icon = fs.readFileSync(path.join(__dirname, 'fixtures', 'ic_launcher-mdpi.png'));
 
   it('extract_file extracts the contents of a file in the archive', function() {
