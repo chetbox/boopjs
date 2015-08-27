@@ -37,9 +37,9 @@ public abstract class StopwatchActivityTest {
     @Before
     public void setUp() {
         // These lines have to be done in this order
-        Chetbot.setOfflineMode(true);
-        Chetbot.setTestActivity(activity);
         activity = mActivityRule.getActivity();
+        chetbot = Chetbot.getInstance(activity);
+        chetbot.setTestActivity(activity);
 
         StopwatchActivity activity = mActivityRule.getActivity();
         resetButton = (Button) activity.findViewById(R.id.reset);
@@ -48,7 +48,6 @@ public abstract class StopwatchActivityTest {
         secondsText = (TextView) activity.findViewById(R.id.seconds);
         millisecondsText = (TextView) activity.findViewById(R.id.milliseconds);
 
-        chetbot = Chetbot.getInstance();
         chetbot.onStartScript();
 
         // Handy references to views in the layout

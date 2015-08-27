@@ -2,7 +2,7 @@ var path = require('path');
 var shell = require('shelljs');
 shell.config.silent = true;
 
-['zip', 'java', 'xmlstarlet', 'jarsigner', 'zipalign', 'aapt'].forEach(function(cmd) {
+['zip', 'java', 'jarsigner', 'zipalign', 'aapt'].forEach(function(cmd) {
   function escape_arg(s) {
     return "'" + s.replace("'", "\\'") + "'";
   }
@@ -15,10 +15,11 @@ shell.config.silent = true;
   };
 });
 
-exports.apk_parser = path.join(__dirname, 'deps', 'APKParser.jar');
-exports.smali = path.join(__dirname, 'deps', 'smali.jar');
-exports.baksmali = path.join(__dirname, 'deps', 'baksmali.jar');
-exports.chetbot_smali = path.join(__dirname, 'deps', 'chetbot-smali', '*');
+exports.apktool = path.join(__dirname, 'deps', 'apktool_2.0.1.jar');
+exports.chetbot_dex = path.join(__dirname, 'deps', 'classes-chetbot.dex');
+exports.chetbot_smali = path.join(__dirname, 'deps', 'classes-chetbot');
+exports.smali = path.join(__dirname, 'deps', 'smali-2.0.6.jar');
+exports.baksmali = path.join(__dirname, 'deps', 'baksmali-2.0.6.jar');
 
 exports.global = function() {
   for (var cmd in exports) {

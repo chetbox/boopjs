@@ -1,7 +1,7 @@
 var _ = require('underscore');
 var path = require('path');
-var tools = require('./tools');
-var zip = require('./zip-utils');
+var aapt = require('./tools').aapt;
+var zip = require('./utils/zip');
 
 // hack to parse quoted string things
 function parse_value(val) {
@@ -25,7 +25,7 @@ function parse_value(val) {
 
 module.exports = function(apk_file) {
   var apk_info = _.object(
-    tools.aapt('dump', 'badging', apk_file)
+    aapt('dump', 'badging', apk_file)
     .split('\n')
     .map(function(line) {
       var i = line.indexOf(':');

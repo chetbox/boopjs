@@ -36,7 +36,6 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
     private static Chetbot sInstance = null;
 
     /* For testing only */
-    private static boolean sOfflineMode = false;
     private static Activity sTestActivity = null;
 
     private final String mPackageName;
@@ -45,16 +44,16 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
     private org.mozilla.javascript.Context mJsContext;
     private Scriptable mJsScope;
 
-    private Chetbot(Activity activity) {
-        if (activity != null) {
-            mPackageName = activity.getPackageName();
+    private Chetbot(Context context) {
+        if (context != null) {
+            mPackageName = context.getPackageName();
         } else {
             // Running in testing mode
             mPackageName = null;
         }
     }
 
-    private void connect(Activity activity) {
+    public void connect(Activity activity) {
         String server = activity.getIntent().getStringExtra("chetbot.server");
         String deviceId = activity.getIntent().getStringExtra("chetbot.device");
         boolean quiet = !TextUtils.isEmpty( activity.getIntent().getStringExtra("chetbot.quiet") );
@@ -436,15 +435,6 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
         });
     }
 
-    public static void start(Activity activity) {
-        if (sInstance == null) {
-            sInstance = new Chetbot(activity);
-            if (!sOfflineMode) {
-                sInstance.connect(activity);
-            }
-        }
-    }
-
     public static void reset() {
         if (sInstance != null) {
             if (sInstance.mServerConnection != null) {
@@ -453,22 +443,17 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
         }
         sTestActivity = null;
         sInstance = null;
-        sOfflineMode = false;
     }
 
-    /**
-     * For testing only
-     */
-    public static Chetbot getInstance() {
+    public static Chetbot getInstance(Context context) {
+        if (sInstance == null) {
+            sInstance = new Chetbot(context);
+        }
         return sInstance;
     }
 
-    public static void setOfflineMode(boolean offlineMode) {
-        sOfflineMode = offlineMode;
-    }
-
-    public static void setTestActivity(Activity testActivity) {
-        sTestActivity = testActivity;
+    public void setTestActivity(Activity activity) {
+        sTestActivity = activity;
     }
 
     // based on https://androidreclib.wordpress.com/2014/11/22/getting-the-current-activity/
