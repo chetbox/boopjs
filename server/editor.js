@@ -117,13 +117,12 @@ exports.add_routes = function(app) {
 
       // Allow admins to create a new app
       if (req.body.as_user) {
-        console.log('as_user', req.body.as_user);
-        console.log('admin', req.user.admin);
         if (!req.user.admin) {
           res.sendStatus(403);
           return;
         }
 
+        console.log('Creating app ' + new_app_id + 'for user ' + req.body.as_user + ' (admin)');
         var as_user = null;
         db.users().find(req.body.as_user)
         .then(function(u) {
