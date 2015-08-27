@@ -4,12 +4,12 @@ var fs = require('fs');
 var shortid = require('shortid');
 var xml2js = require('xml2js');
 
-describe('Inject Chetbot (Android)', function() {
+describe('XML utils', function() {
 
-  var inject = require('../../../apps/android/inject-chetbot');
+  var xml = require('../../../../apps/android/utils/xml');
 
   function fixture(relpath) {
-    return path.join(__dirname, 'fixtures', relpath);
+    return path.join(__dirname, '..', 'fixtures', relpath);
   }
 
   function parseXML(str) {
@@ -26,23 +26,30 @@ describe('Inject Chetbot (Android)', function() {
     return fs.readFileSync(file, 'utf-8');
   }
 
+  it('parses XML', function() {
+    assert.deepEqual(
+      xml.parseXML('<manifest first="one"></manifest>'),
+      {manifest: {'$': {'first': 'one'}}}
+    );
+  });
+
   it('gets application/@android:name AndroidManifest.xml definition', function() {
     assert.equal(
-      inject.get_manifest_application_class(parseXML(read(fixture('StopwatchManifestCustomApplication.xml')))),
+      xml.get_manifest_application_class(parseXML(read(fixture('StopwatchManifestCustomApplication.xml')))),
       'com.domain.CustomApplication'
     );
   });
 
   it('cannot get application/@android:name AndroidManifest.xml definition if not defined', function() {
     assert.equal(
-      inject.get_manifest_application_class(parseXML(read(fixture('StopwatchManifestDefaultApplication.xml')))),
+      xml.get_manifest_application_class(parseXML(read(fixture('StopwatchManifestDefaultApplication.xml')))),
       undefined
     );
   });
 
   it('sets an application/@android:name AndroidManifest.xml definition', function() {
     var manifest = parseXML(read(fixture('StopwatchManifestDefaultApplication.xml')));
-    inject.set_manifest_application_class(manifest, 'com.domain.CustomApplication');
+    xml.set_manifest_application_class(manifest, 'com.domain.CustomApplication');
     assert.deepEqual(
       manifest,
       parseXML(read(fixture('StopwatchManifestCustomApplication.xml')))
