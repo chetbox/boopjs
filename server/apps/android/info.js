@@ -1,7 +1,7 @@
 var _ = require('underscore');
 var path = require('path');
 var aapt = require('./tools').aapt;
-var zip = require('./zip-utils');
+var zip = require('./utils/zip');
 
 // hack to parse quoted string things
 function parse_value(val) {
