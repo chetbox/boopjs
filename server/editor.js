@@ -115,6 +115,40 @@ exports.add_routes = function(app) {
       var new_app_id = shortid.generate();
       var new_code_id = shortid.generate();
 
+      // Allow admins to create a new app
+      if (req.body.as_user) {
+        console.log('as_user', req.body.as_user);
+        console.log('admin', req.user.admin);
+        if (!req.user.admin) {
+          res.sendStatus(403);
+          return;
+        }
+
+        var as_user = null;
+        db.users().find(req.body.as_user)
+        .then(function(u) {
+          if (!u) throw 'User not found: ' + req.body.as_user;
+          as_user = u;
+        })
+        .then(function() {
+          return db.apps().insert({
+            id: new_app_id,
+            admins: [as_user.id],
+            platform: 'android'
+          });
+        })
+        .then(function() {
+          // Keep existing info (dynasty's .update is broken)
+          as_user.apps.push(new_app_id);
+          return db.users().update(as_user);
+        })
+        .then(function() {
+          res.redirect('/app/' + new_app_id);
+        })
+        .catch(fail_on_error(res));
+        return;
+      }
+
       create_and_upload_chetbot_apk(user_apk_url)
       .spread(function(apk_info, modified_apk_url) {
         console.log('Creating appetize.io app', modified_apk_url);
@@ -236,6 +270,8 @@ exports.add_routes = function(app) {
         res.status(200).send('');
       })
       .catch(fail_on_error(res));
+
+      // TODO: Also remove app from db.users().find(_).apps
     }
   );
 
