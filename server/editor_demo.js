@@ -6,7 +6,7 @@ exports.add_routes = function(app) {
 
   var devices = require('./devices');
 
-  var demo_code = fs.readFileSync(__dirname + '/demos/stopwatch.js');
+  var demo_code = fs.readFileSync(__dirname + '/demos/slack.js');
 
   app.get('/demo', function(req, res) {
     devices.create_device({user: null})
@@ -20,7 +20,7 @@ exports.add_routes = function(app) {
         server: host_address,
         app: {
           icon: '/favicon.ico',
-          publicKey: 'w00ru87r17568t5uznyhhu423w'
+          publicKey: '5v1d0qrmwy74yhq5w33zc12ar0'
         },
         autosave: false,
         code: {
