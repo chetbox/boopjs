@@ -259,7 +259,6 @@
     </paper-header-panel>
   </body>
 
-  <!-- JavaScript API -->
   <script src="/components/jquery/dist/jquery.min.js"></script>
 
   <!-- code editor -->
@@ -276,6 +275,24 @@
     autosave(editor);
   </script>
   {{/autosave}}
+
+  <!-- keyboard shortcuts -->
+  <script type="text/javascript">
+    $(document).keydown(function(e) {
+      if (e.which === 'S'.charCodeAt(0) && (e.ctrlKey || e.metaKey)) {
+        save(editor);
+        return false;
+      }
+      if (e.which === 'R'.charCodeAt(0) && e.ctrlKey) {
+        eval( $('#controls a.run:visible').attr('href') );
+        return false;
+      }
+      if (e.which == 27 /* ESC */) {
+        eval( $('#controls a.back:visible').attr('href') );
+        return false;
+      }
+    });
+  </script>
 
   <script src="/js/rename-test.js"></script>
 
