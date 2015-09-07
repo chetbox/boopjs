@@ -1,7 +1,9 @@
 package com.chetbox.chetbot.android;
 
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.text.TextUtils;
 import android.util.Base64;
@@ -16,7 +18,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -232,7 +236,32 @@ public class ViewUtils {
         }
     }
 
-    public static Bitmap screenshot(final Activity activity) {
+    public static Bitmap screenshot(Activity activity) {
+        return new File("/system/xbin/su").exists() // emulator 'su' path
+            ? screenshotWithRoot()
+            : screenshotWithoutRoot(activity);
+    }
+
+    /**
+     * A full screenshot that requires root privileges (normal for an emulator)
+     */
+    public static Bitmap screenshotWithRoot() {
+        try {
+            Process sh = Runtime.getRuntime().exec("/system/bin/screencap", null, null);
+            sh.waitFor();
+            return BitmapFactory.decodeStream(sh.getInputStream());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * A screenshot that only properly captures the main activity window.
+     * Does not require root.
+     */
+    public static Bitmap screenshotWithoutRoot(final Activity activity) {
         final Container<Bitmap> screenshotContainer = new Container<>();
         final CountDownLatch latch = new CountDownLatch(1);
         activity.runOnUiThread(new Runnable() {
