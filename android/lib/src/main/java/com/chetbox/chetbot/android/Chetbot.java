@@ -65,6 +65,13 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
                 Toast.makeText(activity, "Starting ChetBot", Toast.LENGTH_SHORT).show();
             }
             mServerConnection = new ChetbotServerConnection(server, deviceId, this);
+
+            UncaughtExceptionHandler.addListener(new UncaughtExceptionHandler.ExceptionListener() {
+                @Override
+                public void exception(Throwable e) {
+                    mServerConnection.onUncaughtError(e);
+                }
+            });
         }
     }
 
@@ -381,6 +388,18 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
                     timeout = Math.round(getDoubleValue("timeout", (ScriptableObject) args[0], (ScriptableObject) args[0]));
                 }
                 waitUntilIdle(activity, timeout, TimeUnit.SECONDS);
+                return null;
+            }
+        });
+        registerJsFunction(scope, "crash", new JsFunction() {
+            @Override
+            public Object call(Activity activity, Object[] args) {
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        throw new RuntimeException("forced crash");
+                    }
+                });
                 return null;
             }
         });
