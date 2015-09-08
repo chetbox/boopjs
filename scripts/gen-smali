@@ -1,0 +1,41 @@
+#/bin/bash
+
+DEST=server/apps/android/deps
+SMALI='java -jar server/apps/android/deps/smali-2.0.6.jar'
+BAKSMALI='java -jar server/apps/android/deps/baksmali-2.0.6.jar'
+
+set -e
+
+# Check the Android project exists
+ls android/test/app > /dev/null
+
+echo 'Setting up build folder...'
+mkdir -p build
+rm -rf build/*
+
+echo 'Building Android project...'
+cd android/test
+./gradlew clean assembleRelease
+cd ..
+cd ..
+
+echo 'Disassembling...'
+unzip android/test/app/build/outputs/apk/app-release-unsigned.apk classes.dex
+mv classes.dex build/classes.dex
+$BAKSMALI build/classes.dex -o build/classes-original-ns
+
+echo 'Renamespacing disassembled code...'
+node -e "var smali = require('./server/apps/android/utils/smali'); smali.renamespace('build/classes-original-ns', 'build/classes-new-ns', /^/, 'lgzmrmbhly/');"
+
+echo 'Reassembling...'
+$SMALI build/classes-new-ns -o build/classes-new-ns.dex
+
+echo "Setting up $DEST/classes-chetbot ..."
+rm -rf "$DEST/classes-chetbot"
+cp -r build/classes-new-ns "$DEST/classes-chetbot"
+
+echo "Setting up $DEST/classes-chetbot.dex ..."
+rm -f "$DEST/classes-chetbot.dex"
+cp build/classes-new-ns.dex "$DEST/classes-chetbot.dex"
+
+echo 'Done.'
