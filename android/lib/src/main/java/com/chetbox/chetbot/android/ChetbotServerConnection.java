@@ -68,10 +68,24 @@ public class ChetbotServerConnection {
         private int line;
         private String error;
         private String stacktrace;
+        private String type = "execution";
 
         public Error(String device, int line, Throwable error) {
             this.device = device;
             this.line = line;
+            this.error = error.getMessage();
+            this.stacktrace = Throwables.getStackTraceAsString(error);
+        }
+    }
+
+    private static class UncaughtError {
+        private String device;
+        private String error;
+        private String stacktrace;
+        private String type = "uncaught";
+
+        public UncaughtError(String device, Throwable error) {
+            this.device = device;
             this.error = error.getMessage();
             this.stacktrace = Throwables.getStackTraceAsString(error);
         }
@@ -112,6 +126,9 @@ public class ChetbotServerConnection {
     private final URI mHost;
     private final String mDeviceId;
     private final ScriptHandler mScriptHandler;
+
+    private volatile Script mCurrentScript = null;
+    private volatile boolean mCurrentScriptSuccess;
 
     public ChetbotServerConnection(String host, String deviceId, ScriptHandler scriptHandler) {
         mHost = URI.create("ws://" + host + "/api/device");
@@ -172,24 +189,42 @@ public class ChetbotServerConnection {
         public void onMessage(String messageStr) {
             Log.v(TAG, "Message received: " + messageStr);
             Script script = sGson.fromJson(messageStr, Script.class);
-            boolean success = true;
             int line = 0;
+            mCurrentScriptSuccess = true;
+            mCurrentScript = script;
             try {
                 mScriptHandler.onStartScript();
                 for (Statement stmt : script.statements) {
+                    if (!mCurrentScriptSuccess) {
+                        // Stop if there was an uncaught error
+                        break;
+                    }
                     line = stmt.line;
                     Object result = mScriptHandler.onStatement(stmt, script.name);
                     sendAsJson(makeResult(script.device, line, result));
                 }
             } catch (Throwable e) {
-                success = false;
+                mCurrentScriptSuccess = false;
                 Error error = new Error(script.device, line, e);
                 Log.e(TAG, "error: " + sGson.toJson(error));
                 e.printStackTrace();
                 sendAsJson(error);
             } finally {
-                sendAsJson(new Success(script.device, success));
+                sendAsJson(new Success(script.device, mCurrentScriptSuccess));
                 mScriptHandler.onFinishScript();
+                mCurrentScript = null;
+            }
+        }
+
+        private void onUncaughtError(Throwable e) {
+            e.printStackTrace();
+            mCurrentScriptSuccess = false;
+            if (mCurrentScript != null) {
+                UncaughtError error = new UncaughtError(mCurrentScript.device, e);
+                Log.e(TAG, "uncaught error: " + sGson.toJson(error));
+                sendAsJson(error);
+            } else {
+                Log.e(TAG, "Not running a script. Unable to send to device.");
             }
         }
 
@@ -219,5 +254,9 @@ public class ChetbotServerConnection {
 
     }
     private ServerConnectionImpl mServerConnection = null;
+
+    public void onUncaughtError(Throwable e) {
+        mServerConnection.onUncaughtError(e);
+    }
 
 }
