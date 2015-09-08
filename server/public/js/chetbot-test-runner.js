@@ -98,16 +98,30 @@ function run(editor, server, device_id) {
   };
   ws.onmessage = function(event) {
     var message = JSON.parse(event.data);
-    if (message.error && !message.line) {
+    if (message.error && !message.type) {
       alert(message.error);
       end_test();
+      return;
+    }
+
+    if (message.error && message.type === 'uncaught') {
+      ga('send', 'event', 'test-step', 'error', message.type);
+
+      testReportEl.append(
+        $('<li>')
+          .addClass('error')
+          .addClass('uncaught')
+          .text(message.error)
+          .append( $('<pre>').text(message.stacktrace) )
+      );
+
       return;
     }
 
     var lineEl = testReportEl.find('.line-' + message.line)
 
     if ('error' in message) {
-      ga('send', 'event', 'test-step', 'error');
+      ga('send', 'event', 'test-step', 'error', message.type);
 
       lineEl
         .addClass('error')
