@@ -31,7 +31,6 @@ RUN keytool -genkey -v -keystore /root/.android/debug.keystore -alias androiddeb
 # TODO: run gen-smali.sh
 
 # Configure project
-RUN npm update
 RUN npm install --unsafe-perm
 ENV NODE_ENV production
 ENV PORT 80
