@@ -24,7 +24,7 @@
     "body-parser": "^1.13.2",
     "config": "^1.14.0",
     "connect-flash": "^0.1.1",
-    "dynasty": "^0.1.4",
+    "dynasty": "0.1.4",
     "express": "^4.12.4",
     "express-handlebars": "^2.0.1",
     "express-session": "^1.11.3",
