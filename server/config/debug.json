@@ -1,7 +1,7 @@
 {
   "host": {
     "protocol": "http",
-    "address": "chetbot-alpha.chetbox.com:8001"
+    "address": "chetbot.chetbox.com:8001"
   },
   "github-oauth": {
     "clientID": "dc39a4e0f69d0b2a9ecc",
