@@ -1,13 +1,13 @@
 #/bin/bash
 
+set -e
+
+cd $(dirname "$0")
+cd ..
+
 DEST=server/apps/android/deps
 SMALI='java -jar server/apps/android/deps/smali-2.0.6.jar'
 BAKSMALI='java -jar server/apps/android/deps/baksmali-2.0.6.jar'
-
-set -e
-
-# Check the Android project exists
-ls android/test/app > /dev/null
 
 echo 'Setting up build folder...'
 mkdir -p build
