@@ -98,7 +98,7 @@ function run(editor, server, device_id) {
   };
   ws.onmessage = function(event) {
     var message = JSON.parse(event.data);
-    if (message.error && !message.type) {
+    if (message.error && !message.type && !message.line) {
       alert(message.error);
       end_test();
       return;
