@@ -12,7 +12,9 @@ ENV PATH "$PATH:/opt/android-sdk-linux/build-tools/22.0.1"
 ENV ANDROID_HOME /opt/android-sdk-linux/
 
 # Add project
-ADD . /opt/chetbot
+ADD scripts /opt/chetbot/scripts
+ADD android /opt/chetbot/android
+ADD server /opt/chetbot/server
 WORKDIR /opt/chetbot/server
 VOLUME /opt/chetbot/server/config
 
@@ -32,6 +34,7 @@ RUN /opt/chetbot/scripts/gen-smali
 
 # Configure project
 RUN npm install --unsafe-perm
+RUN npm test
 ENV NODE_ENV production
 ENV PORT 80
 EXPOSE 80
