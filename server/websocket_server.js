@@ -70,7 +70,7 @@ exports.add_routes = function(app) {
         .catch(fail_on_error(ws));
 
       } else if (message.device && ('result' in message || 'error' in message || 'success' in message)) {
-        console.log('response:', messageStr);
+        console.log('response:', messageStr.substring(0, 200));
         clients_connected[message.device].send(messageStr);
 
       } else {
