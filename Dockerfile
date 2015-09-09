@@ -11,23 +11,27 @@ RUN echo y | /opt/android-sdk-linux/tools/android update sdk --all --filter plat
 ENV PATH "$PATH:/opt/android-sdk-linux/build-tools/22.0.1"
 ENV ANDROID_HOME /opt/android-sdk-linux/
 
-# Add project
-ADD scripts /opt/chetbot/scripts
-ADD android /opt/chetbot/android
-ADD server /opt/chetbot/server
-WORKDIR /opt/chetbot/server
-VOLUME /opt/chetbot/server/config
-
 # Get project dependencies
-RUN mkdir -p apps/android/deps
-RUN curl -L https://xml-apk-parser.googlecode.com/files/APKParser.jar -o apps/android/deps/APKParser.jar
-RUN curl -L https://bitbucket.org/JesusFreke/smali/downloads/smali-2.0.6.jar -o apps/android/deps/smali-2.0.6.jar
-RUN curl -L https://bitbucket.org/JesusFreke/smali/downloads/baksmali-2.0.6.jar -o apps/android/deps/baksmali-2.0.6.jar
-RUN curl -L https://bitbucket.org/iBotPeaches/apktool/downloads/apktool_2.0.1.jar -o apps/android/deps/apktool_2.0.1.jar
+ADD https://xml-apk-parser.googlecode.com/files/APKParser.jar \
+    https://bitbucket.org/JesusFreke/smali/downloads/smali-2.0.6.jar \
+    https://bitbucket.org/JesusFreke/smali/downloads/baksmali-2.0.6.jar \
+    https://bitbucket.org/iBotPeaches/apktool/downloads/apktool_2.0.1.jar \
+    /opt/chetbot/server/apps/android/deps/
 
 # Generate Android keystore
 RUN mkdir -p /root/.android
 RUN keytool -genkey -v -keystore /root/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android -dname CN=android -keyalg RSA -keysize 2048 -validity 36500
+
+# Node server configuration
+ENV NODE_ENV production
+ENV PORT 80
+EXPOSE 80
+WORKDIR /opt/chetbot/server
+CMD npm start
+
+# Add project
+ADD . /opt/chetbot
+VOLUME /opt/chetbot/server/config
 
 # Configure project
 RUN npm install --unsafe-perm
@@ -37,10 +41,3 @@ RUN /opt/chetbot/scripts/gen-smali
 
 # Run tests
 RUN npm test
-
-# Configure server
-ENV NODE_ENV production
-ENV PORT 80
-EXPOSE 80
-
-CMD npm start
