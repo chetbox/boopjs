@@ -29,12 +29,16 @@ RUN curl -L https://bitbucket.org/iBotPeaches/apktool/downloads/apktool_2.0.1.ja
 RUN mkdir -p /root/.android
 RUN keytool -genkey -v -keystore /root/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android -dname CN=android -keyalg RSA -keysize 2048 -validity 36500
 
+# Configure project
+RUN npm install --unsafe-perm
+
 # Generate code to inject into applications
 RUN /opt/chetbot/scripts/gen-smali
 
-# Configure project
-RUN npm install --unsafe-perm
+# Run tests
 RUN npm test
+
+# Configure server
 ENV NODE_ENV production
 ENV PORT 80
 EXPOSE 80
