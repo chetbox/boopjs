@@ -35,9 +35,7 @@
     "shelljs": "^0.5.1",
     "shortid": "^2.2.2",
     "underscore": "^1.8.3",
-    "xml2js": "^0.4.10"
-  },
-  "devDependencies": {
+    "xml2js": "^0.4.10",
     "bower": "^1.4.1",
     "mocha": "^2.2.5"
   }
