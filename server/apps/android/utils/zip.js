@@ -5,14 +5,13 @@ exports.extract = function(zip_file, match_fn) {
   .getEntries()
   .filter(function(entry) {
     return match_fn(entry.entryName);
-  })
-  .map(function(entry) {
-    return entry.getData();
   });
 }
 
 exports.extract_file = function(zip_file, file_name) {
   return exports.extract(zip_file, function(f) {
     return f === file_name;
-  })[0];
+  })
+  [0]
+  .getData();
 };
