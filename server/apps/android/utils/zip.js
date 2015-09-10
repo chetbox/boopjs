@@ -4,7 +4,6 @@ var path = require('path');
 var mkdir = require('shelljs').mkdir;
 
 exports.extract = function(zip_file, match_fn) {
-  console.log(zip_file);
   var files = {};
   new Zip(zip_file)
   .getEntries()

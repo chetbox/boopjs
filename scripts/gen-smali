@@ -5,6 +5,7 @@ set -e
 cd $(dirname "$0")
 cd ..
 
+SRC_APK=android/test/app/build/outputs/apk/app-release-unsigned.apk
 DEST=server/apps/android/deps
 SMALI='java -jar server/apps/android/deps/smali-2.0.6.jar'
 BAKSMALI='java -jar server/apps/android/deps/baksmali-2.0.6.jar'
@@ -20,15 +21,20 @@ cd ..
 cd ..
 
 echo 'Disassembling...'
-unzip android/test/app/build/outputs/apk/app-release-unsigned.apk classes.dex
+unzip "$SRC_APK" classes.dex
 mv classes.dex build/classes.dex
 $BAKSMALI build/classes.dex -o build/classes-original-ns
 
 echo 'Renamespacing disassembled code...'
-node -e "var smali = require('./server/apps/android/utils/smali'); smali.renamespace('build/classes-original-ns', 'build/classes-new-ns', /^/, 'lgzmrmbhly/');"
+node -e "require('./server/apps/android/utils/smali').renamespace('build/classes-original-ns', 'build/classes-new-ns', /^/, 'lgzmrmbhly/');"
 
 echo 'Reassembling...'
 $SMALI build/classes-new-ns -o build/classes-new-ns.dex
+
+echo 'Extracting resources...'
+node -e "require('./server/apps/android/utils/zip').extract_to('$SRC_APK', 'build/resources-chetbot', function(f) {
+  return f.match(/\.properties$/);
+});"
 
 echo "Setting up $DEST/classes-chetbot ..."
 rm -rf "$DEST/classes-chetbot"
@@ -37,5 +43,9 @@ cp -r build/classes-new-ns "$DEST/classes-chetbot"
 echo "Setting up $DEST/classes-chetbot.dex ..."
 rm -f "$DEST/classes-chetbot.dex"
 cp build/classes-new-ns.dex "$DEST/classes-chetbot.dex"
+
+echo "Setting up $DEST/resources-chetbot ..."
+rm -f "$DEST/resources-chetbot"
+cp -r build/resources-chetbot "$DEST/resources-chetbot"
 
 echo 'Done.'
