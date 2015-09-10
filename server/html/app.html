@@ -21,6 +21,8 @@
         width: 100px;
         border-radius: 18px;
         margin: 50px 50px 5px 50px;
+        -webkit-filter: drop-shadow(0 0 2px rgba(0,0,0,0.2));
+        filter: drop-shadow(0 0 4px rgba(0,0,0,0.2));
       }
 
       h2 {
@@ -171,7 +173,7 @@
   </script>
 
   <script src="/js/rename-test.js"></script>
-  
+
   <script>
     function ajax_delete(url, description, redirect) {
       if (!confirm('Are you sure you want to delete "' + description + '"?')) {
