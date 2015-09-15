@@ -14,6 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.chetbox.chetbot.android.js.Assert;
+import com.chetbox.chetbot.android.js.Drawers;
 import com.google.common.collect.ImmutableList;
 
 import static com.google.common.collect.ImmutableList.copyOf;
@@ -220,8 +221,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
                                 0));
                     }
                 });
-                sleep(0.05);
-                waitUntilSettled(activity);
+                sleep(0.25);
                 return null;
             }
         });
@@ -230,8 +230,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
             public Object call(Activity activity, Object[] args) {
                 InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(getRootView(activity).getWindowToken(), 0);
-                sleep(0.05);
-                waitUntilSettled(activity);
+                sleep(0.25);
                 return null;
             }
         });
@@ -272,8 +271,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
                         activity.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, keycode));
                     }
                 });
-                sleep(0.05);
-                waitUntilSettled(activity);
+                sleep(0.25);
                 return null;
             }
         });
@@ -290,8 +288,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
                         );
                     }
                 });
-                sleep(0.05);
-                waitUntilSettled(activity);
+                sleep(0.25);
                 return null;
             }
         });
@@ -407,6 +404,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
         mJsContext.evaluateString(scope, "RegExp; getClass; java; Packages; JavaAdapter;", "<lazyLoad>", 0, null);
         mJsContext.evaluateString(scope, Assert.source(), Assert.class.getName(), 0, null);
         mJsContext.evaluateString(scope, "var assert_exists = function(selector) { assert_true(exists(selector)); }", "<assert_exists>", 0, null);
+        mJsContext.evaluateString(scope, Drawers.source(), Drawers.class.getName(), 0, null);
         scope.sealObject();
 
         mJsScope = mJsContext.newObject(scope);

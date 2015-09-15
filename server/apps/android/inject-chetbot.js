@@ -2,6 +2,8 @@ var os = require('os');
 var fs = require('fs');
 var path = require('path');
 var shortid = require('shortid');
+var yaml = require('js-yaml');
+var walk = require('fs-walk').walkSync;
 
 var xml_utils = require('./utils/xml');
 var smali_utils = require('./utils/smali');
@@ -100,6 +102,19 @@ exports.add_chetbot_to_apk = function(input_apk, output_apk) {
     console.log('Adding customised Chetbot dex');
     mv(tmp('classes-chetbot.dex'), tmp('app/classes.dex'));
   }
+
+  console.log('Adding new resources');
+  mkdir('-p', tmp('app/unknown'));
+  cp('-R', path.join(chetbot_resources, '*'), tmp('app/unknown'));
+  var apktool_yaml = yaml.safeLoad(fs.readFileSync(tmp('app/apktool.yml'), 'utf8'));
+  apktool_yaml['unknownFiles'] = {};
+  walk(chetbot_resources, function(dir, filename, stat) {
+    if (stat.isFile()) {
+      var relpath = path.relative(chetbot_resources, path.join(dir, filename));
+      apktool_yaml['unknownFiles'][relpath] = '8';
+    }
+  });
+  fs.writeFileSync(tmp('app/apktool.yml'), yaml.safeDump(apktool_yaml));
 
   console.log('Re-packaging APK');
   java('-Xmx1024m', '-jar', apktool, '-o', tmp('app.chetbot.apk'), 'build', tmp('app'));
