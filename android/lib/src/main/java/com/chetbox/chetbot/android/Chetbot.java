@@ -220,8 +220,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
                                 0));
                     }
                 });
-                sleep(0.05);
-                waitUntilSettled(activity);
+                sleep(0.25);
                 return null;
             }
         });
@@ -230,8 +229,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
             public Object call(Activity activity, Object[] args) {
                 InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(getRootView(activity).getWindowToken(), 0);
-                sleep(0.05);
-                waitUntilSettled(activity);
+                sleep(0.25);
                 return null;
             }
         });
@@ -272,8 +270,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
                         activity.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, keycode));
                     }
                 });
-                sleep(0.05);
-                waitUntilSettled(activity);
+                sleep(0.25);
                 return null;
             }
         });
@@ -290,8 +287,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
                         );
                     }
                 });
-                sleep(0.05);
-                waitUntilSettled(activity);
+                sleep(0.25);
                 return null;
             }
         });
