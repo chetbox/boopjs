@@ -97,17 +97,71 @@
       display: inline-block;
     }
 
+    #repl {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 150px;
+      bottom: -150px;
+      transition: bottom .2s ease-out;
+    }
+
+    .show-repl #repl {
+      bottom: 0;
+    }
+
+    #repl .ace_gutter .ace_gutter-cell {
+      color: transparent;
+    }
+
+    #repl .ace_gutter .ace_gutter-cell::before {
+      content: '>>';
+      color: #ccc;
+    }
+
+    #repl.running .ace_gutter .ace_gutter-cell:last-child::before {
+      content: '--';
+    }
+
+    #statusbar {
+      background: #193c43;
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 24px;
+      bottom: 0;
+      transition: bottom .2s ease-out;
+      text-align: right;
+      z-index: 5;
+      box-shadow: 0 -5px 5px -5px rgba(0,0,0,0.5), 0 5px 5px -5px rgba(0,0,0,0.5);
+    }
+
+    .show-repl #statusbar {
+      bottom: 150px;
+    }
+
+    #statusbar paper-icon-button {
+      padding-top: 0;
+      padding-bottom: 0;
+      color: rgba(255,255,255,0.67);
+    }
+
     #editor, #test-report {
       display: block;
       position: absolute;
       top: 64px;
-      bottom: 0;
+      bottom: 24px;
       left: 0;
       right: 0;
+      transition: bottom .2s ease-out;
+    }
+
+    .show-repl #editor, .show-repl #test-report {
+      bottom: 174px;
     }
 
     /* Make the editor look better loading */
-     #editor {
+    #editor {
       background: #1D1F21;
     }
     #editor .ace_gutter {
@@ -258,6 +312,14 @@
           <div id="test-report">
             <ol></ol>
           </div>
+          {{#user}}
+          <div id="statusbar">
+            <a href="javascript:toggle_repl();">
+              <paper-icon-button icon="code"></paper-icon-button>
+            </a>
+          </div>
+          <div id="repl"></div>
+          {{/user}}
         </div>
       </div>
     </paper-header-panel>
@@ -269,32 +331,16 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.1.9/ace.js" charset="utf-8"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.1.9/ext-language_tools.js" charset="utf-8"></script>
   <script>
-    var editor = ace.edit('editor');
     var language_tools = ace.require('ace/ext/language_tools');
+
+    var editor = ace.edit('editor');
     editor.setTheme('ace/theme/tomorrow_night');
     editor.getSession().setMode('ace/mode/javascript');
     editor.setOptions({
       enableLiveAutocompletion: true,
       enableSnippets: false
     });
-
-    // TODO: fetch bultin functions from server
-    var builtin_fns = [
-      'function', 'for', 'var', // JS
-      'tap', 'press', 'type_text', 'hide_keyboard', 'wait', 'screenshot', // interaction
-      'view', 'bottommost', 'topmost', 'leftmost', 'rightmost', 'centermost', 'outermost', // selectors
-       'location', 'size', 'text', 'id', 'class_of', 'exists', 'count', // inspection
-       'assert_true', 'assert_false', 'assert_equal', 'assert_exists' // assertions
-    ];
-    var my_completer = {
-      getCompletions: function(editor, session, pos, prefix, callback) {
-        callback(null, builtin_fns.map(function(f) {
-          return {caption: f, snippet: f};
-        }));
-      }
-    };
-    editor.completers = [language_tools.textCompleter, my_completer];
-  </script>
+    </script>
 
   {{#autosave}}
   <script src="/js/chetbot-autosave.js"></script>
@@ -321,6 +367,72 @@
     });
   </script>
 
+  <!-- repl -->
+  <script type="text/javascript">
+    var repl = ace.edit('repl');
+    repl.setTheme('ace/theme/tomorrow_night_eighties');
+    repl.getSession().setMode('ace/mode/javascript');
+    repl.setOptions({
+      enableLiveAutocompletion: true,
+      enableSnippets: false
+    });
+
+    $('#repl').keydown(function(e) {
+      if (e.which == 13 /* Return */) {
+        e.preventDefault();
+        if (repl.getReadOnly()) {
+          // Still running
+          return;
+        }
+
+        repl.setReadOnly(true);
+
+        // Add a new line
+        var doc = repl.getSession().getDocument();
+        doc.insertLines(doc.getLength(), ['']);
+
+        $('#repl').addClass('running');
+
+        // TODO: execute code, show return value
+        repl.setReadOnly(true);
+        setTimeout(function() {
+          repl.setReadOnly(false);
+          $('#repl').removeClass('running');
+        }, 2000);
+      }
+    });
+
+    function toggle_repl() {
+      $('body').toggleClass('show-repl');
+      if ($('body').hasClass('show-repl')) {
+        repl.focus();
+      } else {
+        editor.focus();
+      }
+    }
+  </script>
+
+  <!-- autocomplete -->
+  <script type="text/javascript">
+    // TODO: fetch bultin functions from server
+    var builtin_fns = [
+      'function', 'for', 'var', // JS
+      'tap', 'press', 'type_text', 'hide_keyboard', 'wait', 'screenshot', // interaction
+      'view', 'bottommost', 'topmost', 'leftmost', 'rightmost', 'centermost', 'outermost', // selectors
+       'location', 'size', 'text', 'id', 'class_of', 'exists', 'count', // inspection
+       'assert_true', 'assert_false', 'assert_equal', 'assert_exists' // assertions
+    ];
+    var my_completer = {
+      getCompletions: function(editor, session, pos, prefix, callback) {
+        callback(null, builtin_fns.map(function(f) {
+          return {caption: f, snippet: f};
+        }));
+      }
+    };
+    editor.completers = [language_tools.textCompleter, my_completer];
+    repl.completers   = [language_tools.textCompleter, my_completer];
+  </script>
+
   <script src="/js/rename-test.js"></script>
 
   <!-- heartbeat to prevent device timing out -->
@@ -339,7 +451,7 @@
   <!-- test runner -->
   <script src="/js/esprima.min.js" charset="utf-8"></script>
   <script src="/js/escodegen.min.js" charset="utf-8"></script>
-  <script src="/js/chetbot-test-runner.js"></script>
+  <script src="/js/test-runner.js"></script>
 
   {{> google-analytics}}
 
