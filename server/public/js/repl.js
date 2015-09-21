@@ -1,4 +1,4 @@
-function setup_repl(server, device_id, id) {
+function setup_repl(server, device_id, id, callbacks) {
   $repl = $('#' + id);
 
   var repl = ace.edit(id);
@@ -10,6 +10,11 @@ function setup_repl(server, device_id, id) {
   });
 
   $repl.keydown(function(e) {
+    if (e.which == 27 /* Esc */) {
+      if (callbacks && callbacks.onClose) callbacks.onClose();
+      return;
+    }
+
     if (e.which == 13 /* Return */) {
       e.preventDefault();
       if (repl.getReadOnly()) {

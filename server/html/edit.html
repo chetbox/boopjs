@@ -358,28 +358,10 @@
   </script>
   {{/autosave}}
 
-  <!-- keyboard shortcuts -->
-  <script type="text/javascript">
-    $(document).keydown(function(e) {
-      if (e.which === 'S'.charCodeAt(0) && (e.ctrlKey || e.metaKey)) {
-        save(editor);
-        return false;
-      }
-      if (e.which === 'R'.charCodeAt(0) && e.ctrlKey) {
-        eval( $('#controls a.run:visible').attr('href') );
-        return false;
-      }
-      if (e.which == 27 /* ESC */) {
-        eval( $('#controls a.back:visible').attr('href') );
-        return false;
-      }
-    });
-  </script>
-
   <!-- repl -->
   <script type="text/javascript" src="/js/repl.js"></script>
   <script type="text/javascript">
-    var repl = setup_repl('{{server}}', '{{device.id}}', 'repl');
+    var repl;
 
     function toggle_repl() {
       $('body').toggleClass('show-repl');
@@ -389,6 +371,10 @@
         editor.focus();
       }
     }
+
+    repl = setup_repl('{{server}}', '{{device.id}}', 'repl', {
+      onClose: toggle_repl
+    });
   </script>
 
   <!-- autocomplete -->
@@ -413,6 +399,28 @@
   </script>
 
   <script src="/js/rename-test.js"></script>
+
+  <!-- keyboard shortcuts -->
+  <script type="text/javascript">
+    $(document).keydown(function(e) {
+      if (e.which === 'S'.charCodeAt(0) && (e.ctrlKey || e.metaKey)) {
+        save(editor);
+        return false;
+      }
+      if (e.which === 'I'.charCodeAt(0) && (e.ctrlKey || e.metaKey)) {
+        toggle_repl();
+        return false;
+      }
+      if (e.which === 'R'.charCodeAt(0) && e.ctrlKey) {
+        eval( $('#controls a.run:visible').attr('href') );
+        return false;
+      }
+      if (e.which == 27 /* ESC */) {
+        eval( $('#controls a.back:visible').attr('href') );
+        return false;
+      }
+    });
+  </script>
 
   <!-- heartbeat to prevent device timing out -->
   <script>
