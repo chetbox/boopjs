@@ -23,6 +23,7 @@ function setup_repl(server, device_id, id) {
       var doc = repl.getSession().getDocument();
       var src_to_execute = doc.getLine(doc.getLength() - 1);
       doc.insertLines(doc.getLength(), ['']); // Used for result or next command
+      repl.gotoLine(doc.getLength());
 
       function show_result(r) {
         if (!r.error && (r.result === undefined || r.result === null)) {
@@ -35,7 +36,8 @@ function setup_repl(server, device_id, id) {
         }
 
         var message = '// ' + JSON.stringify(r.error ? r.error : r.result);
-        doc.insert({row: doc.getLength(), col: 0}, message + '\n');
+        doc.insertLines(doc.getLength() - 1, [message]);
+        repl.gotoLine(doc.getLength());
       }
 
       // execute code
