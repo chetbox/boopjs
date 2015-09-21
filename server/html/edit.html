@@ -170,7 +170,7 @@
 
     #test-report {
       font-size: 12px;
-      background: #dFe8eC;
+      background: #cde;
       font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
       color: rgba(0,0,0,0.87);
       padding-top: 0.5em;
@@ -298,7 +298,7 @@
             <a class="back" href="javascript:showEditor();" title="Back to editor">
               <paper-icon-button icon="create"></paper-icon-button>
             </a>
-            <a class="run" href="javascript:run(editor, '{{server}}', '{{device.id}}');" title="Run test">
+            <a class="run" href="javascript:run_test(editor, '{{server}}', '{{device.id}}');" title="Run test">
               <paper-icon-button icon="av:play-arrow"></paper-icon-button>
               <span class="hint">&#8592; Press me</span>
             </a>
@@ -451,6 +451,7 @@
   <!-- test runner -->
   <script src="/js/esprima.min.js" charset="utf-8"></script>
   <script src="/js/escodegen.min.js" charset="utf-8"></script>
+  <script src="/js/script-runner.js"></script>
   <script src="/js/test-runner.js"></script>
 
   {{> google-analytics}}
