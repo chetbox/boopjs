@@ -119,8 +119,17 @@
       color: #ccc;
     }
 
+    #repl .ace_gutter .ace_gutter-cell.result::before {
+      content: none;
+    }
+
     #repl.running .ace_gutter .ace_gutter-cell:last-child::before {
       content: '--';
+    }
+
+    #repl .ace_gutter .ace_gutter-cell.error::before {
+      content: '!!';
+      color: red;
     }
 
     #statusbar {
@@ -386,14 +395,32 @@
         }
 
         repl.setReadOnly(true);
-
-        // Add a new line
-        var doc = repl.getSession().getDocument();
-        doc.insertLines(doc.getLength(), ['']);
-
         $('#repl').addClass('running');
 
-        // TODO: execute code, show return value
+        var doc = repl.getSession().getDocument();
+        var src_to_execute = doc.getLine(doc.getLength() - 1);
+        doc.insertLines(doc.getLength(), ['']); // Used for result or next command
+
+        function show_result(r) {
+          if (!r.error && (r.result === undefined || r.result === null)) {
+            return;
+          }
+
+          repl.getSession().addGutterDecoration(doc.getLength() - 1, 'result');
+          if (r.error) {
+            repl.getSession().addGutterDecoration(doc.getLength() - 1, 'error');
+          }
+
+          var message = '// ' + JSON.stringify(r.error ? r.error : r.result);
+          doc.insert({row: doc.getLength(), col: 0}, message + '\n');
+        }
+
+        // execute code
+        run_script('{{server}}', '{{device.id}}', [{line: 1, source: src_to_execute}], {
+          onResult: show_result,
+          onError: show_result
+        });
+
         repl.setReadOnly(true);
         setTimeout(function() {
           repl.setReadOnly(false);
@@ -430,7 +457,7 @@
       }
     };
     editor.completers = [language_tools.textCompleter, my_completer];
-    repl.completers   = [language_tools.textCompleter, my_completer];
+    repl.completers   = [my_completer];
   </script>
 
   <script src="/js/rename-test.js"></script>
