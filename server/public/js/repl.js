@@ -53,13 +53,13 @@ function setup_repl(server, device_id, id, callbacks) {
         return;
       }
 
-      repl.getSession().addGutterDecoration(doc.getLength() - 1, 'result');
-      if (r.error) {
-        repl.getSession().addGutterDecoration(doc.getLength() - 1, 'error');
+      var message_lines = JSON.stringify(r.error ? r.error : r.result, null, 2).split('\n');
+      var start_line = doc.getLength() - 1;
+      doc.insertLines(start_line, message_lines);
+      // Hide '>>' annotation for results
+      for (var i = start_line; i < doc.getLength() - 1; i++) {
+        repl.getSession().addGutterDecoration(i, r.error ? 'error' : 'result');
       }
-
-      var message = '// ' + JSON.stringify(r.error ? r.error : r.result);
-      doc.insertLines(doc.getLength() - 1, [message]);
       repl.gotoLine(doc.getLength());
     }
 
