@@ -3,6 +3,7 @@ package com.chetbox.chetbot.android;
 import android.graphics.Bitmap;
 import android.util.Log;
 
+import com.chetbox.chetbot.android.util.Images;
 import com.google.common.base.Throwables;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -11,8 +12,6 @@ import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
 import java.net.URI;
-
-import static com.chetbox.chetbot.android.ViewUtils.*;
 
 public class ChetbotServerConnection {
 
@@ -168,7 +167,7 @@ public class ChetbotServerConnection {
             : "NULL";
         if (data instanceof Bitmap) {
             // Convert to base64 representation for browser rendering
-            data = "data:image/png;base64," + base64Encode(toPNG((Bitmap) data));
+            data = "data:image/png;base64," + Images.base64Encode(Images.toPNG((Bitmap) data));
         }
         return new Result(device, lineNo, type, data);
     }
