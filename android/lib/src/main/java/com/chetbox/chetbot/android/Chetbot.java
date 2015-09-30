@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import com.chetbox.chetbot.android.js.Assert;
 import com.chetbox.chetbot.android.js.Drawers;
+import com.chetbox.chetbot.android.util.Activities;
 import com.chetbox.chetbot.android.util.InputEvents;
 import com.chetbox.chetbot.android.util.RootViews;
 import com.google.common.base.Preconditions;
@@ -29,7 +30,7 @@ import org.mozilla.javascript.ScriptableObject;
 import java.util.concurrent.TimeUnit;
 
 import static com.chetbox.chetbot.android.util.Views.*;
-import static com.chetbox.chetbot.android.ActivityUtils.*;
+import static com.chetbox.chetbot.android.util.Activities.*;
 
 import static com.google.common.collect.Iterables.*;
 
@@ -483,7 +484,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
             return sTestActivity;
         }
 
-        return ActivityUtils.getActivity(mPackageName);
+        return Activities.getActivity(mPackageName);
     }
 
 }
