@@ -15,6 +15,9 @@ import android.widget.Toast;
 
 import com.chetbox.chetbot.android.js.Assert;
 import com.chetbox.chetbot.android.js.Drawers;
+import com.chetbox.chetbot.android.util.InputEvents;
+import com.chetbox.chetbot.android.util.RootViews;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import static com.google.common.collect.ImmutableList.copyOf;
@@ -25,7 +28,7 @@ import org.mozilla.javascript.ScriptableObject;
 
 import java.util.concurrent.TimeUnit;
 
-import static com.chetbox.chetbot.android.ViewUtils.*;
+import static com.chetbox.chetbot.android.util.Views.*;
 import static com.chetbox.chetbot.android.ActivityUtils.*;
 
 import static com.google.common.collect.Iterables.*;
@@ -102,6 +105,8 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
     }
 
     private static Iterable<View> selectViews(View srcView, Object[] args, Scriptable scope) {
+        Preconditions.checkNotNull(srcView);
+
         if (args == null) {
             return null;
         }
@@ -202,25 +207,24 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
                 View view = firstView(selectedViews);
                 final int[] viewCenter = center(view);
                 final long timestamp = SystemClock.uptimeMillis();
-                activity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        activity.dispatchTouchEvent(MotionEvent.obtain(
+                final MotionEvent downEvent = MotionEvent.obtain(
                                 timestamp,
                                 timestamp,
                                 MotionEvent.ACTION_DOWN,
                                 viewCenter[0],
                                 viewCenter[1],
-                                0));
-                        activity.dispatchTouchEvent(MotionEvent.obtain(
+                                0);
+                final MotionEvent upEvent = MotionEvent.obtain(
                                 timestamp,
                                 timestamp + 20,
                                 MotionEvent.ACTION_UP,
                                 viewCenter[0],
                                 viewCenter[1],
-                                0));
-                    }
-                });
+                                0);
+
+                InputEvents.injectEvent(downEvent);
+                InputEvents.injectEvent(upEvent);
+
                 sleep(0.25);
                 return null;
             }
@@ -229,7 +233,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
             @Override
             public Object call(Activity activity, Object[] args) {
                 InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-                imm.hideSoftInputFromWindow(getRootView(activity).getWindowToken(), 0);
+                imm.hideSoftInputFromWindow(RootViews.getTopmostContentView(activity).getWindowToken(), 0);
                 sleep(0.25);
                 return null;
             }
@@ -355,7 +359,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
         scope.put("closest_to", scope, new Callable() {
             @Override
             public Object call(org.mozilla.javascript.Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
-                View rootView = getRootView(getActivity());
+                View rootView = RootViews.getTopmostContentView(getActivity());
                 View target = firstView(selectViews(rootView, new Object[]{args[0]}, scope));
                 Iterable<View> views = selectViews(rootView, new Object[]{args[1]}, scope);
                 return new EuclidianDistanceOrdering(center(target)).min(views);
@@ -364,7 +368,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
         scope.put("furthest_from", scope, new Callable() {
             @Override
             public Object call(org.mozilla.javascript.Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
-                View rootView = getRootView(getActivity());
+                View rootView = RootViews.getTopmostContentView(getActivity());
                 View target = firstView(selectViews(rootView, new Object[]{args[0]}, scope));
                 Iterable<View> views = selectViews(rootView, new Object[]{args[1]}, scope);
                 return new EuclidianDistanceOrdering(center(target)).max(views);
@@ -445,7 +449,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
             @Override
             public Object call(org.mozilla.javascript.Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
                 final Activity activity = getActivity();
-                final View rootView = getRootView(activity);
+                final View rootView = RootViews.getTopmostContentView(activity);
                 final Iterable<View> selectedViews = selectViews(rootView, args, scope);
                 return fn.call(activity, selectedViews);
             }
