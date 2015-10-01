@@ -1,5 +1,6 @@
 package com.chetbox.chetbot.base;
 
+import android.content.Intent;
 import android.support.test.rule.ActivityTestRule;
 import android.view.View;
 import android.widget.Button;
@@ -7,6 +8,7 @@ import android.widget.TextView;
 
 import com.chetbox.chetbot.android.Chetbot;
 import com.chetbox.chetbot.android.ChetbotServerConnection;
+import com.chetbox.chetbot.test.Intents;
 import com.chetbox.chetbot.test.MainActivity;
 import com.chetbox.chetbot.test.R;
 
@@ -17,7 +19,14 @@ import org.junit.rules.TestName;
 public abstract class StopwatchTest {
 
     @Rule
-    public ActivityTestRule<MainActivity> mActivityRule = new ActivityTestRule(MainActivity.class);
+    public ActivityTestRule<MainActivity> mActivityRule = new ActivityTestRule<MainActivity>(MainActivity.class) {
+        @Override
+        protected Intent getActivityIntent() {
+            Intent intent = super.getActivityIntent();
+            intent.putExtra(Intents.SHOW_SCREEN, Intents.SCREEN_STOPWATCH);
+            return intent;
+        }
+    };
 
     @Rule
     public TestName name = new TestName();
