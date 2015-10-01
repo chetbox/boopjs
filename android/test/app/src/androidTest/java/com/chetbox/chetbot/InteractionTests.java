@@ -1,21 +1,23 @@
 package com.chetbox.chetbot;
 
-import android.support.test.runner.AndroidJUnit4;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.widget.EditText;
 
 import com.chetbox.chetbot.android.util.Activities;
-import com.chetbox.chetbot.base.StopwatchTest;
+import com.chetbox.chetbot.base.screens.StopwatchTest;
 import com.chetbox.chetbot.test.R;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.closeTo;
+import static org.hamcrest.Matchers.equalToIgnoringCase;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isA;
+import static org.hamcrest.Matchers.nullValue;
 
-@RunWith(AndroidJUnit4.class)
 public class InteractionTests extends StopwatchTest {
 
     @Test public void tapToggleButton() {

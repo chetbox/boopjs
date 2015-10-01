@@ -1,31 +1,34 @@
 package com.chetbox.chetbot.base;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.support.test.rule.ActivityTestRule;
-import android.widget.EditText;
-import android.widget.TextView;
+import android.support.test.runner.AndroidJUnit4;
+import android.view.View;
 
 import com.chetbox.chetbot.android.Chetbot;
 import com.chetbox.chetbot.android.ChetbotServerConnection;
-import com.chetbox.chetbot.test.Intents;
 import com.chetbox.chetbot.test.MainActivity;
-import com.chetbox.chetbot.test.R;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TestName;
+import org.junit.runner.RunWith;
 
-public class AlertsTest {
+@RunWith(AndroidJUnit4.class)
+public abstract class BaseTest {
+
+    public Intent withIntent(Intent intent) {
+        return intent;
+    }
 
     @Rule
     public ActivityTestRule<MainActivity> mActivityRule = new ActivityTestRule<MainActivity>(MainActivity.class) {
         @Override
         protected Intent getActivityIntent() {
-            Intent intent = super.getActivityIntent();
-            intent.putExtra(Intents.SHOW_SCREEN, Intents.SCREEN_ALERTS);
-            return intent;
+            return withIntent(super.getActivityIntent());
         }
     };
 
@@ -35,9 +38,8 @@ public class AlertsTest {
     @Rule
     public final ExpectedException exception = ExpectedException.none();
 
-    protected MainActivity activity;
-    protected Chetbot chetbot;
-    protected TextView status;
+    private MainActivity activity;
+    private Chetbot chetbot;
 
     int linesExecuted = 0;
 
@@ -47,10 +49,6 @@ public class AlertsTest {
         activity = mActivityRule.getActivity();
         chetbot = Chetbot.getInstance(activity);
         chetbot.setTestActivity(activity);
-
-        MainActivity activity = mActivityRule.getActivity();
-        status = (TextView) activity.findViewById(R.id.status);
-
         chetbot.onStartScript();
     }
 
@@ -62,6 +60,14 @@ public class AlertsTest {
 
     protected Object exec(String stmt) {
         return chetbot.onStatement(new ChetbotServerConnection.Statement(stmt, ++linesExecuted), name.getMethodName());
+    }
+
+    protected View findViewById(int id) {
+        return mActivityRule.getActivity().findViewById(id);
+    }
+
+    protected Activity getActivity() {
+        return mActivityRule.getActivity();
     }
 
 }
