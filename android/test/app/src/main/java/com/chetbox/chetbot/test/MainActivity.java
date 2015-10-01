@@ -2,25 +2,16 @@ package com.chetbox.chetbot.test;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.test.espresso.core.deps.guava.base.Predicate;
-import android.support.test.espresso.core.deps.guava.collect.Iterables;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-import com.google.common.collect.ImmutableList;
-
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
 
@@ -48,10 +39,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.layout_main);
+        setContentView(R.layout.main);
 
         mScreens.add(new Screen(Intents.SCREEN_STOPWATCH, getString(R.string.stopwatch), new StopwatchFragment()));
         mScreens.add(new Screen(Intents.SCREEN_TEXTFIELDS, getString(R.string.text_fields), new TextFieldsFragment()));
+        mScreens.add(new Screen(Intents.SCREEN_ALERTS, getString(R.string.alerts), new AlertsFragment()));
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 

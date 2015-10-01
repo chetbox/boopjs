@@ -11,4 +11,12 @@
     <string name="milliseconds">MILLIS</string>
 
     <string name="text_fields">Text fields</string>
+
+    <string name="alerts">Alerts</string>
+    <string name="alert_confirmation">Confirmation</string>
+    <string name="alert_please_confirm">Please confirm</string>
+    <string name="alert_confirm">OK</string>
+    <string name="alert_deny">Cancel</string>
+    <string name="alert_undefined">Undefined</string>
+
 </resources>
