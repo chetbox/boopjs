@@ -1,6 +1,7 @@
 package com.chetbox.chetbot.base;
 
 import android.support.test.rule.ActivityTestRule;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -66,6 +67,10 @@ public abstract class StopwatchTest {
 
     protected Object exec(String stmt) {
         return chetbot.onStatement(new ChetbotServerConnection.Statement(stmt, ++linesExecuted), name.getMethodName());
+    }
+
+    protected View findViewById(int id) {
+        return mActivityRule.getActivity().findViewById(id);
     }
 
 }
