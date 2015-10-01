@@ -1,38 +1,37 @@
-package com.chetbox.chetbot.android;
+package com.chetbox.chetbot.android.util;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.text.TextUtils;
-import android.util.Base64;
 import android.view.Display;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.chetbox.chetbot.android.Container;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import static com.google.common.collect.Iterables.*;
-import static com.google.common.collect.Lists.*;
+import static com.google.common.collect.Iterables.addAll;
+import static com.google.common.collect.Iterables.concat;
+import static com.google.common.collect.Iterables.filter;
+import static com.google.common.collect.Iterables.get;
+import static com.google.common.collect.Iterables.isEmpty;
+import static com.google.common.collect.Iterables.transform;
+import static com.google.common.collect.Lists.newArrayList;
 
 
-public class ViewUtils {
+public class Views {
 
     public static View firstView(Iterable<?> views) {
         return (View) get(views, 0);
-    }
-
-    public static View getRootView(Activity activity) {
-        return activity.getWindow().getDecorView().findViewById(android.R.id.content);
     }
 
     public static Function<View, Iterable<View>> ChildViews = new Function<View, Iterable<View>>() {
@@ -163,7 +162,7 @@ public class ViewUtils {
 
     public static int[] location(View v) {
         int[] location = new int[2];
-        v.getLocationInWindow(location);
+        v.getLocationOnScreen(location);
         return location;
     }
 
@@ -220,18 +219,6 @@ public class ViewUtils {
         }
     }
 
-    public static String base64Encode(byte[] data) {
-        try {
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            outputStream.write(Base64.encode(data, Base64.DEFAULT));
-            return outputStream
-                    .toString("UTF-8")
-                    .replaceAll("[\r\n]", "");
-        } catch (IOException e) {
-            throw new RuntimeException("This should never happen!", e);
-        }
-    }
-
     public static Bitmap screenshot(final Activity activity) {
         final Container<Bitmap> screenshotContainer = new Container<>();
         final CountDownLatch latch = new CountDownLatch(1);
@@ -251,12 +238,6 @@ public class ViewUtils {
             }
         });
         return screenshotContainer.waitForContent(10, TimeUnit.SECONDS);
-    }
-
-    public static byte[] toPNG(Bitmap bitmap) {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 0, outputStream);
-        return outputStream.toByteArray();
     }
 
     public static int[] screenSize(Activity activity) {

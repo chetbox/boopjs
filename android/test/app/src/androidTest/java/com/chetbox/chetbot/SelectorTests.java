@@ -1,23 +1,27 @@
 package com.chetbox.chetbot;
 
 import android.graphics.Bitmap;
-import android.support.test.runner.AndroidJUnit4;
-import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.chetbox.chetbot.base.StopwatchActivityTest;
-import com.chetbox.chetbot.stopwatch.StopwatchActivity;
+import com.chetbox.chetbot.base.screens.StopwatchTest;
+import com.chetbox.chetbot.test.MainActivity;
 import com.google.common.collect.ImmutableList;
 
-import org.junit.*;
-import org.junit.runner.RunWith;
+import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.equalToIgnoringCase;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.isA;
+import static org.hamcrest.Matchers.lessThan;
+import static org.hamcrest.Matchers.sameInstance;
 
-@RunWith(AndroidJUnit4.class)
-public class SelectorTests extends StopwatchActivityTest {
+public class SelectorTests extends StopwatchTest {
 
     @Test public void viewReturnsInstance() {
         assertThat((Button) exec("view(_startStopButton_)"),
@@ -55,13 +59,13 @@ public class SelectorTests extends StopwatchActivityTest {
     }
 
     @Test public void findViewByLongId() {
-        assertThat((Button) exec("view({id: 'com.chetbox.chetbot.stopwatch:id/reset'})"),
+        assertThat((Button) exec("view({id: 'com.chetbox.chetbot.test:id/reset'})"),
                 sameInstance(resetButton));
     }
 
     @Test public void findViewByLongId_notFound() {
         exception.expect(IndexOutOfBoundsException.class);
-        exec("view({id: 'com.chetbox.chetbot.stopwatch:id/i_do_not_exist'})");
+        exec("view({id: 'com.chetbox.chetbot.test:id/i_do_not_exist'})");
     }
 
     @Test public void findViewsByClassName() {
@@ -163,7 +167,7 @@ public class SelectorTests extends StopwatchActivityTest {
     }
 
     @Test public void activity() {
-        assertThat((StopwatchActivity) exec("activity()"), sameInstance(activity));
+        assertThat((MainActivity) exec("activity()"), sameInstance(getActivity()));
     }
 
     @Test public void leftmostView() {
@@ -198,22 +202,24 @@ public class SelectorTests extends StopwatchActivityTest {
 
     @Test public void allViewIds() {
         assertThat(ImmutableList.copyOf((String[]) exec("view_ids()")),
-                contains("com.chetbox.chetbot.stopwatch:id/stopwatch_container",
-                        "com.chetbox.chetbot.stopwatch:id/center",
-                        "com.chetbox.chetbot.stopwatch:id/minutes",
-                        "com.chetbox.chetbot.stopwatch:id/seconds",
-                        "com.chetbox.chetbot.stopwatch:id/milliseconds",
-                        "com.chetbox.chetbot.stopwatch:id/start_stop",
-                        "com.chetbox.chetbot.stopwatch:id/reset"));
+                hasItems("com.chetbox.chetbot.test:id/drawer_layout",
+                        "com.chetbox.chetbot.test:id/content_frame",
+                        "com.chetbox.chetbot.test:id/stopwatch_container",
+                        "com.chetbox.chetbot.test:id/center",
+                        "com.chetbox.chetbot.test:id/minutes",
+                        "com.chetbox.chetbot.test:id/seconds",
+                        "com.chetbox.chetbot.test:id/milliseconds",
+                        "com.chetbox.chetbot.test:id/start_stop",
+                        "com.chetbox.chetbot.test:id/reset"));
     }
 
     @Test public void subViewIds() {
         assertThat(ImmutableList.copyOf((String[]) exec("view_ids({id: 'stopwatch_container'})")),
-                contains("com.chetbox.chetbot.stopwatch:id/center",
-                        "com.chetbox.chetbot.stopwatch:id/minutes",
-                        "com.chetbox.chetbot.stopwatch:id/seconds",
-                        "com.chetbox.chetbot.stopwatch:id/milliseconds",
-                        "com.chetbox.chetbot.stopwatch:id/start_stop",
-                        "com.chetbox.chetbot.stopwatch:id/reset"));
+                contains("com.chetbox.chetbot.test:id/center",
+                        "com.chetbox.chetbot.test:id/minutes",
+                        "com.chetbox.chetbot.test:id/seconds",
+                        "com.chetbox.chetbot.test:id/milliseconds",
+                        "com.chetbox.chetbot.test:id/start_stop",
+                        "com.chetbox.chetbot.test:id/reset"));
     }
 }

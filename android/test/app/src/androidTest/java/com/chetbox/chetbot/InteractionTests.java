@@ -1,18 +1,23 @@
 package com.chetbox.chetbot;
 
-import android.support.test.runner.AndroidJUnit4;
+import android.support.v4.view.GravityCompat;
+import android.widget.EditText;
 
-import com.chetbox.chetbot.android.ActivityUtils;
-import com.chetbox.chetbot.base.StopwatchActivityTest;
+import com.chetbox.chetbot.android.util.Activities;
+import com.chetbox.chetbot.base.screens.StopwatchTest;
+import com.chetbox.chetbot.test.R;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.closeTo;
+import static org.hamcrest.Matchers.equalToIgnoringCase;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isA;
+import static org.hamcrest.Matchers.nullValue;
 
-@RunWith(AndroidJUnit4.class)
-public class InteractionTests extends StopwatchActivityTest {
+public class InteractionTests extends StopwatchTest {
 
     @Test public void tapToggleButton() {
         assertThat(startStopButton.getText().toString(),
@@ -39,7 +44,7 @@ public class InteractionTests extends StopwatchActivityTest {
     @Test public void waitUntilIdleTimeout() {
         exec("tap(_startStopButton_)");
 
-        exception.expect(ActivityUtils.TimeoutException.class);
+        exception.expect(Activities.TimeoutException.class);
         exec("wait_until_idle({timeout: 2})");
     }
 
@@ -66,4 +71,32 @@ public class InteractionTests extends StopwatchActivityTest {
              "   Packages.android.widget.Toast.makeText(activity(), '" + name.getMethodName() + "', 0).show();\n" +
              "})");
     }
+
+    @Test public void openAndCloseDrawer() {
+        assertThat(drawerLayout.isDrawerOpen(GravityCompat.START),
+                is(false));
+
+        exec("open_drawer()");
+
+        assertThat(drawerLayout.isDrawerOpen(GravityCompat.START),
+                is(true));
+
+        exec("close_drawer()");
+
+        assertThat(drawerLayout.isDrawerOpen(GravityCompat.START),
+                is(false));
+    }
+
+    @Test public void openDrawerAndSelectItem() {
+        // Initially showing Stopwatch
+        assertThat(findViewById(R.id.email),
+                nullValue());
+
+        exec("open_drawer()");
+        exec("tap('Text fields')");
+
+        assertThat(findViewById(R.id.email),
+                instanceOf(EditText.class));
+    }
+
 }
