@@ -8,7 +8,7 @@ RUN wget -qO- http://dl.google.com/android/android-sdk_r24.3.4-linux.tgz | tar -
 RUN echo y | /opt/android-sdk-linux/tools/android update sdk --all --filter platform-tools,build-tools-23.0.1,android-23,extra-android-support,extra-android-m2repository --no-ui --force
 
 # Setup Android tools environment
-ENV PATH "$PATH:/opt/android-sdk-linux/build-tools/22.0.1"
+ENV PATH "$PATH:/opt/android-sdk-linux/build-tools/23.0.1"
 ENV ANDROID_HOME /opt/android-sdk-linux/
 
 # Get project dependencies
