@@ -5,13 +5,16 @@ public class Assert {
     public static String source() {
         return "function assert_true(o) {\n" +
                 "  if (!o) { throw (o + ' is not truthy'); }\n" +
-                "};\n" +
+                "}\n" +
                 "function assert_false(o) {\n" +
                 "  if (o) { throw (o + ' is truthy'); }\n" +
-                "};\n" +
+                "}\n" +
                 "function assert_equal(a, b) {\n" +
                 "  if (a != b) { throw (a + ' != ' + b); }\n" +
-                "};\n";
+                "}\n" +
+                "function assert_exists(selector) {\n" +
+                "  assert_true(exists(selector));\n" +
+                "}\n";
     }
 
 }

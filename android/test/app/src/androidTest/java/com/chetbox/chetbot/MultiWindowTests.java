@@ -7,7 +7,7 @@ import org.junit.Test;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-public class MultiWindowTest extends AlertsTest {
+public class MultiWindowTests extends AlertsTest {
 
     @Test public void tapAlertButton() {
         assertThat(status.getText().toString(),
