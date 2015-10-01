@@ -1,7 +1,6 @@
 package com.chetbox.chetbot;
 
 import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
 import android.widget.EditText;
 
 import com.chetbox.chetbot.android.util.Activities;
@@ -74,17 +73,17 @@ public class InteractionTests extends StopwatchTest {
     }
 
     @Test public void openAndCloseDrawer() {
-        assertThat(((DrawerLayout) findViewById(R.id.drawer_layout)).isDrawerOpen(GravityCompat.START),
+        assertThat(drawerLayout.isDrawerOpen(GravityCompat.START),
                 is(false));
 
         exec("open_drawer()");
 
-        assertThat(((DrawerLayout) findViewById(R.id.drawer_layout)).isDrawerOpen(GravityCompat.START),
+        assertThat(drawerLayout.isDrawerOpen(GravityCompat.START),
                 is(true));
 
         exec("close_drawer()");
 
-        assertThat(((DrawerLayout) findViewById(R.id.drawer_layout)).isDrawerOpen(GravityCompat.START),
+        assertThat(drawerLayout.isDrawerOpen(GravityCompat.START),
                 is(false));
     }
 

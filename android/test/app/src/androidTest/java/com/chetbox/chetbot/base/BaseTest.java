@@ -4,11 +4,13 @@ import android.app.Activity;
 import android.content.Intent;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
+import android.support.v4.widget.DrawerLayout;
 import android.view.View;
 
 import com.chetbox.chetbot.android.Chetbot;
 import com.chetbox.chetbot.android.ChetbotServerConnection;
 import com.chetbox.chetbot.test.MainActivity;
+import com.chetbox.chetbot.test.R;
 
 import org.junit.After;
 import org.junit.Before;
@@ -41,6 +43,8 @@ public abstract class BaseTest {
     private MainActivity activity;
     private Chetbot chetbot;
 
+    protected DrawerLayout drawerLayout;
+
     int linesExecuted = 0;
 
     @Before
@@ -50,6 +54,8 @@ public abstract class BaseTest {
         chetbot = Chetbot.getInstance(activity);
         chetbot.setTestActivity(activity);
         chetbot.onStartScript();
+
+        drawerLayout = (DrawerLayout) activity.findViewById(R.id.drawer_layout);
     }
 
     @After
