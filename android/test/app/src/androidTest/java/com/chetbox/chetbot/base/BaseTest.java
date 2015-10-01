@@ -40,7 +40,6 @@ public abstract class BaseTest {
     @Rule
     public final ExpectedException exception = ExpectedException.none();
 
-    private MainActivity activity;
     private Chetbot chetbot;
 
     protected DrawerLayout drawerLayout;
@@ -50,7 +49,7 @@ public abstract class BaseTest {
     @Before
     public void setUp() {
         // These lines have to be done in this order
-        activity = mActivityRule.getActivity();
+        Activity activity = mActivityRule.getActivity();
         chetbot = Chetbot.getInstance(activity);
         chetbot.setTestActivity(activity);
         chetbot.onStartScript();
