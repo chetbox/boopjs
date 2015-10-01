@@ -1,18 +1,12 @@
 package com.chetbox.chetbot;
 
-import android.support.test.runner.AndroidJUnit4;
-import android.widget.Button;
-
-import com.chetbox.chetbot.base.TextFieldsTest;
+import com.chetbox.chetbot.base.screens.TextFieldsTest;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.sameInstance;
 
-@RunWith(AndroidJUnit4.class)
 public class TextEntryTest extends TextFieldsTest {
 
     @Test public void typeInTextField() {

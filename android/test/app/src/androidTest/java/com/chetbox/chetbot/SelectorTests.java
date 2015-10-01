@@ -1,22 +1,26 @@
 package com.chetbox.chetbot;
 
 import android.graphics.Bitmap;
-import android.support.test.runner.AndroidJUnit4;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.chetbox.chetbot.base.StopwatchTest;
+import com.chetbox.chetbot.base.screens.StopwatchTest;
 import com.chetbox.chetbot.test.MainActivity;
-import com.chetbox.chetbot.test.StopwatchFragment;
 import com.google.common.collect.ImmutableList;
 
-import org.junit.*;
-import org.junit.runner.RunWith;
+import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.equalToIgnoringCase;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.isA;
+import static org.hamcrest.Matchers.lessThan;
+import static org.hamcrest.Matchers.sameInstance;
 
-@RunWith(AndroidJUnit4.class)
 public class SelectorTests extends StopwatchTest {
 
     @Test public void viewReturnsInstance() {
@@ -163,7 +167,7 @@ public class SelectorTests extends StopwatchTest {
     }
 
     @Test public void activity() {
-        assertThat((MainActivity) exec("activity()"), sameInstance(activity));
+        assertThat((MainActivity) exec("activity()"), sameInstance(getActivity()));
     }
 
     @Test public void leftmostView() {
