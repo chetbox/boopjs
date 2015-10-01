@@ -7,7 +7,7 @@ import org.junit.Test;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-public class TextEntryTest extends TextFieldsTest {
+public class TextEntryTests extends TextFieldsTest {
 
     @Test public void typeInTextField() {
         exec("tap('text')");

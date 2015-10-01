@@ -166,10 +166,6 @@ public class SelectorTests extends StopwatchTest {
         assertThat((Bitmap) exec("screenshot()"), isA(Bitmap.class));
     }
 
-    @Test public void activity() {
-        assertThat((MainActivity) exec("activity()"), sameInstance(getActivity()));
-    }
-
     @Test public void leftmostView() {
         assertThat((Button) exec("leftmost(_startStopButton_, _resetButton_)"),
                 sameInstance(startStopButton));
