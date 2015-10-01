@@ -58,7 +58,7 @@ public class StopwatchFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.layout_stopwatch, container, false);
+        View view = inflater.inflate(R.layout.stopwatch, container, false);
 
         mMinutesText = (TextView) view.findViewById(R.id.minutes);
         mSecondsText = (TextView) view.findViewById(R.id.seconds);
