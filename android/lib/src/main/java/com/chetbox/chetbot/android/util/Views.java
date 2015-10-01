@@ -1,16 +1,12 @@
 package com.chetbox.chetbot.android.util;
 
 import android.app.Activity;
-import android.content.ContextWrapper;
 import android.graphics.Bitmap;
 import android.graphics.Point;
-import android.os.Looper;
 import android.text.TextUtils;
-import android.util.Base64;
 import android.view.Display;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.TextView;
 
 import com.chetbox.chetbot.android.Container;
@@ -19,17 +15,17 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import static com.google.common.collect.Iterables.*;
-import static com.google.common.collect.Lists.*;
+import static com.google.common.collect.Iterables.addAll;
+import static com.google.common.collect.Iterables.concat;
+import static com.google.common.collect.Iterables.filter;
+import static com.google.common.collect.Iterables.get;
+import static com.google.common.collect.Iterables.isEmpty;
+import static com.google.common.collect.Iterables.transform;
+import static com.google.common.collect.Lists.newArrayList;
 
 
 public class Views {
