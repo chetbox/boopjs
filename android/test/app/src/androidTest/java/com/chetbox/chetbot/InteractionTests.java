@@ -3,7 +3,7 @@ package com.chetbox.chetbot;
 import android.support.test.runner.AndroidJUnit4;
 
 import com.chetbox.chetbot.android.util.Activities;
-import com.chetbox.chetbot.base.StopwatchActivityTest;
+import com.chetbox.chetbot.base.StopwatchTest;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -12,7 +12,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 @RunWith(AndroidJUnit4.class)
-public class InteractionTests extends StopwatchActivityTest {
+public class InteractionTests extends StopwatchTest {
 
     @Test public void tapToggleButton() {
         assertThat(startStopButton.getText().toString(),

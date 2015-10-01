@@ -6,17 +6,17 @@ import android.widget.TextView;
 
 import com.chetbox.chetbot.android.Chetbot;
 import com.chetbox.chetbot.android.ChetbotServerConnection;
-import com.chetbox.chetbot.stopwatch.R;
-import com.chetbox.chetbot.stopwatch.StopwatchActivity;
+import com.chetbox.chetbot.test.MainActivity;
+import com.chetbox.chetbot.test.R;
 
 import org.junit.*;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TestName;
 
-public abstract class StopwatchActivityTest {
+public abstract class StopwatchTest {
 
     @Rule
-    public ActivityTestRule<StopwatchActivity> mActivityRule = new ActivityTestRule(StopwatchActivity.class);
+    public ActivityTestRule<MainActivity> mActivityRule = new ActivityTestRule(MainActivity.class);
 
     @Rule
     public TestName name = new TestName();
@@ -24,7 +24,7 @@ public abstract class StopwatchActivityTest {
     @Rule
     public final ExpectedException exception = ExpectedException.none();
 
-    protected StopwatchActivity activity;
+    protected MainActivity activity;
     protected Chetbot chetbot;
     protected Button resetButton;
     protected Button startStopButton;
@@ -41,7 +41,7 @@ public abstract class StopwatchActivityTest {
         chetbot = Chetbot.getInstance(activity);
         chetbot.setTestActivity(activity);
 
-        StopwatchActivity activity = mActivityRule.getActivity();
+        MainActivity activity = mActivityRule.getActivity();
         resetButton = (Button) activity.findViewById(R.id.reset);
         startStopButton = (Button) activity.findViewById(R.id.start_stop);
         minutesText = (TextView) activity.findViewById(R.id.minutes);
