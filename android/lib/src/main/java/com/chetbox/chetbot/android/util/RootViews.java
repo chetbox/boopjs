@@ -8,7 +8,9 @@ import android.support.test.espresso.base.ActiveRootLister;
 import android.support.test.espresso.base.RootViewPicker;
 import android.support.test.espresso.base.RootViewPicker_Factory;
 import android.support.test.espresso.matcher.RootMatchers;
+import android.support.test.internal.runner.lifecycle.ActivityLifecycleMonitorImpl;
 import android.support.test.runner.lifecycle.ActivityLifecycleMonitor;
+import android.support.test.runner.lifecycle.ActivityLifecycleMonitorRegistry;
 import android.util.Log;
 import android.view.View;
 
@@ -42,6 +44,7 @@ public class RootViews {
             Constructor<ActiveRootLister> rootsOracleConstructor = rootsOracleClass.getDeclaredConstructor(new Class[]{Looper.class});
             rootsOracleConstructor.setAccessible(true);
             sRootsOracle = rootsOracleConstructor.newInstance(Looper.getMainLooper());
+
             sRootsOracle_listActiveRoots = rootsOracleClass.getMethod("listActiveRoots");
 
             sRootViewPicker = RootViewPicker_Factory.create(
@@ -52,11 +55,12 @@ public class RootViews {
                         @Override public UiController get() { return null; }
                     },
                     new Provider<ActivityLifecycleMonitor>() {
-                        @Override public ActivityLifecycleMonitor get() { return null; }
+                        @Override public ActivityLifecycleMonitor get() { return ActivityLifecycleMonitorRegistry.getInstance(); }
                     },
                     new Provider<AtomicReference<Matcher<Root>>>() {
                         @Override public AtomicReference<Matcher<Root>> get() { return new AtomicReference<>(RootMatchers.DEFAULT); }
                     }).get();
+
             sRootViewPicker_reduceRoots = RootViewPicker.class.getDeclaredMethod("reduceRoots", List.class);
             sRootViewPicker_reduceRoots.setAccessible(true);
 
@@ -73,7 +77,6 @@ public class RootViews {
             @Override
             public void run() {
                 rootView.setContent(reduceRoots(applyDefaultRootMatcher(listActiveRoots())).getDecorView());
-
             }
         });
 
