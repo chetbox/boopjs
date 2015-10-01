@@ -1,15 +1,19 @@
-package com.chetbox.chetbot.stopwatch;
+package com.chetbox.chetbot.test;
 
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v7.app.AppCompatActivity;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
-public class StopwatchActivity extends AppCompatActivity {
+public class StopwatchFragment extends Fragment {
 
     private Handler mHandler;
     private TextView mMinutesText;
@@ -43,16 +47,24 @@ public class StopwatchActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.layout_stopwatch);
+
+        setHasOptionsMenu(true);
 
         mHandler = new Handler();
-        mMinutesText = (TextView) findViewById(R.id.minutes);
-        mSecondsText = (TextView) findViewById(R.id.seconds);
-        mMillisecondsText = (TextView) findViewById(R.id.milliseconds);
-        mStartStopButton = (Button) findViewById(R.id.start_stop);
-        mResetButton = (Button) findViewById(R.id.reset);
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.layout_stopwatch, container, false);
+
+        mMinutesText = (TextView) view.findViewById(R.id.minutes);
+        mSecondsText = (TextView) view.findViewById(R.id.seconds);
+        mMillisecondsText = (TextView) view.findViewById(R.id.milliseconds);
+        mStartStopButton = (Button) view.findViewById(R.id.start_stop);
+        mResetButton = (Button) view.findViewById(R.id.reset);
 
         mStartStopButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -85,13 +97,14 @@ public class StopwatchActivity extends AppCompatActivity {
 
         mRunning = false;
         mResetButton.callOnClick();
+
+        return view;
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_stopwatch, menu);
-        return true;
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_stopwatch, menu);
+        super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override

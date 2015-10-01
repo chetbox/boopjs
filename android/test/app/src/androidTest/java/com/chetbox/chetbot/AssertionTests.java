@@ -2,20 +2,13 @@ package com.chetbox.chetbot;
 
 import android.support.test.runner.AndroidJUnit4;
 
-import com.chetbox.chetbot.android.Chetbot;
-import com.chetbox.chetbot.android.ChetbotServerConnection;
-import com.chetbox.chetbot.base.StopwatchActivityTest;
+import com.chetbox.chetbot.base.StopwatchTest;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 
 @RunWith(AndroidJUnit4.class)
-public class AssertionTests extends StopwatchActivityTest {
+public class AssertionTests extends StopwatchTest {
 
     @Test public void assertTrue() {
         // No exception

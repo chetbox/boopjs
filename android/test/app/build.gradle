@@ -5,7 +5,7 @@ android {
     buildToolsVersion '23.0.1'
 
     defaultConfig {
-        applicationId "com.chetbox.chetbot.stopwatch"
+        applicationId "com.chetbox.chetbot.test"
         minSdkVersion 19
         targetSdkVersion 21
         versionCode 1
