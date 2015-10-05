@@ -160,10 +160,13 @@
       display: block;
       position: absolute;
       top: 64px;
-      bottom: 24px;
+      bottom: 0;
       left: 0;
       right: 0;
       transition: bottom .2s ease-out;
+      {{#user}}
+      bottom: 24px; /* make room for #statusbar */
+      {{/user}}
     }
 
     .show-repl #editor, .show-repl #test-report {
