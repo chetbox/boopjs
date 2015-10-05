@@ -7,8 +7,8 @@ cd ..
 
 SRC_APK=android/test/app/build/outputs/apk/app-release-unsigned.apk
 DEST=server/apps/android/deps
-SMALI='java -jar server/apps/android/deps/smali-2.0.6.jar'
-BAKSMALI='java -jar server/apps/android/deps/baksmali-2.0.6.jar'
+SMALI='java -jar server/apps/android/deps/smali-2.1.0.jar'
+BAKSMALI='java -jar server/apps/android/deps/baksmali-2.1.0.jar'
 
 echo 'Setting up build folder...'
 mkdir -p build
