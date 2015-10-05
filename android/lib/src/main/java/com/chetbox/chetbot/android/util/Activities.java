@@ -1,21 +1,21 @@
-package com.chetbox.chetbot.android;
+package com.chetbox.chetbot.android.util;
 
 import android.app.Activity;
 import android.os.Looper;
-import android.os.Message;
 import android.os.MessageQueue;
 import android.util.ArrayMap;
 import android.util.Log;
 
+import com.chetbox.chetbot.android.Container;
 import com.google.android.apps.common.testing.ui.espresso.base.QueueInterrogator;
 
 import java.lang.reflect.Field;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-public class ActivityUtils {
+public class Activities {
 
-    private static final String TAG = ActivityUtils.class.getSimpleName();
+    private static final String TAG = Activities.class.getSimpleName();
 
     public static class TimeoutException extends RuntimeException {
         public TimeoutException(String message) {
