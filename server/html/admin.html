@@ -82,10 +82,27 @@
           </tbody>
         </table>
       </div>
+      <div id="fab">
+        <paper-fab title="Add user" icon="social:person-add" onclick="add_user();"></paper-fab>
+      </div>
     </paper-header-panel>
   </body>
 
   {{> google-analytics}}
 
   <script src="/components/jquery/dist/jquery.min.js"></script>
+  <script>
+    function add_user() {
+      var gh_username = prompt('GitHub user');
+      if (!gh_username) return;
+
+      $.post('/admin/user/' + gh_username)
+      .done(function() {
+        location.reload();
+      })
+      .fail(function(jqXHR) {
+        alert(jqXHR.responseText);
+      });
+    }
+  </script>
 </html>
