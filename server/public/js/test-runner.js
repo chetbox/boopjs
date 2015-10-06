@@ -36,6 +36,14 @@ function resultHTML(response) {
   return el;
 }
 
+function errorHTML(message) {
+  return $('<li>')
+    .addClass('error')
+    .addClass(message.type)
+    .text(message.error)
+    .append( $('<pre>').text(message.stacktrace) );
+}
+
 function run_test(editor, server, device_id) {
   ga('send', 'event', 'button', 'click', 'run');
 
@@ -78,7 +86,10 @@ function run_test(editor, server, device_id) {
       testReportEl.find('.line-' + message.line)
         .addClass(message.error ? 'error' : 'success')
         .find('ol')
-        .append(resultHTML(message));
+        .append(message.error
+          ? errorHTML(message)
+          : resultHTML(message)
+        );
 
       // TODO: scroll new output into view
     },
@@ -95,13 +106,7 @@ function run_test(editor, server, device_id) {
     onError: function(message) {
       ga('send', 'event', 'test-result', 'error', message.type);
 
-      testReportEl.append(
-        $('<li>')
-          .addClass('error')
-          .addClass(message.type)
-          .text(message.error)
-          .append( $('<pre>').text(message.stacktrace) )
-      );
+      testReportEl.append(errorHTML(message));
     }
   });
 }

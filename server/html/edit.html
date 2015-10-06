@@ -160,10 +160,13 @@
       display: block;
       position: absolute;
       top: 64px;
-      bottom: 24px;
+      bottom: 0;
       left: 0;
       right: 0;
       transition: bottom .2s ease-out;
+      {{#user}}
+      bottom: 24px; /* make room for #statusbar */
+      {{/user}}
     }
 
     .show-repl #editor, .show-repl #test-report {
@@ -243,7 +246,7 @@
       content: '\2713'
     }
 
-    #test-report .error {
+    #test-report > ol > li.error {
       color: #D32F2F;
     }
 
@@ -299,7 +302,7 @@
       </paper-toolbar>
       {{/user}}
       <div class="content">
-        <iframe id="device" src="https://appetize.io/embed/{{app.publicKey}}?device={{device.model}}&amp;scale=75&amp;autoplay=true&amp;orientation={{device.orientation}}&amp;deviceColor=black&amp;xdocMsg=true&amp;params=%7b%22chetbot.server%22%3a%22{{server}}%22%2c%22chetbot.device%22%3a%22{{device.id}}%22%7d" frameborder="0" scrolling="no"></iframe>
+        <iframe id="device" src="https://appetize.io/embed/{{app.publicKey}}?device={{device.model}}&amp;osVersion=6.0&amp;scale=75&amp;autoplay=true&amp;orientation={{device.orientation}}&amp;deviceColor=black&amp;xdocMsg=true&amp;params=%7b%22chetbot.server%22%3a%22{{server}}%22%2c%22chetbot.device%22%3a%22{{device.id}}%22%7d" frameborder="0" scrolling="no"></iframe>
         <div id="device-controls">
           <paper-fab mini title="Restart app" icon="refresh" class="secondary" onclick="reset_device();"></paper-fab>
         </div>

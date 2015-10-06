@@ -90,7 +90,7 @@ function setup(app, options) {
   }
 
   function logout_redirect(req) {
-    return logged_out_homepage || '/';
+    return options.logged_out_homepage || '/';
   }
 
   app.use(expressSession({

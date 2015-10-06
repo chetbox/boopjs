@@ -13,8 +13,8 @@ ENV ANDROID_HOME /opt/android-sdk-linux/
 
 # Get project dependencies
 ADD https://xml-apk-parser.googlecode.com/files/APKParser.jar \
-    https://bitbucket.org/JesusFreke/smali/downloads/smali-2.0.6.jar \
-    https://bitbucket.org/JesusFreke/smali/downloads/baksmali-2.0.6.jar \
+    https://bitbucket.org/JesusFreke/smali/downloads/smali-2.1.0.jar \
+    https://bitbucket.org/JesusFreke/smali/downloads/baksmali-2.1.0.jar \
     https://bitbucket.org/iBotPeaches/apktool/downloads/apktool_2.0.1.jar \
     /opt/chetbot/server/apps/android/deps/
 
