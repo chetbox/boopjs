@@ -71,7 +71,12 @@ exports.add_routes = function(app) {
 
       } else if (message.device && ('result' in message || 'error' in message || 'success' in message)) {
         console.log('response:', messageStr.substring(0, 200));
-        clients_connected[message.device].send(messageStr);
+        var client = clients_connected[message.device];
+        if (client) {
+          client.send(messageStr);
+        } else {
+          console.warn('No client connected for device "' + message.device + '". Ignoring.');
+        }
 
       } else {
         console.error('dunno what to do with: ' + messageStr);
