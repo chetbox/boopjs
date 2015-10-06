@@ -47,7 +47,9 @@ exports.add_routes = function(app) {
       .then(function() {
         res.sendStatus(200);
       })
-      .catch(util.fail_on_error(res));
+      .catch(function(e) {
+        res.status(400).send(e);
+      });
     }
   );
 
