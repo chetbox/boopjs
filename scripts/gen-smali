@@ -45,7 +45,7 @@ rm -f "$DEST/classes-chetbot.dex"
 cp build/classes-new-ns.dex "$DEST/classes-chetbot.dex"
 
 echo "Setting up $DEST/resources-chetbot ..."
-rm -f "$DEST/resources-chetbot"
+rm -rf "$DEST/resources-chetbot"
 cp -r build/resources-chetbot "$DEST/resources-chetbot"
 
 echo 'Done.'
