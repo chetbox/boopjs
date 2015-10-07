@@ -50,7 +50,7 @@ public class SelectorTests extends StopwatchTest {
                 buttonsContainer.setVisibility(View.INVISIBLE);
             }
         });
-        Activities.waitUntilIdle(getActivity());
+        Activities.waitUntilSettled(getActivity());
 
         assertThat(exec("exists({id: 'reset'})"),
                 is(false));
