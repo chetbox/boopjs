@@ -1,6 +1,7 @@
 package com.chetbox.chetbot.android.util;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.os.Looper;
 import android.os.MessageQueue;
 import android.util.ArrayMap;
@@ -10,6 +11,7 @@ import com.chetbox.chetbot.android.Container;
 import com.google.android.apps.common.testing.ui.espresso.base.QueueInterrogator;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -24,6 +26,21 @@ public class Activities {
     }
 
     public static Activity getActivity(String packageName) {
+        final int maxTries = 5;
+        int tryCount = 0;
+        while (true) {
+            try {
+                return _getActivity(packageName);
+            } catch (ActivityNotFoundException e) {
+                if (++tryCount == maxTries) {
+                    throw e;
+                }
+            }
+            sleep(0.05);
+        }
+    }
+
+    private static Activity _getActivity(String packageName) throws ActivityNotFoundException {
         // based on https://androidreclib.wordpress.com/2014/11/22/getting-the-current-activity/
         try {
             Class activityThreadClass = Class.forName("android.app.ActivityThread");
@@ -48,10 +65,15 @@ public class Activities {
                     }
                 }
             }
-        } catch (Exception e) {
+        } catch (ClassNotFoundException
+                |NoSuchMethodException
+                |IllegalAccessException
+                |InvocationTargetException
+                |NoSuchFieldException e) {
+
             throw new RuntimeException(e);
         }
-        throw new AssertionError("Activity not found");
+        throw new ActivityNotFoundException("package:" + packageName);
     }
 
     public static void sleep(Double seconds) {
