@@ -1,7 +1,9 @@
 package com.chetbox.chetbot;
 
 import android.graphics.Bitmap;
+import android.view.View;
 
+import com.chetbox.chetbot.android.util.Activities;
 import com.chetbox.chetbot.base.screens.StopwatchTest;
 
 import org.junit.Test;
@@ -27,6 +29,31 @@ public class SelectorTests extends StopwatchTest {
     @Test public void viewReturnsFirstInstance() {
         assertThat(exec("view(_resetButton_, _startStopButton_)"),
                 sameInstance(resetButton));
+    }
+
+    @Test public void ignoreInvisibleViews() {
+        assertThat(exec("exists({id: 'progress'})"),
+                is(false));
+
+        exec("tap('start')");
+
+        assertThat(exec("exists({id: 'progress'})"),
+                is(true));
+    }
+
+    @Test public void ignoreInvisibleSubViews() {
+        assertThat(exec("exists({id: 'reset'})"),
+                is(true));
+
+        getActivity().runOnUiThread(new Runnable() {
+            @Override public void run() {
+                buttonsContainer.setVisibility(View.INVISIBLE);
+            }
+        });
+        Activities.waitUntilIdle(getActivity());
+
+        assertThat(exec("exists({id: 'reset'})"),
+                is(false));
     }
 
     @Test public void findViewByTextIsDefault() {
@@ -194,24 +221,22 @@ public class SelectorTests extends StopwatchTest {
 
     @Test public void allViewIds() {
         assertThat(arrayAsList(exec("view_ids()")),
-                hasItems("com.chetbox.chetbot.test:id/drawer_layout",
-                        "com.chetbox.chetbot.test:id/content_frame",
-                        "com.chetbox.chetbot.test:id/stopwatch_container",
-                        "com.chetbox.chetbot.test:id/center",
-                        "com.chetbox.chetbot.test:id/minutes",
-                        "com.chetbox.chetbot.test:id/seconds",
-                        "com.chetbox.chetbot.test:id/milliseconds",
-                        "com.chetbox.chetbot.test:id/start_stop",
-                        "com.chetbox.chetbot.test:id/reset"));
+                hasItems(   "com.chetbox.chetbot.test:id/drawer_layout",
+                            "com.chetbox.chetbot.test:id/content_frame",
+                            "com.chetbox.chetbot.test:id/stopwatch_container",
+                            "com.chetbox.chetbot.test:id/center",
+                            "com.chetbox.chetbot.test:id/minutes",
+                            "com.chetbox.chetbot.test:id/seconds",
+                            "com.chetbox.chetbot.test:id/milliseconds",
+                            "com.chetbox.chetbot.test:id/start_stop",
+                            "com.chetbox.chetbot.test:id/reset",
+                            "com.chetbox.chetbot.test:id/buttons",
+                            "com.chetbox.chetbot.test:id/statusBar"));
     }
 
     @Test public void subViewIds() {
-        assertThat(arrayAsList(exec("view_ids({id: 'stopwatch_container'})")),
-                contains("com.chetbox.chetbot.test:id/center",
-                        "com.chetbox.chetbot.test:id/minutes",
-                        "com.chetbox.chetbot.test:id/seconds",
-                        "com.chetbox.chetbot.test:id/milliseconds",
-                        "com.chetbox.chetbot.test:id/start_stop",
-                        "com.chetbox.chetbot.test:id/reset"));
+        assertThat(arrayAsList(exec("view_ids({id: 'buttons'})")),
+                containsInAnyOrder( "com.chetbox.chetbot.test:id/start_stop",
+                                    "com.chetbox.chetbot.test:id/reset"));
     }
 }

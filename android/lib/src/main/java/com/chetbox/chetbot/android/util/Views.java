@@ -41,7 +41,10 @@ public class Views {
                 ViewGroup viewGroup = (ViewGroup) view;
                 ArrayList<View> children = newArrayList();
                 for (int i=0; i<viewGroup.getChildCount(); i++) {
-                    children.add(viewGroup.getChildAt(i));
+                    View child = viewGroup.getChildAt(i);
+                    if (child.getVisibility() == View.VISIBLE) {
+                        children.add(child);
+                    }
                 }
                 return ImmutableList.copyOf(children);
             } else {
@@ -125,9 +128,17 @@ public class Views {
                     }
                 };
 
+                Predicate<View> visiblePredicate = new Predicate<View>() {
+                    @Override
+                    public boolean apply(View input) {
+                        return input.getVisibility() == View.VISIBLE;
+                    }
+                };
+
                 @Override
                 public boolean apply(View input) {
-                    return (TextUtils.isEmpty(text) || textPredicate.apply(input))
+                    return visiblePredicate.apply(input)
+                            && (TextUtils.isEmpty(text) || textPredicate.apply(input))
                             && (TextUtils.isEmpty(type) || typePredicate.apply(input))
                             && (TextUtils.isEmpty(id) || idPredicate.apply(input));
                 }
