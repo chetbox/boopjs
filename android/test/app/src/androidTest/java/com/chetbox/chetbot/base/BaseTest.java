@@ -2,6 +2,7 @@ package com.chetbox.chetbot.base;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.support.test.espresso.core.deps.guava.base.Joiner;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
 import android.support.v4.widget.DrawerLayout;
@@ -63,8 +64,9 @@ public abstract class BaseTest {
         chetbot.reset();
     }
 
-    protected <T> T exec(String stmt) {
-        return (T) chetbot.onStatement(new ChetbotServerConnection.Statement(stmt, ++linesExecuted), name.getMethodName());
+    protected <T> T exec(String... stmts) {
+        String script = Joiner.on('\n').join(stmts);
+        return (T) chetbot.onStatement(new ChetbotServerConnection.Statement(script, ++linesExecuted), name.getMethodName());
     }
 
     protected View findViewById(int id) {
