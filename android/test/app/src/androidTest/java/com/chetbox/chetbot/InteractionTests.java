@@ -8,9 +8,11 @@ import com.chetbox.chetbot.base.screens.StopwatchTest;
 import com.chetbox.chetbot.test.R;
 
 import org.junit.Test;
+import org.mozilla.javascript.JavaScriptException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.equalToIgnoringCase;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
@@ -35,10 +37,9 @@ public class InteractionTests extends StopwatchTest {
     }
 
     @Test public void waitUntilIdle() {
-        exec("tap(_startStopButton_)");
-        exec("tap(_startStopButton_)");
-
-        exec("wait_until_idle()");
+        exec(   "tap(_startStopButton_);",
+                "tap(_startStopButton_);",
+                "wait_until_idle();");
     }
 
     @Test public void waitUntilIdleTimeout() {
@@ -67,9 +68,9 @@ public class InteractionTests extends StopwatchTest {
     }
 
     @Test public void arbitraryUiThreadExecution() {
-        exec("activity().runOnUiThread(function() {\n" +
-             "   Packages.android.widget.Toast.makeText(activity(), '" + name.getMethodName() + "', 0).show();\n" +
-             "})");
+        exec(   "activity().runOnUiThread(function() {",
+                "   Packages.android.widget.Toast.makeText(activity(), '" + name.getMethodName() + "', 0).show();",
+                "})");
     }
 
     @Test public void openAndCloseDrawer() {
@@ -92,11 +93,26 @@ public class InteractionTests extends StopwatchTest {
         assertThat(findViewById(R.id.email),
                 nullValue());
 
-        exec("open_drawer()");
-        exec("tap('Text fields')");
+        exec(   "open_drawer();",
+                "tap('Text fields');");
 
         assertThat(findViewById(R.id.email),
                 instanceOf(EditText.class));
+    }
+
+    @Test public void waitForViewCondition() {
+        exec(   "tap('start');",
+                "wait_for({id: 'seconds', text: '02'});",
+                "tap('stop');");
+
+        assertThat(secondsText.getText().toString(),
+                equalTo("02"));
+    }
+
+    @Test(expected = JavaScriptException.class)
+    public void waitForViewConditionTimeout() {
+        exec(   "tap('start');",
+                "wait_for({id: 'seconds', text: '03'}, {timeout: 2});");
     }
 
 }

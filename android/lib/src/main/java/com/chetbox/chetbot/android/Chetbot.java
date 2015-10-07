@@ -17,6 +17,7 @@ import android.widget.Toast;
 import com.chetbox.chetbot.android.js.Assert;
 import com.chetbox.chetbot.android.js.Drawers;
 import com.chetbox.chetbot.android.js.Version;
+import com.chetbox.chetbot.android.js.Wait;
 import com.chetbox.chetbot.android.util.Activities;
 import com.chetbox.chetbot.android.util.InputEvents;
 import com.chetbox.chetbot.android.util.RootViews;
@@ -384,13 +385,6 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
                 return new EuclidianDistanceOrdering(center(target)).max(views);
             }
         });
-        scope.put("wait", scope, new Callable() {
-            @Override
-            public Object call(org.mozilla.javascript.Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
-                sleep((Double) args[0]);
-                return null;
-            }
-        });
         registerJsFunction(scope, "wait_until_idle", new JsFunction() {
             @Override
             public Object call(Activity activity, Object[] args) {
@@ -419,6 +413,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
         mJsContext.evaluateString(scope, Version.source(), Version.class.getName(), 0, null);
         mJsContext.evaluateString(scope, Assert.source(), Assert.class.getName(), 0, null);
         mJsContext.evaluateString(scope, Drawers.source(), Drawers.class.getName(), 0, null);
+        mJsContext.evaluateString(scope, Wait.source(), Wait.class.getName(), 0, null);
         scope.sealObject();
 
         mJsScope = mJsContext.newObject(scope);
