@@ -11,6 +11,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 public class StopwatchFragment extends Fragment {
@@ -21,6 +22,7 @@ public class StopwatchFragment extends Fragment {
     private TextView mMillisecondsText;
     private Button mStartStopButton;
     private Button mResetButton;
+    private ProgressBar mProgressBar;
 
     private boolean mRunning;
     private long mPreviousElapsed;
@@ -65,6 +67,7 @@ public class StopwatchFragment extends Fragment {
         mMillisecondsText = (TextView) view.findViewById(R.id.milliseconds);
         mStartStopButton = (Button) view.findViewById(R.id.start_stop);
         mResetButton = (Button) view.findViewById(R.id.reset);
+        mProgressBar = (ProgressBar) view.findViewById(R.id.progress);
 
         mStartStopButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -75,11 +78,13 @@ public class StopwatchFragment extends Fragment {
                     mPreviousElapsed += mStoppedAt - mStartedAt;
                     mStartedAt = System.nanoTime();
                     mStartStopButton.setText(R.string.stop);
+                    mProgressBar.setVisibility(View.VISIBLE);
                     mHandler.post(mUpdateTimerTextTask);
                 } else {
                     // timer stopped
                     mStoppedAt = System.nanoTime();
                     mStartStopButton.setText(R.string.start);
+                    mProgressBar.setVisibility(View.INVISIBLE);
                 }
                 mResetButton.setEnabled(!mRunning);
             }
