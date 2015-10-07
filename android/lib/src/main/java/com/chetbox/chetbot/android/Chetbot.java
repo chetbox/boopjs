@@ -98,18 +98,19 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
                 : (Double) value;
     }
 
-    private static SubViews subViewsSelector(Object selector, Scriptable scope) {
+    private static SubViews subViewsSelector(Activity activity, Object selector, Scriptable scope) {
         if (selector instanceof String) {
-            return new SubViews((String) selector, null, null);
+            return new SubViews(activity, (String) selector, null, null);
         }
 
         return new SubViews(
+                activity,
                 getStringValue("text", (ScriptableObject) selector, scope),
                 getStringValue("type", (ScriptableObject) selector, scope),
                 getStringValue("id",   (ScriptableObject) selector, scope));
     }
 
-    private static Iterable<View> selectViews(View srcView, Object[] args, Scriptable scope) {
+    private static Iterable<View> selectViews(Activity activity, View srcView, Object[] args, Scriptable scope) {
         Preconditions.checkNotNull(srcView);
 
         if (args == null) {
@@ -119,10 +120,10 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
         if (args.length > 0) {
             if (args[0] instanceof Object[]) {
                 // Assume the first argument is the list of arguments
-                return selectViews(srcView, (Object[]) args[0], scope);
+                return selectViews(activity, srcView, (Object[]) args[0], scope);
             } else if (args[0] instanceof Iterable) {
                 // Assume the first argument is the list of arguments
-                return selectViews(srcView, toArray((Iterable) args[0], Object.class), scope);
+                return selectViews(activity, srcView, toArray((Iterable) args[0], Object.class), scope);
             } else if (args[0] instanceof View) {
                 // Get all View instances
                 return filter(copyOf(args), View.class);
@@ -131,7 +132,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
 
         Iterable<View> views = ImmutableList.of(srcView);
         for (Object selector : args) {
-            views = subViewsSelector(selector, scope).apply(views);
+            views = subViewsSelector(activity, selector, scope).apply(views);
         }
         return views;
     }
@@ -370,18 +371,20 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
         scope.put("closest_to", scope, new Callable() {
             @Override
             public Object call(org.mozilla.javascript.Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
-                View rootView = RootViews.getTopmostContentView(getActivity());
-                View target = firstView(selectViews(rootView, new Object[]{args[0]}, scope));
-                Iterable<View> views = selectViews(rootView, new Object[]{args[1]}, scope);
+                Activity activity = getActivity();
+                View rootView = RootViews.getTopmostContentView(activity);
+                View target = firstView(selectViews(activity, rootView, new Object[]{args[0]}, scope));
+                Iterable<View> views = selectViews(activity, rootView, new Object[]{args[1]}, scope);
                 return new EuclidianDistanceOrdering(center(target)).min(views);
             }
         });
         scope.put("furthest_from", scope, new Callable() {
             @Override
             public Object call(org.mozilla.javascript.Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
-                View rootView = RootViews.getTopmostContentView(getActivity());
-                View target = firstView(selectViews(rootView, new Object[]{args[0]}, scope));
-                Iterable<View> views = selectViews(rootView, new Object[]{args[1]}, scope);
+                Activity activity = getActivity();
+                View rootView = RootViews.getTopmostContentView(activity);
+                View target = firstView(selectViews(activity, rootView, new Object[]{args[0]}, scope));
+                Iterable<View> views = selectViews(activity, rootView, new Object[]{args[1]}, scope);
                 return new EuclidianDistanceOrdering(center(target)).max(views);
             }
         });
@@ -455,7 +458,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
             public Object call(org.mozilla.javascript.Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
                 final Activity activity = getActivity();
                 final View rootView = RootViews.getTopmostContentView(activity);
-                final Iterable<View> selectedViews = selectViews(rootView, args, scope);
+                final Iterable<View> selectedViews = selectViews(activity, rootView, args, scope);
                 return fn.call(activity, selectedViews);
             }
         });
