@@ -21,3 +21,10 @@ exports.stringifyXML = function(xml) {
   var xml_builder = new xml2js.Builder();
   return xml_builder.buildObject(xml);
 }
+
+exports.remove_unsupported_styles = function(styles_xml) {
+  styles_xml.resources.style = styles_xml.resources.style.filter(function(s) {
+    return s['$'].parent !== '@android:style/WindowTitle'
+        && s['$'].parent !== '@android:style/WindowTitleBackground';
+  });
+}
