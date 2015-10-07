@@ -63,8 +63,8 @@ public abstract class BaseTest {
         chetbot.reset();
     }
 
-    protected Object exec(String stmt) {
-        return chetbot.onStatement(new ChetbotServerConnection.Statement(stmt, ++linesExecuted), name.getMethodName());
+    protected <T> T exec(String stmt) {
+        return (T) chetbot.onStatement(new ChetbotServerConnection.Statement(stmt, ++linesExecuted), name.getMethodName());
     }
 
     protected View findViewById(int id) {

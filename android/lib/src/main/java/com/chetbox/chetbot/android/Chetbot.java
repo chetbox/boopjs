@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.SystemClock;
+import android.support.test.espresso.core.deps.guava.collect.Iterables;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -28,6 +29,7 @@ import org.mozilla.javascript.Callable;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import static com.chetbox.chetbot.android.util.Views.*;
@@ -314,6 +316,12 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
                     }
                 });
                 return null;
+            }
+        });
+        registerJsFunction(scope, "views", new JsViewFunction() {
+            @Override
+            public Object call(Activity activity, Iterable<View> selectedViews) {
+                return Iterables.toArray(selectedViews, View.class);
             }
         });
         registerJsFunction(scope, "view", new JsViewFunction() {
