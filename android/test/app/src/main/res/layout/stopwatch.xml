@@ -54,6 +54,7 @@
     </TableLayout>
 
     <LinearLayout
+        android:id="@+id/buttons"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/center"
@@ -77,6 +78,23 @@
             android:layout_weight="1"
             android:layout_height="wrap_content"
             style="?android:buttonBarButtonStyle" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/statusBar"
+        android:layout_marginTop="32dp"
+        android:layout_below="@+id/buttons"
+        android:layout_centerHorizontal="true">
+
+        <ProgressBar
+            style="?android:attr/progressBarStyleLarge"
+            android:id="@+id/progress"
+            android:visibility="invisible"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
 
     </LinearLayout>
 

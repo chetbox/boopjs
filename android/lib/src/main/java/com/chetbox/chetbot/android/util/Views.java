@@ -41,7 +41,10 @@ public class Views {
                 ViewGroup viewGroup = (ViewGroup) view;
                 ArrayList<View> children = newArrayList();
                 for (int i=0; i<viewGroup.getChildCount(); i++) {
-                    children.add(viewGroup.getChildAt(i));
+                    View child = viewGroup.getChildAt(i);
+                    if (child.getVisibility() == View.VISIBLE) {
+                        children.add(child);
+                    }
                 }
                 return ImmutableList.copyOf(children);
             } else {
@@ -64,13 +67,15 @@ public class Views {
     public static class SubViews implements Function<Iterable<View>, Iterable<View>> {
 
         private final Predicate<View> mViewPredicate;
+        private final int[] mScreenSize;
 
-        public SubViews(final String text, final String type, final String id) {
+        public SubViews(Activity activity, final String text, final String type, final String id) {
 
             if (TextUtils.isEmpty(text) && TextUtils.isEmpty(type) && TextUtils.isEmpty(id)) {
                 throw new IllegalArgumentException("At least one of text, type and id must be specified");
             }
 
+            mScreenSize = screenSize(activity);
             mViewPredicate = new Predicate<View>() {
 
                 Predicate<View> textPredicate = new Predicate<View>() {
@@ -125,9 +130,27 @@ public class Views {
                     }
                 };
 
+                Predicate<View> visiblePredicate = new Predicate<View>() {
+                    @Override
+                    public boolean apply(View input) {
+                        int[] location = location(input),
+                              size = size(input);
+                        int left = location[0],
+                            right = location[0] + size[0],
+                            top = location[1],
+                            bottom = location[1] + size[1];
+                        return input.getVisibility() == View.VISIBLE
+                                && left < mScreenSize[0]
+                                && right >= 0
+                                && top < mScreenSize[1]
+                                && bottom >= 0;
+                    }
+                };
+
                 @Override
                 public boolean apply(View input) {
-                    return (TextUtils.isEmpty(text) || textPredicate.apply(input))
+                    return visiblePredicate.apply(input)
+                            && (TextUtils.isEmpty(text) || textPredicate.apply(input))
                             && (TextUtils.isEmpty(type) || typePredicate.apply(input))
                             && (TextUtils.isEmpty(id) || idPredicate.apply(input));
                 }

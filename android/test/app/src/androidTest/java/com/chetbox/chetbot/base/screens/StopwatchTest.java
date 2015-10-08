@@ -2,6 +2,8 @@ package com.chetbox.chetbot.base.screens;
 
 import android.content.Intent;
 import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.chetbox.chetbot.base.BaseTest;
@@ -21,6 +23,8 @@ public abstract class StopwatchTest extends BaseTest {
     protected TextView minutesText;
     protected TextView secondsText;
     protected TextView millisecondsText;
+    protected ProgressBar progress;
+    protected LinearLayout buttonsContainer;
 
     @Override
     public void setUp() {
@@ -31,6 +35,8 @@ public abstract class StopwatchTest extends BaseTest {
         minutesText = (TextView) findViewById(R.id.minutes);
         secondsText = (TextView) findViewById(R.id.seconds);
         millisecondsText = (TextView) findViewById(R.id.milliseconds);
+        progress = (ProgressBar) findViewById(R.id.progress);
+        buttonsContainer = (LinearLayout) findViewById(R.id.buttons);
 
         // Handy references to views in the layout
         exec("var _startStopButton_ = view({id: 'start_stop'});");

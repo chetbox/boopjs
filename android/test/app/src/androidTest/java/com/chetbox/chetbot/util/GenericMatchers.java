@@ -24,6 +24,10 @@ public class GenericMatchers {
         return genericMatcher(Matchers.contains(items));
     }
 
+    public static Matcher<Object> containsInAnyOrder(Object... items) {
+        return genericMatcher(Matchers.containsInAnyOrder(items));
+    }
+
     public static Matcher<Object> hasItems(Object... items) {
         return genericMatcher(Matchers.hasItems(items));
     }
