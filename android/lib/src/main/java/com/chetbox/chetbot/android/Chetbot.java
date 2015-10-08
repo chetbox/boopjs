@@ -171,7 +171,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
                 return size(selectedViews);
             }
         });
-        registerJsFunction(scope, "exists", new JsViewFunction() {
+        registerJsFunction(scope, "visible", new JsViewFunction() {
             @Override
             public Object call(Activity activity, Iterable<View> selectedViews) {
                 return !isEmpty(selectedViews);

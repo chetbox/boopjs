@@ -14,7 +14,7 @@ public class Wait {
                 "function wait_for(selector, options) {",
                 "  var timeout = (options && options.timeout) || 60;",
                 "  var start = Packages.android.os.SystemClock.uptimeMillis();",
-                "  while (!exists(selector)) {",
+                "  while (!visible(selector)) {",
                 "    if ((Packages.android.os.SystemClock.uptimeMillis() - start) > (timeout * 1000)) {",
                 "      throw 'Timeout expired';",
                 "    } else {",

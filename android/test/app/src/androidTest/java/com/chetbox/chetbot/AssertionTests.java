@@ -42,13 +42,13 @@ public class AssertionTests extends BaseTest {
         exec("assert_equal(123, 321);");
     }
 
-    @Test public void assertExists() {
+    @Test public void assertVisible() {
         // No exception
-        exec("assert_exists('reset');");
-        exec("assert_exists({text: 'reset'});");
+        exec("assert_visible('reset');");
+        exec("assert_visible({text: 'reset'});");
 
         exception.expect(Exception.class);
-        exec("assert_exists('does not exist');");
+        exec("assert_visible('does not exist');");
     }
 
 }

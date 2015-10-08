@@ -32,17 +32,17 @@ public class SelectorTests extends StopwatchTest {
     }
 
     @Test public void ignoreInvisibleViews() {
-        assertThat(exec("exists({id: 'progress'})"),
+        assertThat(exec("visible({id: 'progress'})"),
                 is(false));
 
         exec("tap('start')");
 
-        assertThat(exec("exists({id: 'progress'})"),
+        assertThat(exec("visible({id: 'progress'})"),
                 is(true));
     }
 
     @Test public void ignoreInvisibleSubViews() {
-        assertThat(exec("exists({id: 'reset'})"),
+        assertThat(exec("visible({id: 'reset'})"),
                 is(true));
 
         getActivity().runOnUiThread(new Runnable() {
@@ -52,7 +52,7 @@ public class SelectorTests extends StopwatchTest {
         });
         Activities.waitUntilSettled(getActivity());
 
-        assertThat(exec("exists({id: 'reset'})"),
+        assertThat(exec("visible({id: 'reset'})"),
                 is(false));
     }
 
@@ -107,13 +107,13 @@ public class SelectorTests extends StopwatchTest {
                 sameInstance(resetButton));
     }
 
-    @Test public void textViewExists() {
-        assertThat(exec("exists('reset')"),
+    @Test public void textViewVisible() {
+        assertThat(exec("visible('reset')"),
                 equalTo(Boolean.TRUE));
     }
 
     @Test public void textViewDoesNotExist() {
-        assertThat(exec("exists('i do not exist')"),
+        assertThat(exec("visible('i do not exist')"),
                 equalTo(Boolean.FALSE));
     }
 
