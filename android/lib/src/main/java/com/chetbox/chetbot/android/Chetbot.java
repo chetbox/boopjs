@@ -143,7 +143,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
         mJsContext.setOptimizationLevel(-1);
         ScriptableObject scope = mJsContext.initStandardObjects();
 
-        registerJsFunction(scope, "view_id", new JsViewFunction() {
+        registerJsFunction(scope, "id", new JsViewFunction() {
             @Override
             public Object call(Activity activity, Iterable<View> selectedViews) {
                 View v = firstView(selectedViews);
@@ -159,7 +159,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
                 return toArray(ViewIds.apply(concat(transform(selectedViews, ChildViews))), String.class);
             }
         });
-        registerJsFunction(scope, "class_of", new JsViewFunction() {
+        registerJsFunction(scope, "type", new JsViewFunction() {
             @Override
             public Object call(Activity activity, Iterable<View> selectedViews) {
                 return firstView(selectedViews).getClass().getSimpleName();
@@ -171,7 +171,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
                 return size(selectedViews);
             }
         });
-        registerJsFunction(scope, "exists", new JsViewFunction() {
+        registerJsFunction(scope, "visible", new JsViewFunction() {
             @Override
             public Object call(Activity activity, Iterable<View> selectedViews) {
                 return !isEmpty(selectedViews);

@@ -32,27 +32,28 @@ public class SelectorTests extends StopwatchTest {
     }
 
     @Test public void ignoreInvisibleViews() {
-        assertThat(exec("exists({id: 'progress'})"),
+        assertThat(exec("visible({id: 'progress'})"),
                 is(false));
 
         exec("tap('start')");
 
-        assertThat(exec("exists({id: 'progress'})"),
+        assertThat(exec("visible({id: 'progress'})"),
                 is(true));
     }
 
     @Test public void ignoreInvisibleSubViews() {
-        assertThat(exec("exists({id: 'reset'})"),
+        assertThat(exec("visible({id: 'reset'})"),
                 is(true));
 
         getActivity().runOnUiThread(new Runnable() {
-            @Override public void run() {
+            @Override
+            public void run() {
                 buttonsContainer.setVisibility(View.INVISIBLE);
             }
         });
         Activities.waitUntilSettled(getActivity());
 
-        assertThat(exec("exists({id: 'reset'})"),
+        assertThat(exec("visible({id: 'reset'})"),
                 is(false));
     }
 
@@ -107,19 +108,24 @@ public class SelectorTests extends StopwatchTest {
                 sameInstance(resetButton));
     }
 
-    @Test public void textViewExists() {
-        assertThat(exec("exists('reset')"),
+    @Test public void textViewVisible() {
+        assertThat(exec("visible('reset')"),
                 equalTo(Boolean.TRUE));
     }
 
     @Test public void textViewDoesNotExist() {
-        assertThat(exec("exists('i do not exist')"),
+        assertThat(exec("visible('i do not exist')"),
                 equalTo(Boolean.FALSE));
     }
 
     @Test public void viewType() {
-        assertThat(exec("class_of(_resetButton_)"),
+        assertThat(exec("type(_resetButton_)"),
                 equalTo("AppCompatButton"));
+    }
+
+    @Test public void viewId() {
+        assertThat(exec("id(_resetButton_)"),
+                equalTo("com.chetbox.chetbot.test:id/reset"));
     }
 
     @Test public void viewText() {
