@@ -385,11 +385,12 @@
   <script type="text/javascript">
     // TODO: fetch bultin functions from server
     var builtin_fns = [
-      'function', 'for', 'var', // JS
-      'tap', 'press', 'type_text', 'hide_keyboard', 'wait', 'screenshot', // interaction
-      'view', 'bottommost', 'topmost', 'leftmost', 'rightmost', 'centermost', 'outermost', // selectors
-       'location', 'size', 'text', 'id', 'class_of', 'exists', 'count', // inspection
-       'assert_true', 'assert_false', 'assert_equal', 'assert_exists' // assertions
+      'function', 'for', 'var', 'while', 'do', // JS
+      'tap', 'press', 'type_text', 'hide_keyboard', 'wait', 'screenshot', 'open_drawer', 'close_drawer', // interaction
+      'view', 'views', 'bottommost', 'topmost', 'leftmost', 'rightmost', 'centermost', 'outermost', // selectors
+      'location', 'size', 'text', 'id', 'class_of', 'visible', 'count', 'view_ids', // inspection
+      'assert_true', 'assert_false', 'assert_equal', 'assert_visible', // assertions
+      'wait', 'wait_until_idle', 'wait_for' // wait
     ];
     var my_completer = {
       getCompletions: function(editor, session, pos, prefix, callback) {
