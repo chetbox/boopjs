@@ -46,7 +46,8 @@ public class SelectorTests extends StopwatchTest {
                 is(true));
 
         getActivity().runOnUiThread(new Runnable() {
-            @Override public void run() {
+            @Override
+            public void run() {
                 buttonsContainer.setVisibility(View.INVISIBLE);
             }
         });
@@ -118,8 +119,13 @@ public class SelectorTests extends StopwatchTest {
     }
 
     @Test public void viewType() {
-        assertThat(exec("class_of(_resetButton_)"),
+        assertThat(exec("type(_resetButton_)"),
                 equalTo("AppCompatButton"));
+    }
+
+    @Test public void viewId() {
+        assertThat(exec("id(_resetButton_)"),
+                equalTo("com.chetbox.chetbot.test:id/reset"));
     }
 
     @Test public void viewText() {
