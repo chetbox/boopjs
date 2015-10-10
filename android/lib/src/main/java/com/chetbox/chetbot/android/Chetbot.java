@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.SystemClock;
-import android.support.test.espresso.core.deps.guava.collect.Iterables;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -23,15 +22,20 @@ import com.chetbox.chetbot.android.util.InputEvents;
 import com.chetbox.chetbot.android.util.RootViews;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Response;
 
 import static com.google.common.collect.ImmutableList.copyOf;
 
 import org.mozilla.javascript.Callable;
+import org.mozilla.javascript.EvaluatorException;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 
-import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
+import java.io.IOException;
+import java.util.concurrent.*;
 
 import static com.chetbox.chetbot.android.util.Views.*;
 import static com.chetbox.chetbot.android.util.Activities.*;
@@ -53,6 +57,9 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
     private org.mozilla.javascript.Context mJsContext;
     private Scriptable mJsScope;
 
+    private String[] mScripts;
+
+
     private Chetbot(Context context) {
         if (context != null) {
             mPackageName = context.getPackageName();
@@ -62,16 +69,20 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
         }
     }
 
-    public void connect(Activity activity) {
+    public void connect(final Activity activity) {
         String server = activity.getIntent().getStringExtra("chetbot.server");
         String deviceId = activity.getIntent().getStringExtra("chetbot.device");
         boolean quiet = !TextUtils.isEmpty( activity.getIntent().getStringExtra("chetbot.quiet") );
+        String scriptUrls = activity.getIntent().getStringExtra("chetbot.scripts");
+        if (scriptUrls != null) {
+            mScripts = scriptUrls.split(",");
+        }
 
         // Connect to Chetbot server
         if (!TextUtils.isEmpty(server) && !TextUtils.isEmpty(deviceId)) {
-            Log.d(TAG, "Starting ChetBot (" + deviceId + ")");
+            Log.d(TAG, "Starting ChetBot v" + Version.VERSION + " (" + deviceId + ")");
             if (!quiet) {
-                Toast.makeText(activity, "Starting ChetBot", Toast.LENGTH_SHORT).show();
+                Toast.makeText(activity, "ChetBot v" + Version.VERSION, Toast.LENGTH_SHORT).show();
             }
             mServerConnection = new ChetbotServerConnection(server, deviceId, this);
 
@@ -81,6 +92,13 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
                     mServerConnection.onUncaughtError(e);
                 }
             });
+
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    setupJsContext(activity);
+                }
+            }).start();
         }
     }
 
@@ -137,7 +155,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
         return views;
     }
 
-    public void onStartScript() {
+    private void setupJsContext(final Activity activity) {
         // Set up JavaScript environment
         mJsContext = org.mozilla.javascript.Context.enter();
         mJsContext.setOptimizationLevel(-1);
@@ -214,19 +232,19 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
                 final int[] viewCenter = center(view);
                 final long timestamp = SystemClock.uptimeMillis();
                 final MotionEvent downEvent = MotionEvent.obtain(
-                                timestamp,
-                                timestamp,
-                                MotionEvent.ACTION_DOWN,
-                                viewCenter[0],
-                                viewCenter[1],
-                                0);
+                        timestamp,
+                        timestamp,
+                        MotionEvent.ACTION_DOWN,
+                        viewCenter[0],
+                        viewCenter[1],
+                        0);
                 final MotionEvent upEvent = MotionEvent.obtain(
-                                timestamp,
-                                timestamp + 20,
-                                MotionEvent.ACTION_UP,
-                                viewCenter[0],
-                                viewCenter[1],
-                                0);
+                        timestamp,
+                        timestamp + 20,
+                        MotionEvent.ACTION_UP,
+                        viewCenter[0],
+                        viewCenter[1],
+                        0);
 
                 InputEvents.injectEvent(downEvent);
                 InputEvents.injectEvent(upEvent);
@@ -422,7 +440,43 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
         mJsScope = mJsContext.newObject(scope);
         mJsScope.setPrototype(scope);
         mJsScope.setParentScope(null);
+
+        OkHttpClient client = new OkHttpClient();
+        if (mScripts != null) {
+            for (String scriptUrl : mScripts) {
+                try {
+                    Log.d(TAG, "Loading " + scriptUrl);
+                    Request request = new Request.Builder()
+                            .url(scriptUrl)
+                            .build();
+                    Response response = client.newCall(request).execute();
+                    if (!response.isSuccessful()) {
+                        throw new RuntimeException("HTTP Error " + response.code() + ": " + response.message());
+                    }
+                    String script = response.body().string();
+
+                    onStatement(new ChetbotServerConnection.Statement(script, 1), scriptUrl);
+                    Log.d(TAG, "Loaded " + scriptUrl);
+
+                } catch (final Exception e) {
+                    Log.w(TAG, "Error loading script '" + scriptUrl + "': " + e.getMessage());
+                    e.printStackTrace();
+                    activity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(activity, e.getMessage(), Toast.LENGTH_LONG).show();
+                        }
+                    });
+                    if (mServerConnection != null) {
+                        mServerConnection.onUncaughtError(e);
+                    }
+                }
+            }
+        }
     }
+
+    @Override
+    public void onStartScript() {}
 
     @Override
     public Object onStatement(ChetbotServerConnection.Statement stmt, String scriptName) {
@@ -430,10 +484,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
     }
 
     @Override
-    public void onFinishScript() {
-        org.mozilla.javascript.Context.exit();
-        mJsContext = null;
-    }
+    public void onFinishScript() {}
 
     private interface JsFunction {
         Object call(Activity activity, Object[] args);
