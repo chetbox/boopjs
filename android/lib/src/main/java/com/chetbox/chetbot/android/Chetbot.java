@@ -368,9 +368,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
     }
 
     @Override
-    public void onStartScript() {
-        org.mozilla.javascript.Context.enter();
-    }
+    public void onStartScript() {}
 
     @Override
     public Object onStatement(ChetbotServerConnection.Statement stmt, String scriptName) {
@@ -420,7 +418,6 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
                 org.mozilla.javascript.Context.exit();
             }
         }
-        sTestActivity = null;
         sInstance = null;
     }
 

@@ -22,6 +22,7 @@ import org.junit.Rule;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
+import org.mozilla.javascript.Wrapper;
 
 @RunWith(AndroidJUnit4.class)
 public abstract class BaseTest {
@@ -73,7 +74,7 @@ public abstract class BaseTest {
 
     protected <T> T exec(String... stmts) {
         String script = Joiner.on('\n').join(stmts);
-        return (T) chetbot.onStatement(new ChetbotServerConnection.Statement(script, ++linesExecuted), name.getMethodName());
+        return (T) unwrap(chetbot.onStatement(new ChetbotServerConnection.Statement(script, ++linesExecuted), name.getMethodName()));
     }
 
     protected View findViewById(int id) {
@@ -82,6 +83,10 @@ public abstract class BaseTest {
 
     protected Activity getActivity() {
         return mActivityRule.getActivity();
+    }
+
+    private static Object unwrap(Object obj) {
+        return obj instanceof Wrapper ? ((Wrapper) obj).unwrap() : obj;
     }
 
 }
