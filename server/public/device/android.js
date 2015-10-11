@@ -40,11 +40,18 @@ function __latch(count) {
 
 var console = {
   log: function(message) {
-    Packages.android.util.Log.i('CHETBOT', message.toString());
+    Packages.android.util.Log.i('Chetbot', message + '');
   }
 };
 
 // Activities
+
+function screen_size() {
+  var display = activity().getWindowManager().getDefaultDisplay();
+  var size = new android.graphics.Point();
+  display.getSize(size);
+  return [size.x, size.y];
+}
 
 var __activityThreadClass = java.lang.Class.forName('android.app.ActivityThread');
 var __activityThread__activitiesField = __activityThreadClass.getDeclaredField('mActivities');
@@ -61,11 +68,9 @@ function _activity() {
   // TODO: handle API < 19 (ArrayMap is new for API 19)
   for (var i=activities.values().iterator(); i.hasNext();) {
     var activityRecord = i.next();
-    console.log('' + activityRecord);
     if (!__activityRecord_pausedField.getBoolean(activityRecord)) {
       var activity = __activityRecord_activityField.get(activityRecord);
-      console.log(activity.getPackageName() + ' ? ' + package_name); // package_name is defined globally
-      if (activity.getPackageName().equals(package_name)) {
+      if (activity.getPackageName().equals(package_name)) { // package_name is defined globally
         return activity;
       } else {
         console.log('Found activity for different package: ' + activity.getPackageName());
@@ -135,6 +140,189 @@ function content_view() {
     root_view_container.set_content(reduce_roots(apply_default_root_matcher(list_active_roots())).getDecorView());
   });
   return find_content_view(root_view_container.wait_for_content());
+}
+
+// View selectors
+
+function __text(view) {
+  return (view instanceof android.widget.TextView)
+      && (!android.text.TextUtils.isEmpty(view.getText())
+          ? view.getText().toString()
+          : (!android.text.TextUtils.isEmpty(view.getHint())
+              ? view.getHint().toString()
+              : null));
+}
+
+function __id(view) {
+  var id = view.getId();
+  return (id > 0) ? view.getResources().getResourceName(id) : null;
+}
+
+function __type(view) {
+  return view.getClass().getName();
+}
+
+function __location(view) {
+  var xy = java.lang.reflect.Array.newInstance(java.lang.Integer.TYPE, 2);
+  view.getLocationOnScreen(xy);
+  return [xy[0], xy[1]];
+}
+
+function __size(view) {
+  return [view.getWidth(), view.getHeight()];
+}
+
+function __center(view) {
+  var xy = location(view);
+  return [xy[0] + view.getWidth() / 2, xy[1] + view.getHeight() / 2];
+}
+
+function views(selectors) {
+
+  if (selectors instanceof android.view.View) {
+    // We've been passed a signle view so just return it
+    return [selectors];
+  }
+
+  if (selectors && (selectors.length > 0) && (selectors[0] instanceof android.view.View)) {
+    // We've been passed a list of views so just return them
+    return selectors;
+  }
+
+  function visible_matcher(screen_size) {
+    return function(view) {
+      var location = __location(view),
+          size = __size(view),
+          left = location[0],
+          right = location[0] + size[0],
+          top = location[1],
+          bottom = location[1] + size[1];
+      return view.getVisibility() === android.view.View.VISIBLE
+          && left < screen_size[0]
+          && right >= 0
+          && top < screen_size[1]
+          && bottom >= 0;
+    }
+  }
+
+  function text_matcher(text_query) {
+    return function(view) {
+      return text_query.equalsIgnoreCase(__text(view));
+    }
+  }
+
+  function type_matcher(type) {
+    return function(view) {
+      return type.equalsIgnoreCase( type.indexOf('.') >= 0
+        ? __type(view)
+        : view.getClass().getSimpleName());
+    }
+  }
+
+  function id_matcher(id_query) {
+    return function(view) {
+      var id_string = __id(view);
+      return id_string
+          && (id_query.indexOf('/') >= 0
+              ? id_string.equalsIgnoreCase(id_query)
+              : id_string.endsWith('/' + id_query));
+    }
+  }
+
+  function children(view) {
+    var visible_children = [];
+    if (view instanceof android.view.ViewGroup) {
+      for (var i=0; i<view.getChildCount(); i++) {
+        var child = view.getChildAt(i);
+        if (child.getVisibility() === android.view.View.VISIBLE) {
+          visible_children.push(child);
+        }
+      }
+    }
+    return visible_children;
+  }
+
+  function find_matching_views(views, match_fn) {
+    return views.reduce(function(views, view) {
+      return views.concat(
+        match_fn(view) ? [view] : find_matching_views(children(view), match_fn)
+      );
+    }, []);
+  }
+
+  switch (typeof(selectors)) {
+    case 'string':
+      selectors = [{text: selectors}];
+      break;
+    case 'object':
+      selectors = [selectors];
+      break;
+  }
+
+  var views = [content_view()];
+
+  selectors = selectors
+  .map(function(selector) {
+    switch (typeof(selector)) {
+      case 'function':
+        return selector;
+      case 'object':
+        if (!selector.text && !selector.type && !selector.id) {
+          throw '"text", "type" or "id" must be specified';
+        }
+        var match_all = function() { return true; },
+            match_visible = visible_matcher(screen_size()),
+            match_text = selector.text ? text_matcher(selector.text) : match_all,
+            match_type = selector.type ? type_matcher(selector.type) : match_all,
+            match_id   = selector.id   ? id_matcher(selector.id)     : match_all;
+        return function(view) {
+          return match_visible(view) && match_text(view) && match_type(view) && match_id(view);
+        };
+      default:
+        throw 'View selector must be a string, object or function';
+    }
+  })
+  .forEach(function(match_fn) {
+    views = find_matching_views(views, match_fn);
+  });
+
+  return views;
+}
+
+function count(selector) {
+  return views(selector).length;
+}
+
+function visible(selector) {
+  return count(selector) > 0;
+}
+
+function view(selector) {
+  return views(selector)[0];
+}
+
+function text(selector) {
+  return __text(view(selector));
+}
+
+function id(selector) {
+  return __id(view(selector));
+}
+
+function type(selector) {
+  return __type(view(selector));
+}
+
+function location(selector) {
+  return __location(view(selector));
+}
+
+function size(selector) {
+  return __size(view(selector));
+}
+
+function center(selector) {
+  return __center(view(selector));
 }
 
 // Wait
@@ -255,7 +443,7 @@ function hide_keyboard() {
 
 function toast(message) {
   run_on_ui_thread(function(activity) {
-    android.widget.Toast.makeText(activity, message.toString(), 0).show();
+    android.widget.Toast.makeText(activity, message + '', 0).show();
   });
 }
 

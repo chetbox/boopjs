@@ -7,6 +7,7 @@ import com.chetbox.chetbot.android.util.Activities;
 import com.chetbox.chetbot.base.screens.StopwatchTest;
 
 import org.junit.Test;
+import org.mozilla.javascript.Undefined;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -16,8 +17,8 @@ import static com.chetbox.chetbot.util.Lists.*;
 public class SelectorTests extends StopwatchTest {
 
     @Test
-    public void multipleViews() {
-        assertThat(arrayAsList(exec("views({type: 'AppCompatButton'})")),
+    public void  multipleViews() {
+        assertThat(exec("views({type: 'AppCompatButton'})"),
                 contains(startStopButton, resetButton));
     }
 
@@ -68,8 +69,8 @@ public class SelectorTests extends StopwatchTest {
     }
 
     @Test public void findViewByText_notFound() {
-        exception.expect(IndexOutOfBoundsException.class);
-        exec("text({text: 'nonsense'})");
+        assertThat(exec("text({text: 'nonsense'})"),
+                is(false));
     }
 
     @Test public void findViewByShortId() {
@@ -78,8 +79,8 @@ public class SelectorTests extends StopwatchTest {
     }
 
     @Test public void findViewByShortId_notFound() {
-        exception.expect(IndexOutOfBoundsException.class);
-        exec("view({id: 'i_do_not_exist'})");
+        assertThat(exec("view({id: 'i_do_not_exist'})"),
+                is(Undefined.instance));
     }
 
     @Test public void findViewByLongId() {
@@ -88,8 +89,8 @@ public class SelectorTests extends StopwatchTest {
     }
 
     @Test public void findViewByLongId_notFound() {
-        exception.expect(IndexOutOfBoundsException.class);
-        exec("view({id: 'com.chetbox.chetbot.test:id/i_do_not_exist'})");
+        assertThat(exec("view({id: 'com.chetbox.chetbot.test:id/i_do_not_exist'})"),
+                is(Undefined.instance));
     }
 
     @Test public void findViewsByClassName() {
@@ -120,7 +121,7 @@ public class SelectorTests extends StopwatchTest {
 
     @Test public void viewType() {
         assertThat(exec("type(_resetButton_)"),
-                equalTo("AppCompatButton"));
+                equalTo("android.support.v7.widget.AppCompatButton"));
     }
 
     @Test public void viewId() {
@@ -134,23 +135,23 @@ public class SelectorTests extends StopwatchTest {
     }
 
     @Test public void viewText_notTextView() {
-        exception.expect(ClassCastException.class);
-        exec("text({type: 'RelativeLayout'})");
+        assertThat(exec("text({type: 'RelativeLayout'})"),
+                is(false));
     }
 
     @Test public void countInstances() {
-        assertThat(exec("count(_startStopButton_, _resetButton_)"),
-                equalTo(2));
+        assertThat(exec("count([_startStopButton_, _resetButton_])"),
+                equalTo(2.0));
     }
 
     @Test public void countViewsWithClassSimpleName() {
         assertThat(exec("count({type: 'AppCompatButton'})"),
-                equalTo(2));
+                equalTo(2.0));
     }
 
     @Test public void countViewsWithText() {
         assertThat(exec("count('00')"),
-                equalTo(2));
+                equalTo(2.0));
     }
 
     @Test public void locationOfHorizontalButtons() {
