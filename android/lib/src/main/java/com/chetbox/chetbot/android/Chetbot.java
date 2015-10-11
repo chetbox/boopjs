@@ -35,6 +35,8 @@ import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.concurrent.*;
 
 import static com.chetbox.chetbot.android.util.Views.*;
@@ -45,6 +47,8 @@ import static com.google.common.collect.Iterables.*;
 public class Chetbot implements ChetbotServerConnection.ScriptHandler {
 
     private static final String TAG = Chetbot.class.getSimpleName();
+
+    private static final String CHETBOT_LIB_ENDPOINT = "/device/android.js";
 
     private static Chetbot sInstance = null;
 
@@ -57,7 +61,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
     private org.mozilla.javascript.Context mJsContext;
     private Scriptable mJsScope;
 
-    private String[] mScripts;
+    private Collection<String> mScripts;
 
 
     private Chetbot(Context context) {
@@ -74,12 +78,14 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
         String deviceId = activity.getIntent().getStringExtra("chetbot.device");
         boolean quiet = !TextUtils.isEmpty( activity.getIntent().getStringExtra("chetbot.quiet") );
         String scriptUrls = activity.getIntent().getStringExtra("chetbot.scripts");
-        if (scriptUrls != null) {
-            mScripts = scriptUrls.split(",");
-        }
 
         // Connect to Chetbot server
         if (!TextUtils.isEmpty(server) && !TextUtils.isEmpty(deviceId)) {
+            mScripts = new ImmutableList.Builder<String>()
+                    .add("http://" + server +  CHETBOT_LIB_ENDPOINT)
+                    .addAll(Arrays.asList((scriptUrls.split(","))))
+                    .build();
+
             Log.d(TAG, "Starting ChetBot v" + Version.VERSION + " (" + deviceId + ")");
             if (!quiet) {
                 Toast.makeText(activity, "ChetBot v" + Version.VERSION, Toast.LENGTH_SHORT).show();
@@ -92,13 +98,6 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
                     mServerConnection.onUncaughtError(e);
                 }
             });
-
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    setupJsContext(activity);
-                }
-            }).start();
         }
     }
 
@@ -155,7 +154,9 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
         return views;
     }
 
-    private void setupJsContext(final Activity activity) {
+    @Override
+    public void setup() {
+        final Activity activity = getActivity();
         // Set up JavaScript environment
         mJsContext = org.mozilla.javascript.Context.enter();
         mJsContext.setOptimizationLevel(-1);
@@ -219,12 +220,6 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
                 return size(firstView(selectedViews));
             }
         });
-        registerJsFunction(scope, "screenshot", new JsFunction() {
-            @Override
-            public Object call(Activity activity, Object[] args) {
-                return screenshot(activity);
-            }
-        });
         registerJsFunction(scope, "tap", new JsViewFunction() {
             @Override
             public Object call(final Activity activity, Iterable<View> selectedViews) {
@@ -250,91 +245,6 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
                 InputEvents.injectEvent(upEvent);
 
                 sleep(0.25);
-                return null;
-            }
-        });
-        registerJsFunction(scope, "hide_keyboard", new JsFunction() {
-            @Override
-            public Object call(Activity activity, Object[] args) {
-                InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-                imm.hideSoftInputFromWindow(RootViews.getTopmostContentView(activity).getWindowToken(), 0);
-                sleep(0.25);
-                return null;
-            }
-        });
-        registerJsFunction(scope, "home", new JsFunction() {
-            @Override
-            public Object call(Activity activity, Object[] args) {
-                Intent homeIntent = new Intent(Intent.ACTION_MAIN);
-                homeIntent.addCategory(Intent.CATEGORY_HOME);
-                homeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                activity.startActivity(homeIntent);
-                sleep(0.5);
-                return null;
-            }
-        });
-        registerJsFunction(scope, "press", new JsFunction() {
-            @Override
-            public Object call(final Activity activity, Object[] args) {
-                int _keycode;
-                String keyArg = (String) args[0];
-                if ("enter".equalsIgnoreCase(keyArg)
-                        || "return".equalsIgnoreCase(keyArg)
-                        || "\n".equals(keyArg)) {
-                    _keycode = KeyEvent.KEYCODE_ENTER;
-                } else if ("back".equalsIgnoreCase(keyArg)) {
-                    // TODO: hide keyboard instead if keyboard is showing
-                    _keycode = KeyEvent.KEYCODE_BACK;
-                } else if ("backspace".equalsIgnoreCase(keyArg)
-                        || "\b".equals(keyArg)) {
-                    _keycode = KeyEvent.KEYCODE_DEL;
-                } else {
-                    throw new IllegalArgumentException("Unrecognised key: " + args[0]);
-                }
-                final int keycode = _keycode;
-                activity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        activity.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, keycode));
-                        activity.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, keycode));
-                    }
-                });
-                sleep(0.25);
-                return null;
-            }
-        });
-
-        registerJsFunction(scope, "type_text", new JsFunction() {
-            @Override
-            public Object call(final Activity activity, Object[] args) {
-                final String text = (String) args[0];
-                activity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        activity.dispatchKeyEvent(
-                                new KeyEvent(SystemClock.uptimeMillis(), text, 0, 0)
-                        );
-                    }
-                });
-                sleep(0.25);
-                return null;
-            }
-        });
-        registerJsFunction(scope, "activity", new JsFunction() {
-            @Override
-            public Object call(final Activity activity, Object[] args) {
-                return activity;
-            }
-        });
-        registerJsFunction(scope, "toast", new JsFunction() {
-            @Override
-            public Object call(final Activity activity, final Object[] args) {
-                activity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(activity, (String) args[0], Toast.LENGTH_SHORT).show();
-                    }
-                });
                 return null;
             }
         });
@@ -417,24 +327,9 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
                 return null;
             }
         });
-        registerJsFunction(scope, "crash", new JsFunction() {
-            @Override
-            public Object call(Activity activity, Object[] args) {
-                activity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        throw new RuntimeException("forced crash");
-                    }
-                });
-                return null;
-            }
-        });
 
-        mJsContext.evaluateString(scope, "RegExp; getClass; java; Packages; JavaAdapter;", "<lazyLoad>", 0, null);
-        mJsContext.evaluateString(scope, Version.source(), Version.class.getName(), 0, null);
-        mJsContext.evaluateString(scope, Assert.source(), Assert.class.getName(), 0, null);
-        mJsContext.evaluateString(scope, Drawers.source(), Drawers.class.getName(), 0, null);
-        mJsContext.evaluateString(scope, Wait.source(), Wait.class.getName(), 0, null);
+        mJsContext.evaluateString(scope, "RegExp; getClass; java; Packages; JavaAdapter;", "<lazy_load>", 1, null);
+        mJsContext.evaluateString(scope, "var package_name = '" + mPackageName + "';", "<package_name>", 1, null);
         scope.sealObject();
 
         mJsScope = mJsContext.newObject(scope);
@@ -443,7 +338,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
 
         OkHttpClient client = new OkHttpClient();
         if (mScripts != null) {
-            for (String scriptUrl : mScripts) {
+            for (final String scriptUrl : mScripts) {
                 try {
                     Log.d(TAG, "Loading " + scriptUrl);
                     Request request = new Request.Builder()
@@ -464,7 +359,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
                     activity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(activity, e.getMessage(), Toast.LENGTH_LONG).show();
+                            Toast.makeText(activity, scriptUrl + "\n" + e.getMessage(), Toast.LENGTH_LONG).show();
                         }
                     });
                     if (mServerConnection != null) {
