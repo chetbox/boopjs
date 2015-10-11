@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.SystemClock;
+import android.support.test.espresso.core.deps.guava.collect.ObjectArrays;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -52,45 +53,41 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
 
     private static Chetbot sInstance = null;
 
-    /* For testing only */
-    private static Activity sTestActivity = null;
-
     private final String mPackageName;
     private ChetbotServerConnection mServerConnection = null;
 
     private org.mozilla.javascript.Context mJsContext;
     private Scriptable mJsScope;
 
-    private Collection<String> mScripts;
+    private String mServer;
+    private String[] mScripts;
 
 
-    private Chetbot(Context context) {
-        if (context != null) {
-            mPackageName = context.getPackageName();
-        } else {
-            // Running in testing mode
-            mPackageName = null;
+    private Chetbot(Activity activity) {
+        mServer = activity.getIntent().getStringExtra("chetbot.server");
+
+        if (!TextUtils.isEmpty(mServer)) {
+            mScripts = new String[]{"http://" + mServer +  CHETBOT_LIB_ENDPOINT};
+            String extraScriptUrls = activity.getIntent().getStringExtra("chetbot.scripts");
+            if (extraScriptUrls != null) {
+                mScripts = ObjectArrays.concat(mScripts, extraScriptUrls.split(","), String.class);
+            }
         }
+        mPackageName = activity.getPackageName();
     }
 
     public void connect(final Activity activity) {
-        String server = activity.getIntent().getStringExtra("chetbot.server");
         String deviceId = activity.getIntent().getStringExtra("chetbot.device");
         boolean quiet = !TextUtils.isEmpty( activity.getIntent().getStringExtra("chetbot.quiet") );
-        String scriptUrls = activity.getIntent().getStringExtra("chetbot.scripts");
 
         // Connect to Chetbot server
-        if (!TextUtils.isEmpty(server) && !TextUtils.isEmpty(deviceId)) {
-            mScripts = new ImmutableList.Builder<String>()
-                    .add("http://" + server +  CHETBOT_LIB_ENDPOINT)
-                    .addAll(Arrays.asList((scriptUrls.split(","))))
-                    .build();
+        if (!TextUtils.isEmpty(mServer) && !TextUtils.isEmpty(deviceId)) {
 
             Log.d(TAG, "Starting ChetBot v" + Version.VERSION + " (" + deviceId + ")");
             if (!quiet) {
                 Toast.makeText(activity, "ChetBot v" + Version.VERSION, Toast.LENGTH_SHORT).show();
             }
-            mServerConnection = new ChetbotServerConnection(server, deviceId, this);
+            mServerConnection = new ChetbotServerConnection(mServer, deviceId, this);
 
             UncaughtExceptionHandler.addListener(new UncaughtExceptionHandler.ExceptionListener() {
                 @Override
@@ -371,7 +368,9 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
     }
 
     @Override
-    public void onStartScript() {}
+    public void onStartScript() {
+        org.mozilla.javascript.Context.enter();
+    }
 
     @Override
     public Object onStatement(ChetbotServerConnection.Statement stmt, String scriptName) {
@@ -415,28 +414,24 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
             if (sInstance.mServerConnection != null) {
                 sInstance.mServerConnection.close();
             }
+            if (sInstance.mJsContext != null) {
+                sInstance.mJsContext = null;
+                sInstance.mJsScope = null;
+                org.mozilla.javascript.Context.exit();
+            }
         }
         sTestActivity = null;
         sInstance = null;
     }
 
-    public static Chetbot getInstance(Context context) {
+    public static Chetbot getInstance(Activity activity) {
         if (sInstance == null) {
-            sInstance = new Chetbot(context);
+            sInstance = new Chetbot(activity);
         }
         return sInstance;
     }
 
-    public void setTestActivity(Activity activity) {
-        sTestActivity = activity;
-    }
-
-    // based on https://androidreclib.wordpress.com/2014/11/22/getting-the-current-activity/
     private Activity getActivity() {
-        if (sTestActivity != null) {
-            return sTestActivity;
-        }
-
         return Activities.getActivity(mPackageName);
     }
 

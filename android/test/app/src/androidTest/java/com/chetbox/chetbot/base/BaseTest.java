@@ -2,6 +2,7 @@ package com.chetbox.chetbot.base;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.core.deps.guava.base.Joiner;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
@@ -12,6 +13,8 @@ import com.chetbox.chetbot.android.Chetbot;
 import com.chetbox.chetbot.android.ChetbotServerConnection;
 import com.chetbox.chetbot.test.MainActivity;
 import com.chetbox.chetbot.test.R;
+import com.chetbox.chetbot.util.AssetServer;
+import com.squareup.okhttp.mockwebserver.MockWebServer;
 
 import org.junit.After;
 import org.junit.Before;
@@ -27,11 +30,15 @@ public abstract class BaseTest {
         return intent;
     }
 
+    private static MockWebServer mAssetServer = AssetServer.server(InstrumentationRegistry.getInstrumentation().getContext());
+
     @Rule
     public ActivityTestRule<MainActivity> mActivityRule = new ActivityTestRule<MainActivity>(MainActivity.class) {
         @Override
         protected Intent getActivityIntent() {
-            return withIntent(super.getActivityIntent());
+            Intent intent = super.getActivityIntent();
+            intent.putExtra("chetbot.server", mAssetServer.getHostName() + ":" + mAssetServer.getPort());
+            return withIntent(intent);
         }
     };
 
@@ -52,7 +59,7 @@ public abstract class BaseTest {
         // These lines have to be done in this order
         Activity activity = mActivityRule.getActivity();
         chetbot = Chetbot.getInstance(activity);
-        chetbot.setTestActivity(activity);
+        chetbot.setup();
         chetbot.onStartScript();
 
         drawerLayout = (DrawerLayout) activity.findViewById(R.id.drawer_layout);
@@ -61,7 +68,7 @@ public abstract class BaseTest {
     @After
     public void tearDown() {
         chetbot.onFinishScript();
-        chetbot.reset();
+        Chetbot.reset();
     }
 
     protected <T> T exec(String... stmts) {
