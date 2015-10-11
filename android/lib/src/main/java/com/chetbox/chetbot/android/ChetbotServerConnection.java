@@ -18,6 +18,7 @@ public class ChetbotServerConnection {
     private static final String TAG = ChetbotServerConnection.class.getSimpleName();
 
     public interface ScriptHandler {
+        void setup();
         void onStartScript();
         Object onStatement(Statement stmt, String scriptName);
         void onFinishScript();
@@ -129,6 +130,9 @@ public class ChetbotServerConnection {
     private volatile Script mCurrentScript = null;
     private volatile boolean mCurrentScriptSuccess;
 
+    private boolean mRequiresSetup = true;
+
+
     public ChetbotServerConnection(String host, String deviceId, ScriptHandler scriptHandler) {
         mHost = URI.create("ws://" + host + "/api/device");
         mDeviceId = deviceId;
@@ -180,13 +184,17 @@ public class ChetbotServerConnection {
 
         @Override
         public void onOpen(ServerHandshake handshakeData) {
+            if (mRequiresSetup) {
+                mScriptHandler.setup();
+                mRequiresSetup = false;
+            }
             Log.d(TAG, "HTTP " + handshakeData.getHttpStatus() + ": " + handshakeData.getHttpStatusMessage());
             sendAsJson(new DeviceRegistration(mDeviceId));
         }
 
         @Override
         public void onMessage(String messageStr) {
-            Log.v(TAG, "Message received: " + messageStr);
+            Log.v(TAG, Thread.currentThread().hashCode() + " // Message received: " + messageStr);
             Script script = sGson.fromJson(messageStr, Script.class);
             int line = 0;
             mCurrentScriptSuccess = true;
