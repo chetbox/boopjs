@@ -4,7 +4,7 @@ var version = '0.7.0';
 
 var android = Packages.android;
 
-// Utilities
+// Concurrency utilities
 
 function __container() {
   var latch = new java.util.concurrent.CountDownLatch(1);
@@ -20,6 +20,18 @@ function __container() {
     },
     content: function() {
       return content;
+    }
+  };
+}
+
+function __latch(count) {
+  var latch = new java.util.concurrent.CountDownLatch(count || 1);
+  return {
+    signal: function(value) {
+      latch.countDown();
+    },
+    wait: function() {
+      latch.await();
     }
   };
 }
@@ -131,7 +143,6 @@ function wait(seconds) {
   java.lang.Thread.sleep(seconds * 1000);
 }
 
-// TODO: define visible
 function wait_for(selector, options) {
   var timeout = (options && options.timeout) || 60;
   var start = android.os.SystemClock.uptimeMillis();
@@ -176,7 +187,6 @@ function assert_equal(a, b) {
   if (a != b) { throw (a + ' != ' + b); }
 }
 
-// TODO: define visible
 function assert_visible(selector) {
   assert_true(visible(selector));
 }
@@ -226,9 +236,13 @@ function press(key) {
 // Interaction - typing
 
 function type_text(text) {
+  var key_event = new android.view.KeyEvent(android.os.SystemClock.uptimeMillis(), text.toString(), 0, 0);
+  var done = __latch();
   run_on_ui_thread(function(activity) {
-    activity.dispatchKeyEvent(new android.view.KeyEvent(android.os.SystemClock.uptimeMillis(), text.toString(), 0, 0));
+    activity.dispatchKeyEvent(key_event);
+    done.signal();
   });
+  done.wait();
 }
 
 function hide_keyboard() {
