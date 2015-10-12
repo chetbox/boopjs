@@ -148,18 +148,6 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
         mJsContext.setOptimizationLevel(-1);
         ScriptableObject scope = mJsContext.initStandardObjects();
 
-        registerJsFunction(scope, "wait_until_idle", new JsFunction() {
-            @Override
-            public Object call(Activity activity, Object[] args) {
-                long timeout = 10;
-                if (args.length > 0 && args[0] instanceof ScriptableObject) {
-                    timeout = Math.round(getDoubleValue("timeout", (ScriptableObject) args[0], (ScriptableObject) args[0]));
-                }
-                waitUntilIdle(activity, timeout, TimeUnit.SECONDS);
-                return null;
-            }
-        });
-
         mJsContext.evaluateString(scope, "RegExp; getClass; java; Packages; JavaAdapter;", "<lazy_load>", 1, null);
         mJsContext.evaluateString(scope, "var package_name = '" + mPackageName + "';", "<package_name>", 1, null);
         scope.sealObject();
