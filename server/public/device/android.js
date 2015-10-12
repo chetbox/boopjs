@@ -4,6 +4,10 @@ var version = '0.7.0';
 
 var android = Packages.android;
 
+// Java interop magic
+
+var __classLoader = java.lang.Thread.currentThread().getContextClassLoader();
+
 // Concurrency utilities
 
 function __container() {
@@ -105,7 +109,6 @@ function run_on_ui_thread(fn) {
   });
 }
 
-var __classLoader = java.lang.Thread.currentThread().getContextClassLoader();
 var __rootsOracleClass = java.lang.Class.forName('android.support.test.espresso.base.RootsOracle', true, __classLoader);
 var __rootsOracleConstructor = __rootsOracleClass.getDeclaredConstructor([android.os.Looper]);
 __rootsOracleConstructor.setAccessible(true);
@@ -385,6 +388,50 @@ function assert_equal(a, b) {
 
 function assert_visible(selector) {
   assert_true(visible(selector));
+}
+
+// Interaction - touch
+
+var __inputManagerEventInjectionStrategyClass = java.lang.Class.forName('android.support.test.espresso.base.InputManagerEventInjectionStrategy', true, __classLoader);
+var __inputManagerEventInjectionStrategy_constructor = __inputManagerEventInjectionStrategyClass.getDeclaredConstructor([]);
+__inputManagerEventInjectionStrategy_constructor.setAccessible(true);
+var __inputManagerEventInjectStrategy_initialize = __inputManagerEventInjectionStrategyClass.getDeclaredMethod('initialize');
+__inputManagerEventInjectStrategy_initialize.setAccessible(true);
+var __inputManagerEventInjectionStrategy_injectMotionEvent = __inputManagerEventInjectionStrategyClass.getMethod('injectMotionEvent', android.view.MotionEvent);
+var __inputManagerEventInjectionStrategy = __inputManagerEventInjectionStrategy_constructor.newInstance();
+__inputManagerEventInjectStrategy_initialize.invoke(__inputManagerEventInjectionStrategy);
+
+function __inject_motion_event() {
+  for (var i=0; i<arguments.length; i++) {
+    __inputManagerEventInjectionStrategy_injectMotionEvent.invoke(__inputManagerEventInjectionStrategy, arguments[i]);
+  }
+}
+
+function tap(selector, options) {
+  if (!options) options = {};
+  if (options.duration === undefined) options.duration = 0.02;
+
+  var view_center = center(selector);
+  var timestamp = android.os.SystemClock.uptimeMillis();
+  __inject_motion_event(
+    android.view.MotionEvent.obtain(
+      timestamp,
+      timestamp,
+      android.view.MotionEvent.ACTION_DOWN,
+      view_center[0],
+      view_center[1],
+      0
+    ),
+    android.view.MotionEvent.obtain(
+      timestamp,
+      timestamp + options.duration * 1000,
+      android.view.MotionEvent.ACTION_UP,
+      view_center[0],
+      view_center[1],
+      0
+    )
+  );
+  java.lang.Thread.sleep(250);
 }
 
 // Interaction - h/w keys

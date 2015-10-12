@@ -151,34 +151,6 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
         mJsContext.setOptimizationLevel(-1);
         ScriptableObject scope = mJsContext.initStandardObjects();
 
-        registerJsFunction(scope, "tap", new JsViewFunction() {
-            @Override
-            public Object call(final Activity activity, Iterable<View> selectedViews) {
-                View view = firstView(selectedViews);
-                final int[] viewCenter = center(view);
-                final long timestamp = SystemClock.uptimeMillis();
-                final MotionEvent downEvent = MotionEvent.obtain(
-                        timestamp,
-                        timestamp,
-                        MotionEvent.ACTION_DOWN,
-                        viewCenter[0],
-                        viewCenter[1],
-                        0);
-                final MotionEvent upEvent = MotionEvent.obtain(
-                        timestamp,
-                        timestamp + 20,
-                        MotionEvent.ACTION_UP,
-                        viewCenter[0],
-                        viewCenter[1],
-                        0);
-
-                InputEvents.injectEvent(downEvent);
-                InputEvents.injectEvent(upEvent);
-
-                sleep(0.25);
-                return null;
-            }
-        });
         registerJsFunction(scope, "leftmost", new JsViewFunction() {
             @Override
             public Object call(Activity activity, Iterable<View> selectedViews) {
