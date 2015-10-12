@@ -387,6 +387,22 @@ function all_ids(selector) {
   return ids;
 }
 
+// View array filters
+
+Array.prototype.closest_to = function(v) {
+  var view_center = Array.isArray(v) ? v : center(v);
+  return this.sort(function(v1, v2) {
+    return distance_to_point(v1, view_center) - distance_to_point(v2, view_center);
+  })[0];
+}
+
+Array.prototype.furthest_from = function(v) {
+  var view_center = Array.isArray(v) ? v : center(v);
+  return this.sort(function(v1, v2) {
+    return distance_to_point(v2, view_center) - distance_to_point(v1, view_center);
+  })[0];
+}
+
 // Wait
 
 function wait(seconds) {

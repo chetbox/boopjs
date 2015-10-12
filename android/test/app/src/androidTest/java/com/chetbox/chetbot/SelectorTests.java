@@ -238,6 +238,26 @@ public class SelectorTests extends StopwatchTest {
                 anyOf(sameInstance(minutesText), sameInstance(millisecondsText)));
     }
 
+    @Test public void closestToView() {
+        assertThat(exec("[_minutesText_, _secondsText_].closest_to(_millisecondsText_)"),
+                anyOf(sameInstance(secondsText)));
+    }
+
+    @Test public void closestToViewSelectors() {
+        assertThat(exec("views('00').closest_to('000')"),
+                anyOf(sameInstance(secondsText)));
+    }
+
+    @Test public void furtherFromView() {
+        assertThat(exec("[_minutesText_, _secondsText_].furthest_from(_millisecondsText_)"),
+                anyOf(sameInstance(minutesText)));
+    }
+
+    @Test public void furthestFromViewSelectors() {
+        assertThat(exec("views('00').furthest_from('000')"),
+                anyOf(sameInstance(minutesText)));
+    }
+
     @Test public void allViewIds() {
         assertThat(exec("all_ids()"),
                 hasItems(   "com.chetbox.chetbot.test:id/drawer_layout",
