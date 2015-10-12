@@ -182,12 +182,12 @@ public class SelectorTests extends StopwatchTest {
     }
 
     @Test public void location_center_size() {
-        List<Double> resetCenter = exec("center(_resetButton_)");
-        List<Double> resetLocation = exec("location(_resetButton_)");
-        List<Double> resetSize = exec("size(_resetButton_)");
+        List<Number> resetCenter = exec("center(_resetButton_)");
+        List<Number> resetLocation = exec("location(_resetButton_)");
+        List<Number> resetSize = exec("size(_resetButton_)");
 
-        assertThat(resetCenter.get(0), equalTo(resetLocation.get(0) + resetSize.get(0) / 2.0));
-        assertThat(resetCenter.get(1), equalTo(resetLocation.get(1) + resetSize.get(1) / 2.0));
+        assertThat(resetCenter.get(0).intValue(), equalTo(resetLocation.get(0).intValue() + resetSize.get(0).intValue() / 2));
+        assertThat(resetCenter.get(1).intValue(), equalTo(resetLocation.get(1).intValue() + resetSize.get(1).intValue() / 2));
     }
 
     @Test public void screenshotPngDataUrl() {
