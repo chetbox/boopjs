@@ -22,7 +22,6 @@ import com.squareup.okhttp.Response;
 import static com.google.common.collect.ImmutableList.copyOf;
 
 import org.mozilla.javascript.Callable;
-import org.mozilla.javascript.JavaScriptException;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 
@@ -152,12 +151,6 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
         mJsContext.setOptimizationLevel(-1);
         ScriptableObject scope = mJsContext.initStandardObjects();
 
-        registerJsFunction(scope, "view_ids", new JsViewFunction() {
-            @Override
-            public Object call(Activity activity, Iterable<View> selectedViews) {
-                return toArray(ViewIds.apply(concat(transform(selectedViews, ChildViews))), String.class);
-            }
-        });
         registerJsFunction(scope, "tap", new JsViewFunction() {
             @Override
             public Object call(final Activity activity, Iterable<View> selectedViews) {
