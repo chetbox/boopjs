@@ -34,8 +34,11 @@ function __latch(count) {
     signal: function(value) {
       latch.countDown();
     },
-    wait: function() {
-      latch.await();
+    wait: function(options) {
+      var timeout = (options && options.timeout) || 10;
+      if (!latch.await(timeout, java.util.concurrent.TimeUnit.SECONDS)) {
+        throw 'Timed out after ' + timeout + 's' ;
+      }
     }
   };
 }
@@ -419,6 +422,33 @@ function wait_for(selector, options) {
       java.lang.Thread.sleep(50);
     }
   }
+}
+
+function wait_until_idle(options) {
+  var main_looper = android.os.Looper.getMainLooper();
+  var queue_interrogator = new com.google.android.apps.common.testing.ui.espresso.base.QueueInterrogator(main_looper);
+  function is_idle() {
+    switch (queue_interrogator.determineQueueState().toString() + '') {
+      case 'EMPTY':
+      case 'TASK_DUE_LONG':
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  if (is_idle()) return;
+
+  var idle_latch = __latch();
+  main_looper.getQueue().addIdleHandler(function() {
+    if (is_idle()) {
+      // idle_latch.signal();
+      return true;
+    } else {
+      return false;
+    }
+  });
+  idle_latch.wait(options);
 }
 
 // Drawers
