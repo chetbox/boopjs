@@ -472,19 +472,27 @@ function close_drawer(which) {
 // Assertions
 
 function assert_true(o) {
-  if (!o) { throw (o + ' is not truthy'); }
+  if (!o) {
+    throw JSON.stringify(o) + ' is not truthy';
+  }
 }
 
 function assert_false(o) {
-  if (o) { throw (o + ' is truthy'); }
+  if (o) {
+    throw JSON.stringify(o) + ' is not falsey';
+  }
 }
 
 function assert_equal(a, b) {
-  if (a != b) { throw (a + ' != ' + b); }
+  if (a != b) {
+    throw JSON.stringify(a) + ' is not ' + JSON.stringify(b);
+  }
 }
 
 function assert_visible(selector) {
-  assert_true(visible(selector));
+  if (!visible(selector)) {
+    throw selector + ' not visible';
+  }
 }
 
 // Interaction - touch
