@@ -148,26 +148,6 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
         mJsContext.setOptimizationLevel(-1);
         ScriptableObject scope = mJsContext.initStandardObjects();
 
-        scope.put("closest_to", scope, new Callable() {
-            @Override
-            public Object call(org.mozilla.javascript.Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
-                Activity activity = getActivity();
-                View rootView = RootViews.getTopmostContentView(activity);
-                View target = firstView(selectViews(activity, rootView, new Object[]{args[0]}, scope));
-                Iterable<View> views = selectViews(activity, rootView, new Object[]{args[1]}, scope);
-                return new EuclidianDistanceOrdering(center(target)).min(views);
-            }
-        });
-        scope.put("furthest_from", scope, new Callable() {
-            @Override
-            public Object call(org.mozilla.javascript.Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
-                Activity activity = getActivity();
-                View rootView = RootViews.getTopmostContentView(activity);
-                View target = firstView(selectViews(activity, rootView, new Object[]{args[0]}, scope));
-                Iterable<View> views = selectViews(activity, rootView, new Object[]{args[1]}, scope);
-                return new EuclidianDistanceOrdering(center(target)).max(views);
-            }
-        });
         registerJsFunction(scope, "wait_until_idle", new JsFunction() {
             @Override
             public Object call(Activity activity, Object[] args) {
