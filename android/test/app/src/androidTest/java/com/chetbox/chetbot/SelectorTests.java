@@ -142,11 +142,6 @@ public class SelectorTests extends StopwatchTest {
                 is(false));
     }
 
-    @Test public void countInstances() {
-        assertThat(exec("count([_startStopButton_, _resetButton_])"),
-                equalTo(2.0));
-    }
-
     @Test public void countViewsWithClassSimpleName() {
         assertThat(exec("count({type: 'AppCompatButton'})"),
                 equalTo(2.0));
@@ -187,12 +182,12 @@ public class SelectorTests extends StopwatchTest {
     }
 
     @Test public void location_center_size() {
-        List<Integer> resetCenter = exec("center(_resetButton_)");
-        List<Integer> resetLocation = exec("location(_resetButton_)");
-        List<Integer> resetSize = exec("size(_resetButton_)");
+        List<Double> resetCenter = exec("center(_resetButton_)");
+        List<Double> resetLocation = exec("location(_resetButton_)");
+        List<Double> resetSize = exec("size(_resetButton_)");
 
-        assertThat(resetCenter.get(0), equalTo(resetLocation.get(0) + resetSize.get(0) / 2));
-        assertThat(resetCenter.get(1), equalTo(resetLocation.get(1) + resetSize.get(1) / 2));
+        assertThat(resetCenter.get(0), equalTo(resetLocation.get(0) + resetSize.get(0) / 2.0));
+        assertThat(resetCenter.get(1), equalTo(resetLocation.get(1) + resetSize.get(1) / 2.0));
     }
 
     @Test public void screenshotPngDataUrl() {
@@ -230,7 +225,7 @@ public class SelectorTests extends StopwatchTest {
     }
 
     @Test public void allViewIds() {
-        assertThat(arrayAsList(exec("view_ids()")),
+        assertThat(exec("all_ids()"),
                 hasItems(   "com.chetbox.chetbot.test:id/drawer_layout",
                             "com.chetbox.chetbot.test:id/content_frame",
                             "com.chetbox.chetbot.test:id/stopwatch_container",
@@ -245,8 +240,9 @@ public class SelectorTests extends StopwatchTest {
     }
 
     @Test public void subViewIds() {
-        assertThat(arrayAsList(exec("view_ids({id: 'buttons'})")),
-                containsInAnyOrder( "com.chetbox.chetbot.test:id/start_stop",
+        assertThat(exec("all_ids({id: 'buttons'})"),
+                containsInAnyOrder( "com.chetbox.chetbot.test:id/buttons",
+                                    "com.chetbox.chetbot.test:id/start_stop",
                                     "com.chetbox.chetbot.test:id/reset"));
     }
 }

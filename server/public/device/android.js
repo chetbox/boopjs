@@ -177,17 +177,7 @@ function __center(view) {
   return [xy[0] + view.getWidth() / 2, xy[1] + view.getHeight() / 2];
 }
 
-function views(selectors) {
-
-  if (selectors instanceof android.view.View) {
-    // We've been passed a signle view so just return it
-    return [selectors];
-  }
-
-  if (selectors && (selectors.length > 0) && (selectors[0] instanceof android.view.View)) {
-    // We've been passed a list of views so just return them
-    return selectors;
-  }
+function views(selectors, root_views) {
 
   function visible_matcher(screen_size) {
     return function(view) {
@@ -250,43 +240,49 @@ function views(selectors) {
     }, []);
   }
 
-  switch (typeof(selectors)) {
-    case 'string':
-      selectors = [{text: selectors}];
-      break;
-    case 'object':
-      selectors = [selectors];
-      break;
-  }
-
-  var views = [content_view()];
-
-  selectors = selectors
-  .map(function(selector) {
+  function make_selector_fn(selector) {
     switch (typeof(selector)) {
       case 'function':
         return selector;
+      case 'string':
+        return make_selector_fn({text: selector});
       case 'object':
-        if (!selector.text && !selector.type && !selector.id) {
-          throw '"text", "type" or "id" must be specified';
+        if (selector instanceof android.view.View) {
+          return function(v) { return v === selector; };
+        } else {
+          if (!selector.text && !selector.type && !selector.id) {
+            throw '"text", "type" or "id" must be specified';
+          }
+          var match_any = function() { return true; },
+              match_visible = visible_matcher(screen_size()),
+              match_text = selector.text ? text_matcher(selector.text) : match_any,
+              match_type = selector.type ? type_matcher(selector.type) : match_any,
+              match_id   = selector.id   ? id_matcher(selector.id)     : match_any;
+          return function(v) { return match_visible(v) && match_text(v) && match_type(v) && match_id(v) };
         }
-        var match_all = function() { return true; },
-            match_visible = visible_matcher(screen_size()),
-            match_text = selector.text ? text_matcher(selector.text) : match_all,
-            match_type = selector.type ? type_matcher(selector.type) : match_all,
-            match_id   = selector.id   ? id_matcher(selector.id)     : match_all;
-        return function(view) {
-          return match_visible(view) && match_text(view) && match_type(view) && match_id(view);
-        };
       default:
-        throw 'View selector must be a string, object or function';
+        throw 'View selector must be a string, object, function or View';
     }
-  })
-  .forEach(function(match_fn) {
-    views = find_matching_views(views, match_fn);
-  });
+  }
 
-  return views;
+  if (selectors === undefined) {
+    throw 'No view selector specified';
+  }
+
+  if (!Array.isArray(selectors)) {
+    return views([selectors], root_views);
+  }
+
+  if (root_views === undefined) {
+    return views(selectors, children(content_view()));
+  }
+
+  return selectors.length === 0
+    ? root_views
+    : views(
+        selectors.slice(1),
+        find_matching_views(root_views, make_selector_fn(selectors[0]))
+      );
 }
 
 function count(selector) {
@@ -323,6 +319,18 @@ function size(selector) {
 
 function center(selector) {
   return __center(view(selector));
+}
+
+function all_ids(selector) {
+  var ids = [];
+  views(
+    function(v) {
+      var id = __id(v);
+      if (id) ids.push(id);
+      return false; // keep searching
+    },
+    selector ? views(selector) : undefined);
+  return ids;
 }
 
 // Wait
