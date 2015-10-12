@@ -9,6 +9,9 @@ import com.chetbox.chetbot.base.screens.StopwatchTest;
 import org.junit.Test;
 import org.mozilla.javascript.Undefined;
 
+import java.util.Collection;
+import java.util.List;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import static com.chetbox.chetbot.util.GenericMatchers.*;
@@ -155,41 +158,41 @@ public class SelectorTests extends StopwatchTest {
     }
 
     @Test public void locationOfHorizontalButtons() {
-        int[] startStopLocation = exec("location(_startStopButton_)");
-        int[] resetLocation = exec("location(_resetButton_)");
+        List<Integer> startStopLocation = exec("location(_startStopButton_)");
+        List<Integer> resetLocation = exec("location(_resetButton_)");
 
         assertThat("[start] left of [reset]",
-                startStopLocation[0], lessThan(resetLocation[0]));
+                startStopLocation.get(0), lessThan(resetLocation.get(0)));
 
         assertThat("Same vertical alignment",
-                startStopLocation[1], equalTo(resetLocation[1]));
+                startStopLocation.get(1), equalTo(resetLocation.get(1)));
     }
 
     @Test public void centerOfHorizontalButtons() {
-        int[] startStopCenter = exec("center(_startStopButton_)");
-        int[] resetCenter = exec("center(_resetButton_)");
+        List<Double> startStopCenter = exec("center(_startStopButton_)");
+        List<Double> resetCenter = exec("center(_resetButton_)");
 
         assertThat("[start] left of [reset]",
-                startStopCenter[0], lessThan(resetCenter[0]));
+                startStopCenter.get(0), lessThan(resetCenter.get(0)));
 
         assertThat("Same vertical alignment",
-                startStopCenter[1], equalTo(resetCenter[1]));
+                startStopCenter.get(1), equalTo(resetCenter.get(1)));
     }
 
     @Test public void sizeOfButton() {
-        int[] resetSize = exec("size(_resetButton_)");
+        List<?> resetSize = exec("size(_resetButton_)");
 
-        assertThat(resetSize[0], greaterThan(1));
-        assertThat(resetSize[1], greaterThan(1));
+        assertThat(resetSize.get(0), greaterThan(1));
+        assertThat(resetSize.get(1), greaterThan(1));
     }
 
     @Test public void location_center_size() {
-        int[] resetSize = exec("size(_resetButton_)");
-        int[] resetCenter = exec("center(_resetButton_)");
-        int[] resetLocation = exec("location(_resetButton_)");
+        List<Integer> resetCenter = exec("center(_resetButton_)");
+        List<Integer> resetLocation = exec("location(_resetButton_)");
+        List<Integer> resetSize = exec("size(_resetButton_)");
 
-        assertThat(resetCenter[0], equalTo(resetLocation[0] + resetSize[0] / 2));
-        assertThat(resetCenter[1], equalTo(resetLocation[1] + resetSize[1] / 2));
+        assertThat(resetCenter.get(0), equalTo(resetLocation.get(0) + resetSize.get(0) / 2));
+        assertThat(resetCenter.get(1), equalTo(resetLocation.get(1) + resetSize.get(1) / 2));
     }
 
     @Test public void screenshotPngDataUrl() {
@@ -197,32 +200,32 @@ public class SelectorTests extends StopwatchTest {
     }
 
     @Test public void leftmostView() {
-        assertThat(exec("leftmost(_startStopButton_, _resetButton_)"),
+        assertThat(exec("leftmost([_startStopButton_, _resetButton_])"),
                 sameInstance(startStopButton));
     }
 
     @Test public void rightmostView() {
-        assertThat(exec("rightmost(_startStopButton_, _resetButton_)"),
+        assertThat(exec("rightmost([_startStopButton_, _resetButton_])"),
                 sameInstance(resetButton));
     }
 
     @Test public void topmostView() {
-        assertThat(exec("topmost(_startStopButton_, _minutesText_)"),
+        assertThat(exec("topmost([_startStopButton_, _minutesText_])"),
                 sameInstance(minutesText));
     }
 
     @Test public void bottommostView() {
-        assertThat(exec("bottommost(_startStopButton_, _minutesText_)"),
+        assertThat(exec("bottommost([_startStopButton_, _minutesText_])"),
                 sameInstance(startStopButton));
     }
 
     @Test public void centermostView() {
-        assertThat(exec("centermost(_minutesText_, _secondsText_, _millisecondsText_)"),
+        assertThat(exec("centermost([_minutesText_, _secondsText_, _millisecondsText_])"),
                 sameInstance(secondsText));
     }
 
     @Test public void outermostView() {
-        assertThat(exec("outermost(_minutesText_, _secondsText_, _millisecondsText_)"),
+        assertThat(exec("outermost([_minutesText_, _secondsText_, _millisecondsText_])"),
                 anyOf(sameInstance(minutesText), sameInstance(millisecondsText)));
     }
 
