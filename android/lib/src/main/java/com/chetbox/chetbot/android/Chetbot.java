@@ -7,7 +7,6 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.chetbox.chetbot.android.js.Version;
@@ -16,7 +15,6 @@ import com.chetbox.chetbot.android.util.InputEvents;
 import com.chetbox.chetbot.android.util.RootViews;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
@@ -24,6 +22,7 @@ import com.squareup.okhttp.Response;
 import static com.google.common.collect.ImmutableList.copyOf;
 
 import org.mozilla.javascript.Callable;
+import org.mozilla.javascript.JavaScriptException;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 
@@ -283,12 +282,12 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
                 onStatement(new ChetbotServerConnection.Statement(mUserScript, 1), "<user>");
             }
         } catch (final Exception e) {
-            Log.w(TAG, "Script error: " + e.getMessage());
+            Log.e(TAG, e.getClass().getSimpleName() + ": " + e.getMessage());
             e.printStackTrace();
             activity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    Toast.makeText(activity, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(activity, e.getClass().getSimpleName() + ": " + e.getMessage(), Toast.LENGTH_LONG).show();
                 }
             });
             if (mServerConnection != null) {
