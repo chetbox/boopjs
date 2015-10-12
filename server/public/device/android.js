@@ -45,6 +45,7 @@ function __latch(count) {
 var console = {
   log: function(message) {
     Packages.android.util.Log.i('Chetbot', message + '');
+    return message;
   }
 };
 
@@ -176,7 +177,7 @@ function __size(view) {
 }
 
 function __center(view) {
-  var xy = location(view);
+  var xy = __location(view);
   return [xy[0] + view.getWidth() / 2, xy[1] + view.getHeight() / 2];
 }
 
@@ -276,6 +277,11 @@ function views(selectors, root_views) {
     return views([selectors], root_views);
   }
 
+  if (selectors[0] instanceof android.view.View) {
+    // Assume we've been passed a list of Views so just return them
+    return selectors;
+  }
+
   if (root_views === undefined) {
     return views(selectors, children(content_view()));
   }
@@ -322,6 +328,51 @@ function size(selector) {
 
 function center(selector) {
   return __center(view(selector));
+}
+
+function leftmost(selector) {
+  return views(selector).sort(function(v1, v2) {
+    return __center(v1)[0] - __center(v2)[0];
+  })[0];
+}
+
+function rightmost(selector) {
+  return views(selector).sort(function(v1, v2) {
+    return __center(v2)[0] - __center(v1)[0];
+  })[0];
+}
+
+function topmost(selector) {
+  return views(selector).sort(function(v1, v2) {
+    return __center(v1)[1] - __center(v2)[1];
+  })[0];
+}
+
+function bottommost(selector) {
+  return views(selector).sort(function(v1, v2) {
+    return __center(v2)[1] - __center(v1)[1];
+  })[0];
+}
+
+function distance_to_point(view, point) {
+  var view_center = __center(view),
+      dx = view_center[0] - point[0],
+      dy = view_center[1] - point[1];
+  return dx * dx + dy * dy;
+}
+
+function centermost(selector) {
+  var screen_center = screen_size().map(function(px) { return px / 2; });
+  return views(selector).sort(function(v1, v2) {
+    return distance_to_point(v1, screen_center) - distance_to_point(v2, screen_center);
+  })[0];
+}
+
+function outermost(selector) {
+  var screen_center = screen_size().map(function(px) { return px / 2; });
+  return views(selector).sort(function(v1, v2) {
+    return distance_to_point(v2, screen_center) - distance_to_point(v1, screen_center);
+  })[0];
 }
 
 function all_ids(selector) {

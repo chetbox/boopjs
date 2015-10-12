@@ -1,17 +1,14 @@
 package com.chetbox.chetbot.android;
 
 import android.app.Activity;
-import android.os.SystemClock;
 import android.support.test.espresso.core.deps.guava.collect.ObjectArrays;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
 
 import com.chetbox.chetbot.android.js.Version;
 import com.chetbox.chetbot.android.util.Activities;
-import com.chetbox.chetbot.android.util.InputEvents;
 import com.chetbox.chetbot.android.util.RootViews;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -151,42 +148,6 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
         mJsContext.setOptimizationLevel(-1);
         ScriptableObject scope = mJsContext.initStandardObjects();
 
-        registerJsFunction(scope, "leftmost", new JsViewFunction() {
-            @Override
-            public Object call(Activity activity, Iterable<View> selectedViews) {
-                return horizontalOrdering.min(selectedViews);
-            }
-        });
-        registerJsFunction(scope, "rightmost", new JsViewFunction() {
-            @Override
-            public Object call(Activity activity, Iterable<View> selectedViews) {
-                return horizontalOrdering.max(selectedViews);
-            }
-        });
-        registerJsFunction(scope, "topmost", new JsViewFunction() {
-            @Override
-            public Object call(Activity activity, Iterable<View> selectedViews) {
-                return verticalOrdering.min(selectedViews);
-            }
-        });
-        registerJsFunction(scope, "bottommost", new JsViewFunction() {
-            @Override
-            public Object call(Activity activity, Iterable<View> selectedViews) {
-                return verticalOrdering.max(selectedViews);
-            }
-        });
-        registerJsFunction(scope, "centermost", new JsViewFunction() {
-            @Override
-            public Object call(Activity activity, Iterable<View> selectedViews) {
-                return new EuclidianDistanceOrdering(center(screenSize(activity))).min(selectedViews);
-            }
-        });
-        registerJsFunction(scope, "outermost", new JsViewFunction() {
-            @Override
-            public Object call(Activity activity, Iterable<View> selectedViews) {
-                return new EuclidianDistanceOrdering(center(screenSize(activity))).max(selectedViews);
-            }
-        });
         scope.put("closest_to", scope, new Callable() {
             @Override
             public Object call(org.mozilla.javascript.Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {

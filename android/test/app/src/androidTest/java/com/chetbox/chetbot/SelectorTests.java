@@ -19,9 +19,13 @@ import static com.chetbox.chetbot.util.Lists.*;
 
 public class SelectorTests extends StopwatchTest {
 
-    @Test
-    public void  multipleViews() {
+    @Test public void  multipleViews() {
         assertThat(exec("views({type: 'AppCompatButton'})"),
+                contains(startStopButton, resetButton));
+    }
+
+    @Test public void  multipleViewInstances() {
+        assertThat(exec("views([_startStopButton_, _resetButton_])"),
                 contains(startStopButton, resetButton));
     }
 
@@ -142,6 +146,11 @@ public class SelectorTests extends StopwatchTest {
                 is(false));
     }
 
+    @Test public void countViewsWithClassName() {
+        assertThat(exec("count({type: 'android.support.v7.widget.AppCompatButton'})"),
+                equalTo(2.0));
+    }
+
     @Test public void countViewsWithClassSimpleName() {
         assertThat(exec("count({type: 'AppCompatButton'})"),
                 equalTo(2.0));
@@ -149,6 +158,11 @@ public class SelectorTests extends StopwatchTest {
 
     @Test public void countViewsWithText() {
         assertThat(exec("count('00')"),
+                equalTo(2.0));
+    }
+
+    @Test public void countInstances() {
+        assertThat(exec("count([_startStopButton_, _resetButton_])"),
                 equalTo(2.0));
     }
 
