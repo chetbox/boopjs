@@ -4,10 +4,6 @@ var version = [0, 7, 0];
 
 var android = Packages.android;
 
-// Java interop magic
-
-var __classLoader = java.lang.Thread.currentThread().getContextClassLoader();
-
 // Concurrency utilities
 
 function __container() {
