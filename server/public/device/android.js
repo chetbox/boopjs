@@ -497,28 +497,13 @@ function assert_visible(selector) {
 
 // Interaction - touch
 
-var __inputManagerEventInjectionStrategyClass = java.lang.Class.forName('android.support.test.espresso.base.InputManagerEventInjectionStrategy', true, __classLoader);
-var __inputManagerEventInjectionStrategy_constructor = __inputManagerEventInjectionStrategyClass.getDeclaredConstructor([]);
-__inputManagerEventInjectionStrategy_constructor.setAccessible(true);
-var __inputManagerEventInjectStrategy_initialize = __inputManagerEventInjectionStrategyClass.getDeclaredMethod('initialize');
-__inputManagerEventInjectStrategy_initialize.setAccessible(true);
-var __inputManagerEventInjectionStrategy_injectMotionEvent = __inputManagerEventInjectionStrategyClass.getMethod('injectMotionEvent', android.view.MotionEvent);
-var __inputManagerEventInjectionStrategy = __inputManagerEventInjectionStrategy_constructor.newInstance();
-__inputManagerEventInjectStrategy_initialize.invoke(__inputManagerEventInjectionStrategy);
-
-function __inject_motion_event() {
-  for (var i=0; i<arguments.length; i++) {
-    __inputManagerEventInjectionStrategy_injectMotionEvent.invoke(__inputManagerEventInjectionStrategy, arguments[i]);
-  }
-}
-
 function tap(selector, options) {
   if (!options) options = {};
   if (options.duration === undefined) options.duration = 0.02;
 
   var view_center = center(selector);
   var timestamp = android.os.SystemClock.uptimeMillis();
-  __inject_motion_event(
+  inject_motion_event(
     android.view.MotionEvent.obtain(
       timestamp,
       timestamp,

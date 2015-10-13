@@ -4,16 +4,21 @@ import android.app.Activity;
 import android.support.test.espresso.core.deps.guava.collect.ObjectArrays;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.widget.Toast;
 
 import com.chetbox.chetbot.android.util.Activities;
+import com.chetbox.chetbot.android.util.InputEvents;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 
+import org.mozilla.javascript.Callable;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
+import org.mozilla.javascript.Undefined;
+import org.mozilla.javascript.Wrapper;
 
 import java.io.IOException;
 
@@ -80,6 +85,22 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
 
         mJsContext.evaluateString(mJsScope, "RegExp; getClass; java; Packages; JavaAdapter;", "<lazy_load>", 1, null);
         mJsContext.evaluateString(mJsScope, "var package_name = '" + mPackageName + "';", "<package_name>", 1, null);
+
+        // All functions that require calling and dependent libraries should go here
+        // because we change the namespace of this library and its dependencies in production
+        mJsScope.put("inject_motion_event", mJsScope, new Callable() {
+            @Override
+            public Object call(Context context, Scriptable scope, Scriptable thisObj, Object[] args) {
+                for (Object arg : args) {
+                    if (arg instanceof Wrapper) {
+                        arg = ((Wrapper) arg).unwrap();
+                    }
+                    InputEvents.injectEvent((MotionEvent) arg);
+                }
+                return Undefined.instance;
+            }
+        });
+
         mJsScope = sealJsScope(mJsContext, mJsScope);
 
         if (mServer != null) {
