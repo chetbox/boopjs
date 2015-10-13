@@ -43,6 +43,13 @@ function __latch(count) {
   };
 }
 
+function run_on_ui_thread(fn) {
+  var current_activity = activity();
+  current_activity.runOnUiThread(function() {
+    fn(current_activity);
+  });
+}
+
 // Console
 
 var console = {
@@ -52,65 +59,13 @@ var console = {
   }
 };
 
-// Activities
+// Device info
 
 function screen_size() {
   var display = activity().getWindowManager().getDefaultDisplay();
   var size = new android.graphics.Point();
   display.getSize(size);
   return [size.x, size.y];
-}
-
-var __activityThreadClass = java.lang.Class.forName('android.app.ActivityThread');
-var __activityThread__activitiesField = __activityThreadClass.getDeclaredField('mActivities');
-__activityThread__activitiesField.setAccessible(true);
-var __activityRecordClass = java.lang.Class.forName('android.app.ActivityThread$ActivityClientRecord');
-var __activityRecord_pausedField = __activityRecordClass.getDeclaredField('paused');
-__activityRecord_pausedField.setAccessible(true);
-var __activityRecord_activityField = __activityRecordClass.getDeclaredField('activity');
-__activityRecord_activityField.setAccessible(true);
-
-function _activity() {
-  var activityThread = __activityThreadClass.getMethod('currentActivityThread').invoke(null);
-  var activities = __activityThread__activitiesField.get(activityThread);
-  // TODO: handle API < 19 (ArrayMap is new for API 19)
-  for (var i=activities.values().iterator(); i.hasNext();) {
-    var activityRecord = i.next();
-    if (!__activityRecord_pausedField.getBoolean(activityRecord)) {
-      var activity = __activityRecord_activityField.get(activityRecord);
-      if (activity.getPackageName().equals(package_name)) { // package_name is defined globally
-        return activity;
-      } else {
-        console.log('Found activity for different package: ' + activity.getPackageName());
-      }
-    }
-  }
-}
-
-function activity() {
-  var tryCount = 0;
-  while (true) {
-    try {
-      return _activity();
-    } catch (e) {
-      if (e.javaException instanceof android.content.ActivityNotFoundException) {
-        tryCount++;
-        if (tryCount >= 5) {
-          throw e;
-        }
-      } else {
-        throw e;
-      }
-    }
-    java.lang.Thread.sleep(50);
-  }
-}
-
-function run_on_ui_thread(fn) {
-  var current_activity = activity();
-  current_activity.runOnUiThread(function() {
-    fn(current_activity);
-  });
 }
 
 // View selectors
