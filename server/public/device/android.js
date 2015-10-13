@@ -32,7 +32,7 @@ function __latch(count) {
     },
     wait: function(options) {
       var timeout = (options && options.timeout) || 10;
-      if (!latch.await(timeout, java.util.concurrent.TimeUnit.SECONDS)) {
+      if (!latch.await(timeout * 1000, java.util.concurrent.TimeUnit.MILLISECONDS)) {
         throw 'Timed out after ' + timeout + 's' ;
       }
     }
