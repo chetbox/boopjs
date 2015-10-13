@@ -107,7 +107,16 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
             public Object call(Context context, Scriptable scope, Scriptable thisObj, Object[] args) {
                 return mJsContext.toObject(
                         RootViews.getTopmostContentView(Activities.getActivity(mPackageName)),
-                        mJsScope
+                        scope
+                );
+            }
+        });
+        mJsScope.put("activity", mJsScope, new Callable() {
+            @Override
+            public Object call(Context context, Scriptable scope, Scriptable thisObj, Object[] args) {
+                return mJsContext.toObject(
+                        Activities.getActivity(mPackageName),
+                        scope
                 );
             }
         });
