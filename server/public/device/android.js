@@ -113,42 +113,6 @@ function run_on_ui_thread(fn) {
   });
 }
 
-var __rootsOracleClass = java.lang.Class.forName('android.support.test.espresso.base.RootsOracle', true, __classLoader);
-var __rootsOracleConstructor = __rootsOracleClass.getDeclaredConstructor([android.os.Looper]);
-__rootsOracleConstructor.setAccessible(true);
-var __rootsOracle = __rootsOracleConstructor.newInstance(android.os.Looper.getMainLooper());
-var __rootViewPickerClass = java.lang.Class.forName('android.support.test.espresso.base.RootViewPicker', true, __classLoader);
-var __rootViewPicker_reduceRoots = __rootViewPickerClass.getDeclaredMethod('reduceRoots', java.util.List);
-__rootViewPicker_reduceRoots.setAccessible(true);
-var __rootViewPicker = android.support.test.espresso.base.RootViewPicker_Factory.create(
-  function() { return null; },
-  function() { return null; },
-  function() { return android.support.test.runner.lifecycle.ActivityLifecycleMonitorRegistry.getInstance(); },
-  function() { return new java.util.concurrent.atomic.AtomicReference(android.support.test.espresso.matcher.RootMatchers.DEFAULT); }
-).get();
-
-function content_view() {
-  function list_active_roots() {
-    return __rootsOracle.listActiveRoots().toArray();
-  }
-  function apply_default_root_matcher(roots) {
-    return roots.filter(function(root) {
-      return android.support.test.espresso.matcher.RootMatchers.DEFAULT.matches(root)
-    });
-  }
-  function reduce_roots(roots) {
-    return __rootViewPicker_reduceRoots.invoke(__rootViewPicker, java.util.Arrays.asList(roots));
-  }
-  function find_content_view(root_view) {
-    return root_view.findViewById(android.R.id.content);
-  }
-  var root_view_container = __container();
-  run_on_ui_thread(function() {
-    root_view_container.set_content(reduce_roots(apply_default_root_matcher(list_active_roots())).getDecorView());
-  });
-  return find_content_view(root_view_container.wait_for_content());
-}
-
 // View selectors
 
 function __text(view) {
