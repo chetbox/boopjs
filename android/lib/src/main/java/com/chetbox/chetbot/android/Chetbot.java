@@ -4,30 +4,15 @@ import android.app.Activity;
 import android.support.test.espresso.core.deps.guava.collect.ObjectArrays;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.View;
 import android.widget.Toast;
 
-import com.chetbox.chetbot.android.js.Version;
 import com.chetbox.chetbot.android.util.Activities;
-import com.chetbox.chetbot.android.util.RootViews;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 
-import static com.google.common.collect.ImmutableList.copyOf;
-
-import org.mozilla.javascript.Callable;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
-
-import java.util.concurrent.*;
-
-import static com.chetbox.chetbot.android.util.Views.*;
-import static com.chetbox.chetbot.android.util.Activities.*;
-
-import static com.google.common.collect.Iterables.*;
 
 public class Chetbot implements ChetbotServerConnection.ScriptHandler {
 
@@ -72,9 +57,9 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
         // Connect to Chetbot server
         if (!TextUtils.isEmpty(mServer) && !TextUtils.isEmpty(deviceId)) {
 
-            Log.d(TAG, "Starting ChetBot v" + Version.VERSION + " (" + deviceId + ")");
+            Log.d(TAG, "Starting ChetBot (" + deviceId + ")");
             if (!quiet) {
-                Toast.makeText(activity, "ChetBot v" + Version.VERSION, Toast.LENGTH_SHORT).show();
+                Toast.makeText(activity, "Starting ChetBot", Toast.LENGTH_SHORT).show();
             }
             mServerConnection = new ChetbotServerConnection(mServer, deviceId, this);
 
@@ -87,62 +72,8 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
         }
     }
 
-    private static String getStringValue(String key, ScriptableObject object, Scriptable scope) {
-        Object value = object.get(key, scope);
-        return (value == Scriptable.NOT_FOUND)
-                ? null
-                : (String) value;
-    }
-
-    private static Double getDoubleValue(String key, ScriptableObject object, Scriptable scope) {
-        Object value = object.get(key, scope);
-        return (value == Scriptable.NOT_FOUND)
-                ? null
-                : (Double) value;
-    }
-
-    private static SubViews subViewsSelector(Activity activity, Object selector, Scriptable scope) {
-        if (selector instanceof String) {
-            return new SubViews(activity, (String) selector, null, null);
-        }
-
-        return new SubViews(
-                activity,
-                getStringValue("text", (ScriptableObject) selector, scope),
-                getStringValue("type", (ScriptableObject) selector, scope),
-                getStringValue("id",   (ScriptableObject) selector, scope));
-    }
-
-    private static Iterable<View> selectViews(Activity activity, View srcView, Object[] args, Scriptable scope) {
-        Preconditions.checkNotNull(srcView);
-
-        if (args == null) {
-            return null;
-        }
-
-        if (args.length > 0) {
-            if (args[0] instanceof Object[]) {
-                // Assume the first argument is the list of arguments
-                return selectViews(activity, srcView, (Object[]) args[0], scope);
-            } else if (args[0] instanceof Iterable) {
-                // Assume the first argument is the list of arguments
-                return selectViews(activity, srcView, toArray((Iterable) args[0], Object.class), scope);
-            } else if (args[0] instanceof View) {
-                // Get all View instances
-                return filter(copyOf(args), View.class);
-            }
-        }
-
-        Iterable<View> views = ImmutableList.of(srcView);
-        for (Object selector : args) {
-            views = subViewsSelector(activity, selector, scope).apply(views);
-        }
-        return views;
-    }
-
     @Override
     public void setup() {
-        final Activity activity = getActivity();
         // Set up JavaScript environment
         mJsContext = org.mozilla.javascript.Context.enter();
         mJsContext.setOptimizationLevel(-1);
@@ -178,6 +109,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
         } catch (final Exception e) {
             Log.e(TAG, e.getClass().getSimpleName() + ": " + e.getMessage());
             e.printStackTrace();
+            final Activity activity = Activities.getActivity(mPackageName);
             activity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -201,35 +133,6 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
     @Override
     public void onFinishScript() {}
 
-    private interface JsFunction {
-        Object call(Activity activity, Object[] args);
-    }
-
-    private interface JsViewFunction {
-        Object call(Activity activity, Iterable<View> selectedViews);
-    }
-
-    private void registerJsFunction(Scriptable scope, String name, final JsFunction fn) {
-        scope.put(name, scope, new Callable() {
-            @Override
-            public Object call(org.mozilla.javascript.Context cx, Scriptable scope, Scriptable thisObj, final Object[] args) {
-                return fn.call(getActivity(), args);
-            }
-        });
-    }
-
-    private void registerJsFunction(Scriptable scope, String name, final JsViewFunction fn) {
-        scope.put(name, scope, new Callable() {
-            @Override
-            public Object call(org.mozilla.javascript.Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
-                final Activity activity = getActivity();
-                final View rootView = RootViews.getTopmostContentView(activity);
-                final Iterable<View> selectedViews = selectViews(activity, rootView, args, scope);
-                return fn.call(activity, selectedViews);
-            }
-        });
-    }
-
     public static void reset() {
         if (sInstance != null) {
             if (sInstance.mServerConnection != null) {
@@ -249,10 +152,6 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
             sInstance = new Chetbot(activity);
         }
         return sInstance;
-    }
-
-    private Activity getActivity() {
-        return Activities.getActivity(mPackageName);
     }
 
 }
