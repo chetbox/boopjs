@@ -9,12 +9,14 @@ import android.widget.Toast;
 
 import com.chetbox.chetbot.android.util.Activities;
 import com.chetbox.chetbot.android.util.InputEvents;
+import com.chetbox.chetbot.android.util.RootViews;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 
 import org.mozilla.javascript.Callable;
 import org.mozilla.javascript.Context;
+import org.mozilla.javascript.NativeJavaObject;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.Undefined;
@@ -98,6 +100,15 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
                     InputEvents.injectEvent((MotionEvent) arg);
                 }
                 return Undefined.instance;
+            }
+        });
+        mJsScope.put("content_view", mJsScope, new Callable() {
+            @Override
+            public Object call(Context context, Scriptable scope, Scriptable thisObj, Object[] args) {
+                return mJsContext.toObject(
+                        RootViews.getTopmostContentView(Activities.getActivity(mPackageName)),
+                        mJsScope
+                );
             }
         });
 

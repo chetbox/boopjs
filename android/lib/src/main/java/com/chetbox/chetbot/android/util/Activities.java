@@ -2,11 +2,13 @@ package com.chetbox.chetbot.android.util;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
+import android.support.test.espresso.core.deps.guava.util.concurrent.Uninterruptibles;
 import android.util.ArrayMap;
 import android.util.Log;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.TimeUnit;
 
 public class Activities {
 
@@ -23,7 +25,7 @@ public class Activities {
                     throw e;
                 }
             }
-            sleep(0.05);
+            Uninterruptibles.sleepUninterruptibly(50, TimeUnit.MILLISECONDS);
         }
     }
 
@@ -61,14 +63,6 @@ public class Activities {
             throw new RuntimeException(e);
         }
         throw new ActivityNotFoundException("package:" + packageName);
-    }
-
-    public static void sleep(Double seconds) {
-        try {
-            Thread.sleep(Math.round(seconds * 1000.0));
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
     }
 
 }
