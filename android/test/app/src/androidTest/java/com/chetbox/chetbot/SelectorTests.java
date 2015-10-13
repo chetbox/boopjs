@@ -7,6 +7,10 @@ import com.chetbox.chetbot.android.util.Activities;
 import com.chetbox.chetbot.base.screens.StopwatchTest;
 
 import org.junit.Test;
+import org.mozilla.javascript.Undefined;
+
+import java.util.Collection;
+import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -15,9 +19,13 @@ import static com.chetbox.chetbot.util.Lists.*;
 
 public class SelectorTests extends StopwatchTest {
 
-    @Test
-    public void multipleViews() {
-        assertThat(arrayAsList(exec("views({type: 'AppCompatButton'})")),
+    @Test public void  multipleViews() {
+        assertThat(exec("views({type: 'AppCompatButton'})"),
+                contains(startStopButton, resetButton));
+    }
+
+    @Test public void  multipleViewInstances() {
+        assertThat(exec("views([_startStopButton_, _resetButton_])"),
                 contains(startStopButton, resetButton));
     }
 
@@ -51,7 +59,7 @@ public class SelectorTests extends StopwatchTest {
                 buttonsContainer.setVisibility(View.INVISIBLE);
             }
         });
-        Activities.waitUntilSettled(getActivity());
+        exec("wait(0.1)");
 
         assertThat(exec("visible({id: 'reset'})"),
                 is(false));
@@ -68,8 +76,8 @@ public class SelectorTests extends StopwatchTest {
     }
 
     @Test public void findViewByText_notFound() {
-        exception.expect(IndexOutOfBoundsException.class);
-        exec("text({text: 'nonsense'})");
+        assertThat(exec("text({text: 'nonsense'})"),
+                is(false));
     }
 
     @Test public void findViewByShortId() {
@@ -78,8 +86,8 @@ public class SelectorTests extends StopwatchTest {
     }
 
     @Test public void findViewByShortId_notFound() {
-        exception.expect(IndexOutOfBoundsException.class);
-        exec("view({id: 'i_do_not_exist'})");
+        assertThat(exec("view({id: 'i_do_not_exist'})"),
+                is(Undefined.instance));
     }
 
     @Test public void findViewByLongId() {
@@ -88,8 +96,8 @@ public class SelectorTests extends StopwatchTest {
     }
 
     @Test public void findViewByLongId_notFound() {
-        exception.expect(IndexOutOfBoundsException.class);
-        exec("view({id: 'com.chetbox.chetbot.test:id/i_do_not_exist'})");
+        assertThat(exec("view({id: 'com.chetbox.chetbot.test:id/i_do_not_exist'})"),
+                is(Undefined.instance));
     }
 
     @Test public void findViewsByClassName() {
@@ -120,7 +128,7 @@ public class SelectorTests extends StopwatchTest {
 
     @Test public void viewType() {
         assertThat(exec("type(_resetButton_)"),
-                equalTo("AppCompatButton"));
+                equalTo("android.support.v7.widget.AppCompatButton"));
     }
 
     @Test public void viewId() {
@@ -134,61 +142,66 @@ public class SelectorTests extends StopwatchTest {
     }
 
     @Test public void viewText_notTextView() {
-        exception.expect(ClassCastException.class);
-        exec("text({type: 'RelativeLayout'})");
+        assertThat(exec("text({type: 'RelativeLayout'})"),
+                is(false));
     }
 
-    @Test public void countInstances() {
-        assertThat(exec("count(_startStopButton_, _resetButton_)"),
-                equalTo(2));
+    @Test public void countViewsWithClassName() {
+        assertThat(exec("count({type: 'android.support.v7.widget.AppCompatButton'})"),
+                equalTo(2.0));
     }
 
     @Test public void countViewsWithClassSimpleName() {
         assertThat(exec("count({type: 'AppCompatButton'})"),
-                equalTo(2));
+                equalTo(2.0));
     }
 
     @Test public void countViewsWithText() {
         assertThat(exec("count('00')"),
-                equalTo(2));
+                equalTo(2.0));
+    }
+
+    @Test public void countInstances() {
+        assertThat(exec("count([_startStopButton_, _resetButton_])"),
+                equalTo(2.0));
     }
 
     @Test public void locationOfHorizontalButtons() {
-        int[] startStopLocation = exec("location(_startStopButton_)");
-        int[] resetLocation = exec("location(_resetButton_)");
+        List<Integer> startStopLocation = exec("location(_startStopButton_)");
+        List<Integer> resetLocation = exec("location(_resetButton_)");
 
         assertThat("[start] left of [reset]",
-                startStopLocation[0], lessThan(resetLocation[0]));
+                startStopLocation.get(0), lessThan(resetLocation.get(0)));
 
         assertThat("Same vertical alignment",
-                startStopLocation[1], equalTo(resetLocation[1]));
+                startStopLocation.get(1), equalTo(resetLocation.get(1)));
     }
 
     @Test public void centerOfHorizontalButtons() {
-        int[] startStopCenter = exec("center(_startStopButton_)");
-        int[] resetCenter = exec("center(_resetButton_)");
+        List<Double> startStopCenter = exec("center(_startStopButton_)");
+        List<Double> resetCenter = exec("center(_resetButton_)");
 
         assertThat("[start] left of [reset]",
-                startStopCenter[0], lessThan(resetCenter[0]));
+                startStopCenter.get(0), lessThan(resetCenter.get(0)));
 
         assertThat("Same vertical alignment",
-                startStopCenter[1], equalTo(resetCenter[1]));
+                startStopCenter.get(1), equalTo(resetCenter.get(1)));
     }
 
     @Test public void sizeOfButton() {
-        int[] resetSize = exec("size(_resetButton_)");
+        List<?> resetSize = exec("size(_resetButton_)");
 
-        assertThat(resetSize[0], greaterThan(1));
-        assertThat(resetSize[1], greaterThan(1));
+        assertThat(resetSize.get(0), greaterThan(1));
+        assertThat(resetSize.get(1), greaterThan(1));
     }
 
     @Test public void location_center_size() {
-        int[] resetSize = exec("size(_resetButton_)");
-        int[] resetCenter = exec("center(_resetButton_)");
-        int[] resetLocation = exec("location(_resetButton_)");
+        List<Number> resetCenter = exec("center(_resetButton_)");
+        List<Number> resetLocation = exec("location(_resetButton_)");
+        List<Number> resetSize = exec("size(_resetButton_)");
 
-        assertThat(resetCenter[0], equalTo(resetLocation[0] + resetSize[0] / 2));
-        assertThat(resetCenter[1], equalTo(resetLocation[1] + resetSize[1] / 2));
+        assertThat(resetCenter.get(0).intValue(), equalTo(resetLocation.get(0).intValue() + resetSize.get(0).intValue() / 2));
+        assertThat(resetCenter.get(1).intValue(), equalTo(resetLocation.get(1).intValue() + resetSize.get(1).intValue() / 2));
     }
 
     @Test public void screenshotPngDataUrl() {
@@ -196,37 +209,57 @@ public class SelectorTests extends StopwatchTest {
     }
 
     @Test public void leftmostView() {
-        assertThat(exec("leftmost(_startStopButton_, _resetButton_)"),
+        assertThat(exec("leftmost([_startStopButton_, _resetButton_])"),
                 sameInstance(startStopButton));
     }
 
     @Test public void rightmostView() {
-        assertThat(exec("rightmost(_startStopButton_, _resetButton_)"),
+        assertThat(exec("rightmost([_startStopButton_, _resetButton_])"),
                 sameInstance(resetButton));
     }
 
     @Test public void topmostView() {
-        assertThat(exec("topmost(_startStopButton_, _minutesText_)"),
+        assertThat(exec("topmost([_startStopButton_, _minutesText_])"),
                 sameInstance(minutesText));
     }
 
     @Test public void bottommostView() {
-        assertThat(exec("bottommost(_startStopButton_, _minutesText_)"),
+        assertThat(exec("bottommost([_startStopButton_, _minutesText_])"),
                 sameInstance(startStopButton));
     }
 
     @Test public void centermostView() {
-        assertThat(exec("centermost(_minutesText_, _secondsText_, _millisecondsText_)"),
+        assertThat(exec("centermost([_minutesText_, _secondsText_, _millisecondsText_])"),
                 sameInstance(secondsText));
     }
 
     @Test public void outermostView() {
-        assertThat(exec("outermost(_minutesText_, _secondsText_, _millisecondsText_)"),
+        assertThat(exec("outermost([_minutesText_, _secondsText_, _millisecondsText_])"),
                 anyOf(sameInstance(minutesText), sameInstance(millisecondsText)));
     }
 
+    @Test public void closestToView() {
+        assertThat(exec("[_minutesText_, _secondsText_].closest_to(_millisecondsText_)"),
+                anyOf(sameInstance(secondsText)));
+    }
+
+    @Test public void closestToViewSelectors() {
+        assertThat(exec("views('00').closest_to('000')"),
+                anyOf(sameInstance(secondsText)));
+    }
+
+    @Test public void furtherFromView() {
+        assertThat(exec("[_minutesText_, _secondsText_].furthest_from(_millisecondsText_)"),
+                anyOf(sameInstance(minutesText)));
+    }
+
+    @Test public void furthestFromViewSelectors() {
+        assertThat(exec("views('00').furthest_from('000')"),
+                anyOf(sameInstance(minutesText)));
+    }
+
     @Test public void allViewIds() {
-        assertThat(arrayAsList(exec("view_ids()")),
+        assertThat(exec("all_ids()"),
                 hasItems(   "com.chetbox.chetbot.test:id/drawer_layout",
                             "com.chetbox.chetbot.test:id/content_frame",
                             "com.chetbox.chetbot.test:id/stopwatch_container",
@@ -241,8 +274,9 @@ public class SelectorTests extends StopwatchTest {
     }
 
     @Test public void subViewIds() {
-        assertThat(arrayAsList(exec("view_ids({id: 'buttons'})")),
-                containsInAnyOrder( "com.chetbox.chetbot.test:id/start_stop",
+        assertThat(exec("all_ids({id: 'buttons'})"),
+                containsInAnyOrder( "com.chetbox.chetbot.test:id/buttons",
+                                    "com.chetbox.chetbot.test:id/start_stop",
                                     "com.chetbox.chetbot.test:id/reset"));
     }
 }

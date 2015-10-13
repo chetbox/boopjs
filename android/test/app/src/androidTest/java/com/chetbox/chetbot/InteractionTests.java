@@ -45,7 +45,7 @@ public class InteractionTests extends StopwatchTest {
     @Test public void waitUntilIdleTimeout() {
         exec("tap(_startStopButton_)");
 
-        exception.expect(Activities.TimeoutException.class);
+        exception.expectMessage("Timed out");
         exec("wait_until_idle({timeout: 2})");
     }
 
