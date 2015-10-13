@@ -11,14 +11,17 @@ import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 
+import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
+
+import java.io.IOException;
 
 public class Chetbot implements ChetbotServerConnection.ScriptHandler {
 
     private static final String TAG = Chetbot.class.getSimpleName();
-
     private static final String CHETBOT_LIB_ENDPOINT = "/device/android.js";
+    private static final OkHttpClient HTTP_CLIENT = new OkHttpClient();
 
     private static Chetbot sInstance = null;
 
@@ -26,7 +29,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
     private ChetbotServerConnection mServerConnection = null;
 
     private org.mozilla.javascript.Context mJsContext;
-    private Scriptable mJsScope;
+    private ScriptableObject mJsScope;
 
     private String mServer;
     private String[] mScriptsUrls = new String[]{};
@@ -36,13 +39,9 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
     private Chetbot(Activity activity) {
         mServer = activity.getIntent().getStringExtra("chetbot.server");
 
-        if (!TextUtils.isEmpty(mServer)) {
-            mScriptsUrls = new String[]{"http://" + mServer + CHETBOT_LIB_ENDPOINT};
-        }
-
         String extraScriptUrls = activity.getIntent().getStringExtra("chetbot.scripts");
         if (extraScriptUrls != null) {
-            mScriptsUrls = ObjectArrays.concat(mScriptsUrls, extraScriptUrls.split(","), String.class);
+            mScriptsUrls = extraScriptUrls.split(",");
         }
 
         mUserScript = activity.getIntent().getStringExtra("chetbot.exec");
@@ -77,48 +76,71 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
         // Set up JavaScript environment
         mJsContext = org.mozilla.javascript.Context.enter();
         mJsContext.setOptimizationLevel(-1);
-        ScriptableObject scope = mJsContext.initStandardObjects();
+        mJsScope = mJsContext.initStandardObjects();
 
-        mJsContext.evaluateString(scope, "RegExp; getClass; java; Packages; JavaAdapter;", "<lazy_load>", 1, null);
-        mJsContext.evaluateString(scope, "var package_name = '" + mPackageName + "';", "<package_name>", 1, null);
-        scope.sealObject();
+        mJsContext.evaluateString(mJsScope, "RegExp; getClass; java; Packages; JavaAdapter;", "<lazy_load>", 1, null);
+        mJsContext.evaluateString(mJsScope, "var package_name = '" + mPackageName + "';", "<package_name>", 1, null);
+        mJsScope = sealJsScope(mJsContext, mJsScope);
 
-        mJsScope = mJsContext.newObject(scope);
-        mJsScope.setPrototype(scope);
-        mJsScope.setParentScope(null);
+        if (mServer != null) {
+            try {
+                String script = getTextFromUrl("http://" + mServer + CHETBOT_LIB_ENDPOINT);
+                mJsContext.evaluateString(mJsScope, script, "<chetbot>", 1, null);
+            } catch (Throwable t) {
+                handleScriptError(t);
+                return;
+            } finally {
+                 mJsScope = sealJsScope(mJsContext, mJsScope);
+            }
+        }
 
-        OkHttpClient client = new OkHttpClient();
         try {
             for (final String scriptUrl : mScriptsUrls) {
-                Log.d(TAG, "Loading " + scriptUrl);
-                Request request = new Request.Builder()
-                        .url(scriptUrl)
-                        .build();
-                Response response = client.newCall(request).execute();
-                if (!response.isSuccessful()) {
-                    throw new RuntimeException("HTTP Error " + response.code() + ": " + response.message());
-                }
-                String script = response.body().string();
-
-                onStatement(new ChetbotServerConnection.Statement(script, 1), scriptUrl);
-                Log.d(TAG, "Loaded " + scriptUrl);
+                String script = getTextFromUrl(scriptUrl);
+                mJsContext.evaluateString(mJsScope, script, scriptUrl, 1, null);
             }
             if (mUserScript != null) {
-                onStatement(new ChetbotServerConnection.Statement(mUserScript, 1), "<user>");
+                mJsContext.evaluateString(mJsScope, mUserScript, "<user>", 1, null);
             }
-        } catch (final Exception e) {
-            Log.e(TAG, e.getClass().getSimpleName() + ": " + e.getMessage());
-            e.printStackTrace();
-            final Activity activity = Activities.getActivity(mPackageName);
-            activity.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(activity, e.getClass().getSimpleName() + ": " + e.getMessage(), Toast.LENGTH_LONG).show();
-                }
-            });
-            if (mServerConnection != null) {
-                mServerConnection.onUncaughtError(e);
+        } catch (Throwable t) {
+            handleScriptError(t);
+        }
+    }
+
+    private static ScriptableObject sealJsScope(Context jsContext, ScriptableObject oldScope) {
+        oldScope.sealObject();
+        ScriptableObject newScope = (ScriptableObject) jsContext.newObject(oldScope);
+        newScope.setPrototype(oldScope);
+        newScope.setParentScope(null);
+        return newScope;
+    }
+
+    private String getTextFromUrl(String scriptUrl) throws IOException {
+        Log.d(TAG, "Loading " + scriptUrl);
+        Request request = new Request.Builder()
+                .url(scriptUrl)
+                .build();
+        Response response = HTTP_CLIENT.newCall(request).execute();
+        if (!response.isSuccessful()) {
+            throw new RuntimeException("HTTP Error " + response.code() + ": " + response.message());
+        }
+        return response.body().string();
+    }
+
+    private void handleScriptError(final Throwable t) {
+        Log.e(TAG, t.getClass().getSimpleName() + ": " + t.getMessage());
+        t.printStackTrace();
+        final Activity activity = Activities.getActivity(mPackageName);
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(activity, t.getClass().getSimpleName() + ": " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
+        });
+        if (mServerConnection != null) {
+            mServerConnection.onUncaughtError(t);
+        } else {
+            throw new RuntimeException(t);
         }
     }
 
