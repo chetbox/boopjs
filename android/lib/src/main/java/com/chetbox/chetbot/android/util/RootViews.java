@@ -12,6 +12,7 @@ import android.support.test.espresso.core.deps.guava.util.concurrent.Uninterrupt
 import android.support.test.espresso.matcher.RootMatchers;
 import android.support.test.runner.lifecycle.ActivityLifecycleMonitor;
 import android.support.test.runner.lifecycle.ActivityLifecycleMonitorRegistry;
+import android.util.Log;
 import android.view.View;
 
 import com.chetbox.chetbot.android.Container;
@@ -32,6 +33,8 @@ import javax.inject.Provider;
  * Use Espresso to find and access root views
  */
 public class RootViews {
+
+    private static final String TAG = RootViews.class.getSimpleName();
 
     private static final ActiveRootLister sRootsOracle;
     private static final Method sRootsOracle_listActiveRoots;
@@ -73,21 +76,6 @@ public class RootViews {
     private RootViews() {}
 
     public static View getTopmostContentView(Activity activity) {
-        final int maxTries = 5;
-        int tryCount = 0;
-        while (true) {
-            try {
-                return _getTopmostContentView(activity);
-            } catch (NoActivityResumedException e) {
-                if (++tryCount == maxTries) {
-                    throw e;
-                }
-            }
-            Uninterruptibles.sleepUninterruptibly(50, TimeUnit.MILLISECONDS);
-        }
-    }
-
-    public static View _getTopmostContentView(Activity activity) throws NoActivityResumedException {
         final Container<View> rootView = new Container<>();
         activity.runOnUiThread(new Runnable() {
             @Override
@@ -110,6 +98,22 @@ public class RootViews {
     }
 
     private static List<Root> applyDefaultRootMatcher(List<Root> roots) {
+        final int maxTries = 5;
+        int tryCount = 0;
+        while (true) {
+            try {
+                return _applyDefaultRootMatcher(roots);
+            } catch (NoActivityResumedException e) {
+                if (++tryCount == maxTries) {
+                    throw e;
+                }
+                Log.w(TAG, e.getMessage() + ", retrying...");
+            }
+            Uninterruptibles.sleepUninterruptibly(50, TimeUnit.MILLISECONDS);
+        }
+    }
+
+    private static List<Root> _applyDefaultRootMatcher(List<Root> roots) throws NoActivityResumedException {
         ImmutableList.Builder<Root> selectedRoots = new ImmutableList.Builder<>();
         for (Root root : roots) {
             if (RootMatchers.DEFAULT.matches(root)) {
