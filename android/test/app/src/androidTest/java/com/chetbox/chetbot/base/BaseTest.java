@@ -11,6 +11,7 @@ import android.view.View;
 
 import com.chetbox.chetbot.android.Chetbot;
 import com.chetbox.chetbot.android.ChetbotServerConnection;
+import com.chetbox.chetbot.android.util.Rhino;
 import com.chetbox.chetbot.test.MainActivity;
 import com.chetbox.chetbot.test.R;
 import com.chetbox.chetbot.util.AssetServer;
@@ -74,7 +75,7 @@ public abstract class BaseTest {
 
     protected <T> T exec(String... stmts) {
         String script = Joiner.on('\n').join(stmts);
-        return (T) unwrap(chetbot.onStatement(new ChetbotServerConnection.Statement(script, ++linesExecuted), name.getMethodName()));
+        return (T) Rhino.unwrapJavaObject(chetbot.onStatement(new ChetbotServerConnection.Statement(script, ++linesExecuted), name.getMethodName()));
     }
 
     protected View findViewById(int id) {
@@ -83,10 +84,6 @@ public abstract class BaseTest {
 
     protected Activity getActivity() {
         return mActivityRule.getActivity();
-    }
-
-    private static Object unwrap(Object obj) {
-        return obj instanceof Wrapper ? ((Wrapper) obj).unwrap() : obj;
     }
 
 }

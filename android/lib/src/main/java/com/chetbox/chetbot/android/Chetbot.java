@@ -1,7 +1,6 @@
 package com.chetbox.chetbot.android;
 
 import android.app.Activity;
-import android.support.test.espresso.core.deps.guava.collect.ObjectArrays;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -10,19 +9,17 @@ import android.widget.Toast;
 import com.chetbox.chetbot.android.util.Activities;
 import com.chetbox.chetbot.android.util.InputEvents;
 import com.chetbox.chetbot.android.util.Logs;
+import com.chetbox.chetbot.android.util.Rhino;
 import com.chetbox.chetbot.android.util.RootViews;
-import com.google.common.base.Joiner;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 
 import org.mozilla.javascript.Callable;
 import org.mozilla.javascript.Context;
-import org.mozilla.javascript.NativeJavaObject;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.Undefined;
-import org.mozilla.javascript.Wrapper;
 
 import java.io.IOException;
 
@@ -98,10 +95,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler, Provider<
             @Override
             public Object call(Context context, Scriptable scope, Scriptable thisObj, Object[] args) {
                 for (Object arg : args) {
-                    if (arg instanceof Wrapper) {
-                        arg = ((Wrapper) arg).unwrap();
-                    }
-                    InputEvents.injectEvent((MotionEvent) arg);
+                    InputEvents.injectEvent((MotionEvent) Rhino.unwrapJavaObject(arg));
                 }
                 return Undefined.instance;
             }
@@ -200,7 +194,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler, Provider<
 
     @Override
     public Object onStatement(ChetbotServerConnection.Statement stmt, String scriptName) {
-        return mJsContext.evaluateString(mJsScope, stmt.getSource(), scriptName, stmt.getLine(), null);
+        return Rhino.unwrapJavaObject(mJsContext.evaluateString(mJsScope, stmt.getSource(), scriptName, stmt.getLine(), null));
     }
 
     @Override
