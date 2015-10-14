@@ -46,15 +46,6 @@ function run_on_ui_thread(fn) {
   });
 }
 
-// Console
-
-var console = {
-  log: function(message) {
-    Packages.android.util.Log.i('Chetbot', message + '');
-    return message;
-  }
-};
-
 // Device info
 
 function screen_size() {

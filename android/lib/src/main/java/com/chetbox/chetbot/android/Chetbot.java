@@ -9,7 +9,9 @@ import android.widget.Toast;
 
 import com.chetbox.chetbot.android.util.Activities;
 import com.chetbox.chetbot.android.util.InputEvents;
+import com.chetbox.chetbot.android.util.Logs;
 import com.chetbox.chetbot.android.util.RootViews;
+import com.google.common.base.Joiner;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
@@ -24,9 +26,11 @@ import org.mozilla.javascript.Wrapper;
 
 import java.io.IOException;
 
-public class Chetbot implements ChetbotServerConnection.ScriptHandler {
+import javax.inject.Provider;
 
-    private static final String TAG = Chetbot.class.getSimpleName();
+public class Chetbot implements ChetbotServerConnection.ScriptHandler, Provider<Logs.LogMessageHandler> {
+
+    public static final String TAG = Chetbot.class.getSimpleName();
     private static final String CHETBOT_LIB_ENDPOINT = "/device/android.js";
     private static final OkHttpClient HTTP_CLIENT = new OkHttpClient();
 
@@ -120,6 +124,12 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
                 );
             }
         });
+        Scriptable console = mJsContext.newObject(mJsScope);
+        console.put("log",   console, new Logs.LogCallable(this, Logs.Level.DEBUG));
+        console.put("info",  console, new Logs.LogCallable(this, Logs.Level.INFO));
+        console.put("warn",  console, new Logs.LogCallable(this, Logs.Level.WARN));
+        console.put("error", console, new Logs.LogCallable(this, Logs.Level.ERROR));
+        mJsScope.put("console", mJsScope, console);
 
         mJsScope = sealJsScope(mJsContext, mJsScope);
 
@@ -215,6 +225,11 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler {
             sInstance = new Chetbot(activity);
         }
         return sInstance;
+    }
+
+    @Override
+    public ChetbotServerConnection get() {
+        return mServerConnection;
     }
 
 }
