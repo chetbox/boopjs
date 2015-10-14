@@ -67,12 +67,14 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
     private static class LogMessage {
 
         private String device;
+        private int line;
         private String type;
         private Object log;
         private Logs.Level level;
 
-        public LogMessage(String device, Logs.Level level, String type, Object logMessage) {
+        public LogMessage(String device, int lineNo, Logs.Level level, String type, Object logMessage) {
             this.device = device;
+            this.line = lineNo;
             this.type = type;
             this.log = logMessage;
             this.level = level;
@@ -143,7 +145,7 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
     private final String mDeviceId;
     private final ScriptHandler mScriptHandler;
 
-    private volatile Script mCurrentScript = null;
+    private volatile int mCurrentLine = 0;
     private volatile boolean mCurrentScriptSuccess;
 
     private boolean mRequiresSetup = true;
@@ -192,9 +194,9 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
         return new Result(device, lineNo, type, data);
     }
 
-    private static LogMessage makeLogMessage(String device, Object data, Logs.Level level) {
+    private static LogMessage makeLogMessage(String device, int lineNo, Object data, Logs.Level level) {
         Result result = makeResult(device, 0, data);
-        return new LogMessage(device, level, result.type, result.result);
+        return new LogMessage(device, lineNo, level, result.type, result.result);
     }
 
     private class ServerConnectionImpl extends WebSocketClient {
@@ -217,9 +219,8 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
         public void onMessage(String messageStr) {
             Log.v(TAG, Thread.currentThread().hashCode() + " // Message received: " + messageStr);
             Script script = sGson.fromJson(messageStr, Script.class);
-            int line = 0;
+            mCurrentLine = 0;
             mCurrentScriptSuccess = true;
-            mCurrentScript = script;
             try {
                 mScriptHandler.onStartScript();
                 for (Statement stmt : script.statements) {
@@ -227,20 +228,20 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
                         // Stop if there was an uncaught error
                         break;
                     }
-                    line = stmt.line;
+                    mCurrentLine = stmt.line;
                     Object result = mScriptHandler.onStatement(stmt, script.name);
-                    sendAsJson(makeResult(script.device, line, result));
+                    sendAsJson(makeResult(script.device, stmt.line, result));
                 }
             } catch (Throwable e) {
                 mCurrentScriptSuccess = false;
-                Error error = new Error(script.device, line, e);
+                Error error = new Error(script.device, mCurrentLine, e);
                 Log.e(TAG, "error: " + sGson.toJson(error));
                 e.printStackTrace();
                 sendAsJson(error);
             } finally {
                 sendAsJson(new Success(script.device, mCurrentScriptSuccess));
                 mScriptHandler.onFinishScript();
-                mCurrentScript = null;
+                mCurrentLine = 0;
             }
         }
 
@@ -258,7 +259,7 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
 
         private void onLogMessage(Logs.Level level, Object data) {
             if (mDeviceId != null) {
-                sendAsJson(makeLogMessage(mDeviceId, data, level));
+                sendAsJson(makeLogMessage(mDeviceId, mCurrentLine, data, level));
             } else {
                 Log.w(TAG, "Not connected. Unable to send log message to device.");
             }
