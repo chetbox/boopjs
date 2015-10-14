@@ -101,41 +101,6 @@
       display: inline-block;
     }
 
-    #repl {
-      position: absolute;
-      left: 0;
-      right: 0;
-      height: 150px;
-      bottom: -150px;
-      transition: bottom .2s ease-out;
-    }
-
-    .show-repl #repl {
-      bottom: 0;
-    }
-
-    #repl .ace_gutter .ace_gutter-cell {
-      color: transparent;
-    }
-
-    #repl .ace_gutter .ace_gutter-cell::before {
-      content: '>>';
-      color: #ccc;
-    }
-
-    #repl .ace_gutter .ace_gutter-cell.result::before {
-      content: none;
-    }
-
-    #repl.running .ace_gutter .ace_gutter-cell:last-child::before {
-      content: '--';
-    }
-
-    #repl .ace_gutter .ace_gutter-cell.error::before {
-      content: '!!';
-      color: red;
-    }
-
     #statusbar {
       background: #193c43;
       position: absolute;
@@ -212,27 +177,27 @@
       color: rgba(0,0,0,0.87);
     }
 
-    #test-report li.line > ol > li {
-      display: inline;
-    }
-
-    #test-report li.line > ol::before {
-      content: '\21AA';
+    #test-report li.result, #test-report li.log {
       margin-left: 2em;
       margin-right: 1em;
-      opacity: 0.25;
     }
 
-    #test-report li.final-result {
-      font-weight: bold;
-      margin-top: 1em;
-      margin-bottom: 1em;
+    #test-report li.result::before {
+      content: '\21AA';
+      opacity: 0.25;
+      margin-right: 0.5em;
     }
 
     #test-report li.result.bitmap img {
       height: 300px;
       margin-top: 0.5em;
       border: none;
+    }
+
+    #test-report li.final-result {
+      font-weight: bold;
+      margin-top: 1em;
+      margin-bottom: 1em;
     }
 
     #test-report .success {
@@ -254,6 +219,18 @@
       color: #D32F2F;
     }
 
+    #test-report li.log { color: #777; }
+    #test-report li.log.debug { color: #999; }
+    #test-report li.log.info  { color: #555; }
+    #test-report li.log.warn  { color: #c90; }
+    #test-report li.log.error { color: #900; }
+
+    #test-report li.log::before { margin-right: 1em; }
+    #test-report li.log.debug::before { content: 'D'; }
+    #test-report li.log.info::before  { content: 'I'; }
+    #test-report li.log.warn::before  { content: 'W'; }
+    #test-report li.log.error::before { content: 'E'; }
+
     #test-report .uncaught.error::before {
       content: 'Uncaught error: ';
     }
@@ -266,6 +243,7 @@
       display: none;
     }
     </style>
+    <link rel="stylesheet" href="/css/repl.css"/>
     <style type="text/css" media="print">
       paper-toolbar {
         visibility: hidden;
