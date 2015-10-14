@@ -321,13 +321,16 @@ function wait(seconds) {
 function wait_for(selector, options) {
   var timeout = (options && options.timeout) || 60;
   var start = android.os.SystemClock.uptimeMillis();
-  while (!visible(selector)) {
+  var v = null;
+  while (!v) {
+    v = view(selector);
     if ((android.os.SystemClock.uptimeMillis() - start) > (timeout * 1000)) {
       throw 'Timeout expired';
     } else {
       java.lang.Thread.sleep(50);
     }
   }
+  return v;
 }
 
 function wait_until_idle(options) {
@@ -407,7 +410,7 @@ function tap(selector, options) {
   if (!options) options = {};
   if (options.duration === undefined) options.duration = 0.02;
 
-  var view_center = center(selector);
+  var view_center = __center(wait_for(selector, options));
   var timestamp = android.os.SystemClock.uptimeMillis();
   inject_motion_event(
     android.view.MotionEvent.obtain(
