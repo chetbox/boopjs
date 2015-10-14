@@ -134,7 +134,10 @@ public class RootViews {
     }
 
     private static View findContentView(View rootView) {
-        return rootView.findViewById(android.R.id.content);
+        View contentView = rootView.findViewById(android.R.id.content);
+        return (contentView != null)
+                ? contentView
+                : rootView; // Probably some kind of popup (e.g. dropdown menu)
     }
 
 }
