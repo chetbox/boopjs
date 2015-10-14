@@ -7,31 +7,34 @@ function scrolltestReportToBottom() {
   testReportContainerEl.scrollTop(Math.max(0, offset));
 }
 
-function resultHTML(response) {
+function resultHTML(response, result_key) {
   if (!response) {
     return $('<li>')
       .addClass('result')
       .addClass('none');
   }
   var el = $('<li>')
-    .addClass('result')
+    .addClass(result_key)
+    .addClass(response.level) // for log messages
     .addClass(response.type.toLowerCase());
+  var result = response[result_key];
   if (response.type === 'NULL') {
     // don't show anything
+    return null;
   } else if (response.type === 'BITMAP') {
     el.append(
       $('<a>')
         .attr({
           target: '_blank',
-          href: response.result
+          href: result
         })
         .append(
           $('<img>')
-            .attr('src', response.result)
+            .attr('src', result)
         )
     );
   } else {
-    el.text(JSON.stringify(response.result, null, 2));
+    el.text(JSON.stringify(result, null, 2));
   }
   return el;
 }
@@ -56,6 +59,10 @@ function run_test(editor, server, device_id) {
       line: command.loc.start.line
     };
   });
+
+  function result_container(message) {
+    return message.line ? testReportEl.find('.line-' + message.line + ' > ol') : testReportEl;
+  }
 
   run_script(server, device_id, statements, {
     beforeStart: function(statements) {
@@ -83,15 +90,20 @@ function run_test(editor, server, device_id) {
     onResult: function(message) {
       ga('send', 'event', 'test-step', 'result', message.error ? 'error' : 'success');
 
-      testReportEl.find('.line-' + message.line)
-        .addClass(message.error ? 'error' : 'success')
-        .find('ol')
+      result_container(message)
         .append(message.error
           ? errorHTML(message)
-          : resultHTML(message)
-        );
+          : resultHTML(message, 'result')
+        )
+        .parent()
+          .addClass(message.error ? 'error' : 'success');
 
       // TODO: scroll new output into view
+    },
+    onLogMessage: function(message) {
+      ga('send', 'event', 'log-message', message.level);
+
+      result_container(message).append( resultHTML(message, 'log') );
     },
     onSuccess: function(message) {
       ga('send', 'event', 'test-result', message.success ? 'passed' : 'failed');
@@ -106,7 +118,10 @@ function run_test(editor, server, device_id) {
     onError: function(message) {
       ga('send', 'event', 'test-result', 'error', message.type);
 
-      testReportEl.append(errorHTML(message));
+      result_container(message)
+        .append(errorHTML(message))
+        .parents('.line')
+          .addClass('error');
     }
   });
 }

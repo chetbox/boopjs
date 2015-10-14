@@ -48,27 +48,39 @@ function setup_repl(server, device_id, id, callbacks) {
     doc.insertLines(doc.getLength(), ['']); // Used for result or next command
     repl.gotoLine(doc.getLength());
 
-    function show_result(r) {
-      if (!r.error && (r.result === undefined || r.result === null)) {
-        return;
+    function show_result(result_key, decorate_gutter, prefix) {
+      if (typeof(decorate_gutter) === 'string') {
+        var decoration = decorate_gutter;
+        decorate_gutter = function() { return decoration; }
       }
+      if (!prefix) prefix = '';
+      return function(r) {
+        var result = r[result_key];
+        console.log(result, result_key, r);
+        if (!r.error && (result === undefined || result === null)) {
+          return;
+        }
 
-      var message_lines = JSON.stringify(r.error ? r.error : r.result, null, 2).split('\n');
-      var start_line = doc.getLength() - 1;
-      doc.insertLines(start_line, message_lines);
-      // Hide '>>' annotation for results
-      for (var i = start_line; i < doc.getLength() - 1; i++) {
-        repl.getSession().addGutterDecoration(i, r.error ? 'error' : 'result');
+        var message_lines = JSON.stringify(result, null, 2)
+          .split('\n')
+          .map(function(line) { return prefix + line; });
+        var start_line = doc.getLength() - 1;
+        doc.insertLines(start_line, message_lines);
+        // See repl.css for gutter decorations
+        for (var i = start_line; i < doc.getLength() - 1; i++) {
+          repl.getSession().addGutterDecoration(i, decorate_gutter(r));
+        }
+        repl.gotoLine(doc.getLength());
       }
-      repl.gotoLine(doc.getLength());
     }
 
     add_to_history(src_to_execute);
 
     // execute code
     run_script(server, device_id, [{line: 1, source: src_to_execute}], {
-      onResult: show_result,
-      onError: show_result
+      onResult: show_result('result', 'result'),
+      onError: show_result('error', 'error', '// Uncaught error: '),
+      onLogMessage: show_result('log', function(msg) { return msg.level; }, '// ')
     });
 
     repl.setReadOnly(true);
