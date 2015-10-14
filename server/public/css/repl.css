@@ -1,0 +1,46 @@
+#repl {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 150px;
+  bottom: -150px;
+  transition: bottom .2s ease-out;
+}
+
+.show-repl #repl {
+  bottom: 0;
+}
+
+#repl .ace_gutter .ace_gutter-cell {
+  color: transparent;
+}
+
+#repl .ace_gutter .ace_gutter-cell::before {
+  content: '>';
+  color: #ccc;
+}
+
+#repl .ace_gutter .ace_gutter-cell.result::before {
+  content: none;
+}
+
+#repl.running .ace_gutter .ace_gutter-cell:last-child::before {
+  content: '-';
+}
+
+#repl .ace_gutter .ace_gutter-cell.debug::before {
+  content: 'D';
+  color: #777;
+}
+#repl .ace_gutter .ace_gutter-cell.info::before {
+  content: 'I';
+  color: #aaa;
+}
+#repl .ace_gutter .ace_gutter-cell.warn::before {
+  content: 'W';
+  color: #c90;
+}
+#repl .ace_gutter .ace_gutter-cell.error::before {
+  content: 'E';
+  color: #a33;
+}

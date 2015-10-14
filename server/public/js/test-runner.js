@@ -7,15 +7,17 @@ function scrolltestReportToBottom() {
   testReportContainerEl.scrollTop(Math.max(0, offset));
 }
 
-function resultHTML(response) {
+function resultHTML(response, result_key) {
   if (!response) {
     return $('<li>')
       .addClass('result')
       .addClass('none');
   }
   var el = $('<li>')
-    .addClass('result')
+    .addClass(result_key)
+    .addClass(response.level) // for log messages
     .addClass(response.type.toLowerCase());
+  var result = response[result_key];
   if (response.type === 'NULL') {
     // don't show anything
   } else if (response.type === 'BITMAP') {
@@ -23,15 +25,15 @@ function resultHTML(response) {
       $('<a>')
         .attr({
           target: '_blank',
-          href: response.result
+          href: result
         })
         .append(
           $('<img>')
-            .attr('src', response.result)
+            .attr('src', result)
         )
     );
   } else {
-    el.text(JSON.stringify(response.result, null, 2));
+    el.text(JSON.stringify(result, null, 2));
   }
   return el;
 }
@@ -88,10 +90,15 @@ function run_test(editor, server, device_id) {
         .find('ol')
         .append(message.error
           ? errorHTML(message)
-          : resultHTML(message)
+          : resultHTML(message, 'result')
         );
 
       // TODO: scroll new output into view
+    },
+    onLogMessage: function(message) {
+      ga('send', 'event', 'log-message', message.level);
+
+      testReportEl.append( resultHTML(message, 'log') );
     },
     onSuccess: function(message) {
       ga('send', 'event', 'test-result', message.success ? 'passed' : 'failed');

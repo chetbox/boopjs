@@ -25,21 +25,17 @@ function run_script(server, device_id, statements, callbacks) {
   ws.onmessage = function(event) {
     var message = JSON.parse(event.data);
     if ('error' in message) {
-      if ('line' in message) {
-        callback('onResult', message);
-      } else {
-        callback('onError', message);
+      callback('onError', message);
+      if (!('line' in message)) {
+        // Uncaught error
         callback('onFinish');
         ws.close();
       }
-      return;
-    }
-
-    if ('result' in message) {
+    } else if ('result' in message) {
       callback('onResult', message);
-    }
-
-    if ('success' in message) {
+    } else if ('log' in message) {
+      callback('onLogMessage', message);
+    } else if ('success' in message) {
       callback('onSuccess', message);
       callback('onFinish');
       ws.close();
