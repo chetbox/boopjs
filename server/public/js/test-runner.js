@@ -20,6 +20,7 @@ function resultHTML(response, result_key) {
   var result = response[result_key];
   if (response.type === 'NULL') {
     // don't show anything
+    return null;
   } else if (response.type === 'BITMAP') {
     el.append(
       $('<a>')
@@ -59,6 +60,10 @@ function run_test(editor, server, device_id) {
     };
   });
 
+  function result_container(message) {
+    return message.line ? testReportEl.find('.line-' + message.line + ' > ol') : testReportEl;
+  }
+
   run_script(server, device_id, statements, {
     beforeStart: function(statements) {
       testReportEl.empty();
@@ -85,20 +90,20 @@ function run_test(editor, server, device_id) {
     onResult: function(message) {
       ga('send', 'event', 'test-step', 'result', message.error ? 'error' : 'success');
 
-      testReportEl.find('.line-' + message.line)
-        .addClass(message.error ? 'error' : 'success')
-        .find('ol')
+      result_container(message)
         .append(message.error
           ? errorHTML(message)
           : resultHTML(message, 'result')
-        );
+        )
+        .parent()
+          .addClass(message.error ? 'error' : 'success');
 
       // TODO: scroll new output into view
     },
     onLogMessage: function(message) {
       ga('send', 'event', 'log-message', message.level);
 
-      testReportEl.append( resultHTML(message, 'log') );
+      result_container(message).append( resultHTML(message, 'log') );
     },
     onSuccess: function(message) {
       ga('send', 'event', 'test-result', message.success ? 'passed' : 'failed');
@@ -113,7 +118,10 @@ function run_test(editor, server, device_id) {
     onError: function(message) {
       ga('send', 'event', 'test-result', 'error', message.type);
 
-      testReportEl.append(errorHTML(message));
+      result_container(message)
+        .append(errorHTML(message))
+        .parents('.line')
+          .addClass('error');
     }
   });
 }

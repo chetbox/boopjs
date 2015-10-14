@@ -170,15 +170,15 @@
 
     #test-report li.line {
       margin: 0;
-      margin-bottom: 1em;
+      margin-bottom: 0.5em;
     }
 
     #test-report li.line > ol {
+      margin-left: 2em;
       color: rgba(0,0,0,0.87);
     }
 
     #test-report li.result, #test-report li.log {
-      margin-left: 2em;
       margin-right: 1em;
     }
 
@@ -214,6 +214,9 @@
     #test-report .line.success::before {
       content: '\2713'
     }
+    #test-report .line.error::before {
+      content: '\2717'
+    }
 
     #test-report > ol > li.error {
       color: #D32F2F;
@@ -221,9 +224,9 @@
 
     #test-report li.log { color: #777; }
     #test-report li.log.debug { color: #999; }
-    #test-report li.log.info  { color: #555; }
+    #test-report li.log.info  { color: #777; }
     #test-report li.log.warn  { color: #c90; }
-    #test-report li.log.error { color: #900; }
+    #test-report li.log.error { color: #D32F2F; }
 
     #test-report li.log::before { margin-right: 1em; }
     #test-report li.log.debug::before { content: 'D'; }
@@ -233,6 +236,10 @@
 
     #test-report .uncaught.error::before {
       content: 'Uncaught error: ';
+    }
+
+    #test-report pre {
+      font-family: inherit;
     }
 
     #editor-container.editing #test-report {
