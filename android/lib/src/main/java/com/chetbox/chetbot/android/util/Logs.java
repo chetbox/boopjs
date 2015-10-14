@@ -10,6 +10,7 @@ import org.mozilla.javascript.Callable;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.Undefined;
+import org.mozilla.javascript.Wrapper;
 
 import javax.inject.Provider;
 
@@ -50,6 +51,9 @@ public class Logs {
         public Object call(Context context, Scriptable scope, Scriptable thisObj, Object[] args) {
             Log.println(androidLogLevel(mLogLevel), Chetbot.TAG, Joiner.on(", ").join(args));
             for (Object arg : args) {
+                if (arg instanceof Wrapper) {
+                    arg = ((Wrapper) arg).unwrap();
+                }
                 LogMessageHandler logHandler = mLogMessageHandler.get();
                 if (logHandler != null) {
                     logHandler.onLogMessage(mLogLevel, arg);
