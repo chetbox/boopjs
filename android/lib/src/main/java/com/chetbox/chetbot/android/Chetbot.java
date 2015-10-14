@@ -103,27 +103,24 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler, Provider<
         mJsScope.put("content_view", mJsScope, new Callable() {
             @Override
             public Object call(Context context, Scriptable scope, Scriptable thisObj, Object[] args) {
-                return mJsContext.toObject(
-                        RootViews.getTopmostContentView(Activities.getActivity(mPackageName)),
-                        scope
-                );
+                Object contentView = RootViews.getTopmostContentView(Activities.getActivity(mPackageName));
+                return Rhino.wrapJavaObject(contentView, mJsContext, scope);
             }
         });
         mJsScope.put("activity", mJsScope, new Callable() {
             @Override
             public Object call(Context context, Scriptable scope, Scriptable thisObj, Object[] args) {
-                return mJsContext.toObject(
-                        Activities.getActivity(mPackageName),
-                        scope
-                );
+                return Rhino.wrapJavaObject(Activities.getActivity(mPackageName), mJsContext, scope);
             }
         });
-        Scriptable console = mJsContext.newObject(mJsScope);
-        console.put("log",   console, new Logs.LogCallable(this, Logs.Level.DEBUG));
-        console.put("info",  console, new Logs.LogCallable(this, Logs.Level.INFO));
-        console.put("warn",  console, new Logs.LogCallable(this, Logs.Level.WARN));
-        console.put("error", console, new Logs.LogCallable(this, Logs.Level.ERROR));
-        mJsScope.put("console", mJsScope, console);
+        {
+            Scriptable console = mJsContext.newObject(mJsScope);
+            console.put("log", console, new Logs.LogCallable(this, Logs.Level.DEBUG));
+            console.put("info", console, new Logs.LogCallable(this, Logs.Level.INFO));
+            console.put("warn", console, new Logs.LogCallable(this, Logs.Level.WARN));
+            console.put("error", console, new Logs.LogCallable(this, Logs.Level.ERROR));
+            mJsScope.put("console", mJsScope, console);
+        }
 
         mJsScope = sealJsScope(mJsContext, mJsScope);
 
