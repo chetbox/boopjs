@@ -1,221 +1,282 @@
 package com.chetbox.chetbot;
 
 import android.graphics.Bitmap;
-import android.widget.Button;
-import android.widget.TextView;
+import android.view.View;
 
+import com.chetbox.chetbot.android.util.Activities;
 import com.chetbox.chetbot.base.screens.StopwatchTest;
-import com.chetbox.chetbot.test.MainActivity;
-import com.google.common.collect.ImmutableList;
 
 import org.junit.Test;
+import org.mozilla.javascript.Undefined;
+
+import java.util.Collection;
+import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.anyOf;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.equalToIgnoringCase;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.isA;
-import static org.hamcrest.Matchers.lessThan;
-import static org.hamcrest.Matchers.sameInstance;
+
+import static com.chetbox.chetbot.util.GenericMatchers.*;
+import static com.chetbox.chetbot.util.Lists.*;
 
 public class SelectorTests extends StopwatchTest {
 
+    @Test public void  multipleViews() {
+        assertThat(exec("views({type: 'AppCompatButton'})"),
+                contains(startStopButton, resetButton));
+    }
+
+    @Test public void  multipleViewInstances() {
+        assertThat(exec("views([_startStopButton_, _resetButton_])"),
+                contains(startStopButton, resetButton));
+    }
+
     @Test public void viewReturnsInstance() {
-        assertThat((Button) exec("view(_startStopButton_)"),
+        assertThat(exec("view(_startStopButton_)"),
                 sameInstance(startStopButton));
     }
 
     @Test public void viewReturnsFirstInstance() {
-        assertThat((Button) exec("view(_resetButton_, _startStopButton_)"),
+        assertThat(exec("view(_resetButton_, _startStopButton_)"),
                 sameInstance(resetButton));
     }
 
+    @Test public void ignoreInvisibleViews() {
+        assertThat(exec("visible({id: 'progress'})"),
+                is(false));
+
+        exec("tap('start')");
+
+        assertThat(exec("visible({id: 'progress'})"),
+                is(true));
+    }
+
+    @Test public void ignoreInvisibleSubViews() {
+        assertThat(exec("visible({id: 'reset'})"),
+                is(true));
+
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                buttonsContainer.setVisibility(View.INVISIBLE);
+            }
+        });
+        exec("wait(0.1)");
+
+        assertThat(exec("visible({id: 'reset'})"),
+                is(false));
+    }
+
     @Test public void findViewByTextIsDefault() {
-        assertThat((Button) exec("view('start')"),
+        assertThat(exec("view('start')"),
                 sameInstance(startStopButton));
     }
 
     @Test public void findViewByText() {
-        assertThat((Button) exec("view({text: 'start'})"),
+        assertThat(exec("view({text: 'start'})"),
                 sameInstance(startStopButton));
     }
 
     @Test public void findViewByText_notFound() {
-        exception.expect(IndexOutOfBoundsException.class);
-        exec("text({text: 'nonsense'})");
+        assertThat(exec("text({text: 'nonsense'})"),
+                is(false));
     }
 
     @Test public void findViewByShortId() {
-        assertThat((Button) exec("view({id: 'start_stop'})"),
+        assertThat(exec("view({id: 'start_stop'})"),
                 sameInstance(startStopButton));
     }
 
     @Test public void findViewByShortId_notFound() {
-        exception.expect(IndexOutOfBoundsException.class);
-        exec("view({id: 'i_do_not_exist'})");
+        assertThat(exec("view({id: 'i_do_not_exist'})"),
+                is(Undefined.instance));
     }
 
     @Test public void findViewByLongId() {
-        assertThat((Button) exec("view({id: 'com.chetbox.chetbot.test:id/reset'})"),
+        assertThat(exec("view({id: 'com.chetbox.chetbot.test:id/reset'})"),
                 sameInstance(resetButton));
     }
 
     @Test public void findViewByLongId_notFound() {
-        exception.expect(IndexOutOfBoundsException.class);
-        exec("view({id: 'com.chetbox.chetbot.test:id/i_do_not_exist'})");
+        assertThat(exec("view({id: 'com.chetbox.chetbot.test:id/i_do_not_exist'})"),
+                is(Undefined.instance));
     }
 
     @Test public void findViewsByClassName() {
-        assertThat((Button) exec("view({type: 'android.support.v7.widget.AppCompatButton', text: 'start'})"),
+        assertThat(exec("view({type: 'android.support.v7.widget.AppCompatButton', text: 'start'})"),
                 sameInstance(startStopButton));
 
-        assertThat((Button) exec("view({type: 'android.support.v7.widget.AppCompatButton', text: 'reset'})"),
+        assertThat(exec("view({type: 'android.support.v7.widget.AppCompatButton', text: 'reset'})"),
                 sameInstance(resetButton));
     }
 
     @Test public void findViewsByClassSimpleName() {
-        assertThat((Button) exec("view({type: 'AppCompatButton', text: 'start'})"),
+        assertThat(exec("view({type: 'AppCompatButton', text: 'start'})"),
                 sameInstance(startStopButton));
 
-        assertThat((Button) exec("view({type: 'AppCompatButton', text: 'reset'})"),
+        assertThat(exec("view({type: 'AppCompatButton', text: 'reset'})"),
                 sameInstance(resetButton));
     }
 
-    @Test public void textViewExists() {
-        assertThat((Boolean) exec("exists('reset')"),
+    @Test public void textViewVisible() {
+        assertThat(exec("visible('reset')"),
                 equalTo(Boolean.TRUE));
     }
 
     @Test public void textViewDoesNotExist() {
-        assertThat((Boolean) exec("exists('i do not exist')"),
+        assertThat(exec("visible('i do not exist')"),
                 equalTo(Boolean.FALSE));
     }
 
     @Test public void viewType() {
-        assertThat((String) exec("class_of(_resetButton_)"),
-                equalTo("AppCompatButton"));
+        assertThat(exec("type(_resetButton_)"),
+                equalTo("android.support.v7.widget.AppCompatButton"));
+    }
+
+    @Test public void viewId() {
+        assertThat(exec("id(_resetButton_)"),
+                equalTo("com.chetbox.chetbot.test:id/reset"));
     }
 
     @Test public void viewText() {
-        assertThat((String) exec("text(_startStopButton_)"),
+        assertThat(exec("text(_startStopButton_)"),
                 equalToIgnoringCase("start"));
     }
 
     @Test public void viewText_notTextView() {
-        exception.expect(ClassCastException.class);
-        exec("text({type: 'RelativeLayout'})");
+        assertThat(exec("text({type: 'RelativeLayout'})"),
+                is(false));
     }
 
-    @Test public void countInstances() {
-        assertThat((Integer) exec("count(_startStopButton_, _resetButton_)"),
-                equalTo(2));
+    @Test public void countViewsWithClassName() {
+        assertThat(exec("count({type: 'android.support.v7.widget.AppCompatButton'})"),
+                equalTo(2.0));
     }
 
     @Test public void countViewsWithClassSimpleName() {
-        assertThat((Integer) exec("count({type: 'AppCompatButton'})"),
-                equalTo(2));
+        assertThat(exec("count({type: 'AppCompatButton'})"),
+                equalTo(2.0));
     }
 
     @Test public void countViewsWithText() {
-        assertThat((Integer) exec("count('00')"),
-                equalTo(2));
+        assertThat(exec("count('00')"),
+                equalTo(2.0));
+    }
+
+    @Test public void countInstances() {
+        assertThat(exec("count([_startStopButton_, _resetButton_])"),
+                equalTo(2.0));
     }
 
     @Test public void locationOfHorizontalButtons() {
-        int[] startStopLocation = (int[]) exec("location(_startStopButton_)");
-        int[] resetLocation = (int[]) exec("location(_resetButton_)");
+        List<Integer> startStopLocation = exec("location(_startStopButton_)");
+        List<Integer> resetLocation = exec("location(_resetButton_)");
 
         assertThat("[start] left of [reset]",
-                startStopLocation[0], lessThan(resetLocation[0]));
+                startStopLocation.get(0), lessThan(resetLocation.get(0)));
 
         assertThat("Same vertical alignment",
-                startStopLocation[1], equalTo(resetLocation[1]));
+                startStopLocation.get(1), equalTo(resetLocation.get(1)));
     }
 
     @Test public void centerOfHorizontalButtons() {
-        int[] startStopCenter = (int[]) exec("center(_startStopButton_)");
-        int[] resetCenter = (int[]) exec("center(_resetButton_)");
+        List<Double> startStopCenter = exec("center(_startStopButton_)");
+        List<Double> resetCenter = exec("center(_resetButton_)");
 
         assertThat("[start] left of [reset]",
-                startStopCenter[0], lessThan(resetCenter[0]));
+                startStopCenter.get(0), lessThan(resetCenter.get(0)));
 
         assertThat("Same vertical alignment",
-                startStopCenter[1], equalTo(resetCenter[1]));
+                startStopCenter.get(1), equalTo(resetCenter.get(1)));
     }
 
     @Test public void sizeOfButton() {
-        int[] resetSize = (int[]) exec("size(_resetButton_)");
+        List<?> resetSize = exec("size(_resetButton_)");
 
-        assertThat(resetSize[0], greaterThan(1));
-        assertThat(resetSize[1], greaterThan(1));
+        assertThat(resetSize.get(0), greaterThan(1));
+        assertThat(resetSize.get(1), greaterThan(1));
     }
 
     @Test public void location_center_size() {
-        int[] resetSize = (int[]) exec("size(_resetButton_)");
-        int[] resetCenter = (int[]) exec("center(_resetButton_)");
-        int[] resetLocation = (int[]) exec("location(_resetButton_)");
+        List<Number> resetCenter = exec("center(_resetButton_)");
+        List<Number> resetLocation = exec("location(_resetButton_)");
+        List<Number> resetSize = exec("size(_resetButton_)");
 
-        assertThat(resetCenter[0], equalTo(resetLocation[0] + resetSize[0] / 2));
-        assertThat(resetCenter[1], equalTo(resetLocation[1] + resetSize[1] / 2));
+        assertThat(resetCenter.get(0).intValue(), equalTo(resetLocation.get(0).intValue() + resetSize.get(0).intValue() / 2));
+        assertThat(resetCenter.get(1).intValue(), equalTo(resetLocation.get(1).intValue() + resetSize.get(1).intValue() / 2));
     }
 
     @Test public void screenshotPngDataUrl() {
-        assertThat((Bitmap) exec("screenshot()"), isA(Bitmap.class));
+        assertThat(exec("screenshot()"), isA(Bitmap.class));
     }
 
     @Test public void leftmostView() {
-        assertThat((Button) exec("leftmost(_startStopButton_, _resetButton_)"),
+        assertThat(exec("leftmost([_startStopButton_, _resetButton_])"),
                 sameInstance(startStopButton));
     }
 
     @Test public void rightmostView() {
-        assertThat((Button) exec("rightmost(_startStopButton_, _resetButton_)"),
+        assertThat(exec("rightmost([_startStopButton_, _resetButton_])"),
                 sameInstance(resetButton));
     }
 
     @Test public void topmostView() {
-        assertThat((TextView) exec("topmost(_startStopButton_, _minutesText_)"),
+        assertThat(exec("topmost([_startStopButton_, _minutesText_])"),
                 sameInstance(minutesText));
     }
 
     @Test public void bottommostView() {
-        assertThat((Button) exec("bottommost(_startStopButton_, _minutesText_)"),
+        assertThat(exec("bottommost([_startStopButton_, _minutesText_])"),
                 sameInstance(startStopButton));
     }
 
     @Test public void centermostView() {
-        assertThat((TextView) exec("centermost(_minutesText_, _secondsText_, _millisecondsText_)"),
+        assertThat(exec("centermost([_minutesText_, _secondsText_, _millisecondsText_])"),
                 sameInstance(secondsText));
     }
 
     @Test public void outermostView() {
-        assertThat((TextView) exec("outermost(_minutesText_, _secondsText_, _millisecondsText_)"),
+        assertThat(exec("outermost([_minutesText_, _secondsText_, _millisecondsText_])"),
                 anyOf(sameInstance(minutesText), sameInstance(millisecondsText)));
     }
 
+    @Test public void closestToView() {
+        assertThat(exec("[_minutesText_, _secondsText_].closest_to(_millisecondsText_)"),
+                anyOf(sameInstance(secondsText)));
+    }
+
+    @Test public void closestToViewSelectors() {
+        assertThat(exec("views('00').closest_to('000')"),
+                anyOf(sameInstance(secondsText)));
+    }
+
+    @Test public void furtherFromView() {
+        assertThat(exec("[_minutesText_, _secondsText_].furthest_from(_millisecondsText_)"),
+                anyOf(sameInstance(minutesText)));
+    }
+
+    @Test public void furthestFromViewSelectors() {
+        assertThat(exec("views('00').furthest_from('000')"),
+                anyOf(sameInstance(minutesText)));
+    }
+
     @Test public void allViewIds() {
-        assertThat(ImmutableList.copyOf((String[]) exec("view_ids()")),
-                hasItems("com.chetbox.chetbot.test:id/drawer_layout",
-                        "com.chetbox.chetbot.test:id/content_frame",
-                        "com.chetbox.chetbot.test:id/stopwatch_container",
-                        "com.chetbox.chetbot.test:id/center",
-                        "com.chetbox.chetbot.test:id/minutes",
-                        "com.chetbox.chetbot.test:id/seconds",
-                        "com.chetbox.chetbot.test:id/milliseconds",
-                        "com.chetbox.chetbot.test:id/start_stop",
-                        "com.chetbox.chetbot.test:id/reset"));
+        assertThat(exec("all_ids()"),
+                hasItems(   "com.chetbox.chetbot.test:id/drawer_layout",
+                            "com.chetbox.chetbot.test:id/content_frame",
+                            "com.chetbox.chetbot.test:id/stopwatch_container",
+                            "com.chetbox.chetbot.test:id/center",
+                            "com.chetbox.chetbot.test:id/minutes",
+                            "com.chetbox.chetbot.test:id/seconds",
+                            "com.chetbox.chetbot.test:id/milliseconds",
+                            "com.chetbox.chetbot.test:id/start_stop",
+                            "com.chetbox.chetbot.test:id/reset",
+                            "com.chetbox.chetbot.test:id/buttons",
+                            "com.chetbox.chetbot.test:id/statusBar"));
     }
 
     @Test public void subViewIds() {
-        assertThat(ImmutableList.copyOf((String[]) exec("view_ids({id: 'stopwatch_container'})")),
-                contains("com.chetbox.chetbot.test:id/center",
-                        "com.chetbox.chetbot.test:id/minutes",
-                        "com.chetbox.chetbot.test:id/seconds",
-                        "com.chetbox.chetbot.test:id/milliseconds",
-                        "com.chetbox.chetbot.test:id/start_stop",
-                        "com.chetbox.chetbot.test:id/reset"));
+        assertThat(exec("all_ids({id: 'buttons'})"),
+                containsInAnyOrder( "com.chetbox.chetbot.test:id/buttons",
+                                    "com.chetbox.chetbot.test:id/start_stop",
+                                    "com.chetbox.chetbot.test:id/reset"));
     }
 }

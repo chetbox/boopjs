@@ -14,7 +14,7 @@ public class AssertionTests extends BaseTest {
         exec("assert_true([1,2,3]);");
         exec("assert_true([]);");
 
-        exception.expect(Exception.class);
+        exception.expectMessage("not truthy");
         exec("assert_true(false);");
     }
 
@@ -25,7 +25,7 @@ public class AssertionTests extends BaseTest {
         exec("assert_false(null);");
         exec("assert_false('');");
 
-        exception.expect(Exception.class);
+        exception.expectMessage("not falsey");
         exec("assert_false(true);");
     }
 
@@ -38,17 +38,17 @@ public class AssertionTests extends BaseTest {
         exec("assert_equal('qwertyuiop', 'qwertyuiop');");
         exec("assert_equal('123', 123);");
 
-        exception.expect(Exception.class);
+        exception.expectMessage("is not");
         exec("assert_equal(123, 321);");
     }
 
-    @Test public void assertExists() {
+    @Test public void assertVisible() {
         // No exception
-        exec("assert_exists('reset');");
-        exec("assert_exists({text: 'reset'});");
+        exec("assert_visible('reset');");
+        exec("assert_visible({text: 'reset'});");
 
-        exception.expect(Exception.class);
-        exec("assert_exists('does not exist');");
+        exception.expectMessage("not visible");
+        exec("assert_visible('does not exist');");
     }
 
 }

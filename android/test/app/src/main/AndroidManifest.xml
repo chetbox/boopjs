@@ -9,7 +9,7 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:name="com.chetbox.chetbot.android.ChetbotApplication"
-        android:label="@string/stopwatch"
+        android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
             android:name="com.chetbox.chetbot.test.MainActivity"

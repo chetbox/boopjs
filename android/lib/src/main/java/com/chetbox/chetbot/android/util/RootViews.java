@@ -2,13 +2,14 @@ package com.chetbox.chetbot.android.util;
 
 import android.app.Activity;
 import android.os.Looper;
+import android.support.test.espresso.NoActivityResumedException;
 import android.support.test.espresso.Root;
 import android.support.test.espresso.UiController;
 import android.support.test.espresso.base.ActiveRootLister;
 import android.support.test.espresso.base.RootViewPicker;
 import android.support.test.espresso.base.RootViewPicker_Factory;
+import android.support.test.espresso.core.deps.guava.util.concurrent.Uninterruptibles;
 import android.support.test.espresso.matcher.RootMatchers;
-import android.support.test.internal.runner.lifecycle.ActivityLifecycleMonitorImpl;
 import android.support.test.runner.lifecycle.ActivityLifecycleMonitor;
 import android.support.test.runner.lifecycle.ActivityLifecycleMonitorRegistry;
 import android.util.Log;
@@ -23,6 +24,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.inject.Provider;
@@ -31,6 +33,8 @@ import javax.inject.Provider;
  * Use Espresso to find and access root views
  */
 public class RootViews {
+
+    private static final String TAG = RootViews.class.getSimpleName();
 
     private static final ActiveRootLister sRootsOracle;
     private static final Method sRootsOracle_listActiveRoots;
@@ -79,7 +83,6 @@ public class RootViews {
                 rootView.setContent(reduceRoots(applyDefaultRootMatcher(listActiveRoots())).getDecorView());
             }
         });
-
         return findContentView(rootView.waitForContent());
     }
 
@@ -95,6 +98,22 @@ public class RootViews {
     }
 
     private static List<Root> applyDefaultRootMatcher(List<Root> roots) {
+        final int maxTries = 5;
+        int tryCount = 0;
+        while (true) {
+            try {
+                return _applyDefaultRootMatcher(roots);
+            } catch (NoActivityResumedException e) {
+                if (++tryCount == maxTries) {
+                    throw e;
+                }
+                Log.w(TAG, e.getMessage() + ", retrying...");
+            }
+            Uninterruptibles.sleepUninterruptibly(50, TimeUnit.MILLISECONDS);
+        }
+    }
+
+    private static List<Root> _applyDefaultRootMatcher(List<Root> roots) throws NoActivityResumedException {
         ImmutableList.Builder<Root> selectedRoots = new ImmutableList.Builder<>();
         for (Root root : roots) {
             if (RootMatchers.DEFAULT.matches(root)) {
@@ -115,7 +134,10 @@ public class RootViews {
     }
 
     private static View findContentView(View rootView) {
-        return rootView.findViewById(android.R.id.content);
+        View contentView = rootView.findViewById(android.R.id.content);
+        return (contentView != null)
+                ? contentView
+                : rootView; // Probably some kind of popup (e.g. dropdown menu)
     }
 
 }

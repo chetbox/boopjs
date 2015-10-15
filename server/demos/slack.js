@@ -34,6 +34,7 @@ function send_message(message) {
 
     type_text(message);
     tap({id: 'message_send_btn'});
+    hide_keyboard();
     wait(1);
 }
 
@@ -45,4 +46,4 @@ screenshot();
 
 send_message('Hey! I\'m sending this from the Slack Android app using Chetbot');
 
-assert_true(exists('Hey! I\'m sending this from the Slack Android app using Chetbot'));
+assert_visible('Hey! I\'m sending this from the Slack Android app using Chetbot');

@@ -8,7 +8,10 @@ RegExp.quote = function(str) {
 
 exports.set_smali_application_class = function(src, java_class) {
   // TODO: pass parameter to choose which of Application or MultiDexApplication to replace
-  return src.replace(/\bL(android\/app\/Application|android\/support\/multidex\/MultiDexApplication);/g, exports.smali_class(java_class));
+  var smali_class = exports.smali_class(java_class);
+  src = src.replace(/^\.super +L(android\/app\/Application|android\/support\/multidex\/MultiDexApplication);/gm, '.super ' + smali_class);
+  src = src.replace(/\bL(android\/app\/Application|android\/support\/multidex\/MultiDexApplication);->/g, smali_class + '->');
+  return src;
 }
 
 exports.smali_class = function(java_class) {

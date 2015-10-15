@@ -58,6 +58,10 @@
       width: 320px;
     }
 
+    #device-controls > * {
+      display: inline-block;
+    }
+
     #controls {
       padding: 0 12px;
       height: 64px;
@@ -95,41 +99,6 @@
     #editor-container.editing:not(.running) #controls a.run,
     #editor-container.running #controls a.stop {
       display: inline-block;
-    }
-
-    #repl {
-      position: absolute;
-      left: 0;
-      right: 0;
-      height: 150px;
-      bottom: -150px;
-      transition: bottom .2s ease-out;
-    }
-
-    .show-repl #repl {
-      bottom: 0;
-    }
-
-    #repl .ace_gutter .ace_gutter-cell {
-      color: transparent;
-    }
-
-    #repl .ace_gutter .ace_gutter-cell::before {
-      content: '>>';
-      color: #ccc;
-    }
-
-    #repl .ace_gutter .ace_gutter-cell.result::before {
-      content: none;
-    }
-
-    #repl.running .ace_gutter .ace_gutter-cell:last-child::before {
-      content: '--';
-    }
-
-    #repl .ace_gutter .ace_gutter-cell.error::before {
-      content: '!!';
-      color: red;
     }
 
     #statusbar {
@@ -201,34 +170,34 @@
 
     #test-report li.line {
       margin: 0;
-      margin-bottom: 1em;
+      margin-bottom: 0.5em;
     }
 
     #test-report li.line > ol {
+      margin-left: 2em;
       color: rgba(0,0,0,0.87);
     }
 
-    #test-report li.line > ol > li {
-      display: inline;
+    #test-report li.result, #test-report li.log {
+      margin-right: 1em;
     }
 
-    #test-report li.line > ol::before {
+    #test-report li.result::before {
       content: '\21AA';
-      margin-left: 2em;
-      margin-right: 1em;
       opacity: 0.25;
+      margin-right: 0.5em;
+    }
+
+    #test-report .bitmap img {
+      max-height: 300px;
+      margin-top: 0.5em;
+      border: none;
     }
 
     #test-report li.final-result {
       font-weight: bold;
       margin-top: 1em;
       margin-bottom: 1em;
-    }
-
-    #test-report li.result.bitmap img {
-      height: 300px;
-      margin-top: 0.5em;
-      border: none;
     }
 
     #test-report .success {
@@ -245,13 +214,32 @@
     #test-report .line.success::before {
       content: '\2713'
     }
+    #test-report .line.error::before {
+      content: '\2717'
+    }
 
     #test-report > ol > li.error {
       color: #D32F2F;
     }
 
+    #test-report li.log { color: #777; }
+    #test-report li.log.debug { color: #999; }
+    #test-report li.log.info  { color: #777; }
+    #test-report li.log.warn  { color: #c90; }
+    #test-report li.log.error { color: #D32F2F; }
+
+    #test-report li.log::before { margin-right: 1em; }
+    #test-report li.log.debug::before { content: 'D'; }
+    #test-report li.log.info::before  { content: 'I'; }
+    #test-report li.log.warn::before  { content: 'W'; }
+    #test-report li.log.error::before { content: 'E'; }
+
     #test-report .uncaught.error::before {
       content: 'Uncaught error: ';
+    }
+
+    #test-report pre {
+      font-family: inherit;
     }
 
     #editor-container.editing #test-report {
@@ -262,6 +250,7 @@
       display: none;
     }
     </style>
+    <link rel="stylesheet" href="/css/repl.css"/>
     <style type="text/css" media="print">
       paper-toolbar {
         visibility: hidden;
@@ -385,11 +374,13 @@
   <script type="text/javascript">
     // TODO: fetch bultin functions from server
     var builtin_fns = [
-      'function', 'for', 'var', // JS
-      'tap', 'press', 'type_text', 'hide_keyboard', 'wait', 'screenshot', // interaction
-      'view', 'bottommost', 'topmost', 'leftmost', 'rightmost', 'centermost', 'outermost', // selectors
-       'location', 'size', 'text', 'id', 'class_of', 'exists', 'count', // inspection
-       'assert_true', 'assert_false', 'assert_equal', 'assert_exists' // assertions
+      'function', 'for', 'var', 'while', 'do', // JS
+      'activity', 'content_view', 'run_on_ui_thread', // Activity
+      'tap', 'press', 'type_text', 'hide_keyboard', 'wait', 'screenshot', 'open_drawer', 'close_drawer', // interaction
+      'view', 'views', 'bottommost', 'topmost', 'leftmost', 'rightmost', 'centermost', 'outermost', 'closest_to', 'furthest_from',  // selectors
+      'location', 'size', 'text', 'id', 'class_of', 'visible', 'count', 'all_ids', // inspection
+      'assert_true', 'assert_false', 'assert_equal', 'assert_visible', // assertions
+      'wait', 'wait_until_idle', 'wait_for' // wait
     ];
     var my_completer = {
       getCompletions: function(editor, session, pos, prefix, callback) {

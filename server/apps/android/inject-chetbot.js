@@ -116,6 +116,14 @@ exports.add_chetbot_to_apk = function(input_apk, output_apk) {
   });
   fs.writeFileSync(tmp('app/apktool.yml'), yaml.safeDump(apktool_yaml));
 
+  var styles_v23_file = tmp('app/res/values-v23/styles.xml');
+  if (fs.existsSync(styles_v23_file)) {
+    console.log('Applying SDK 23 styles workaround');
+    var styles_v23 = xml_utils.parseXML(fs.readFileSync(styles_v23_file));
+    xml_utils.remove_unsupported_styles(styles_v23);
+    fs.writeFileSync(styles_v23_file, xml_utils.stringifyXML(styles_v23));
+  }
+
   console.log('Re-packaging APK');
   java('-Xmx1024m', '-jar', apktool, '-o', tmp('app.chetbot.apk'), 'build', tmp('app'));
 

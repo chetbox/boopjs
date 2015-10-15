@@ -29,8 +29,7 @@ exports.add_routes = function(app) {
             return;
           }
 
-          // TODO: fix client authentication
-          // devices.check_device_access(message.device, req.user).then(function() {
+          devices.check_device_access(message.device, req.user).then(function() {
             clients_connected[message.device] = ws;
             var device_socket = devices_connected[message.device];
             if (device_socket) {
@@ -41,8 +40,8 @@ exports.add_routes = function(app) {
                 error: 'Device not in use: ' + message.device
               }));
             }
-          // })
-          // .catch(fail_on_error(ws));
+          })
+          .catch(fail_on_error(ws));
         }
       );
       ws.on('close', function() {
@@ -69,9 +68,14 @@ exports.add_routes = function(app) {
         })
         .catch(fail_on_error(ws));
 
-      } else if (message.device && ('result' in message || 'error' in message || 'success' in message)) {
+      } else if (message.device) {
         console.log('response:', messageStr.substring(0, 200));
-        clients_connected[message.device].send(messageStr);
+        var client = clients_connected[message.device];
+        if (client) {
+          client.send(messageStr);
+        } else {
+          console.warn('No client connected for device "' + message.device + '". Ignoring.');
+        }
 
       } else {
         console.error('dunno what to do with: ' + messageStr);
