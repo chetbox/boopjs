@@ -156,7 +156,7 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
     public void close() {
         mServerConnection.close();
     }
-    
+
     private class ServerConnectionImpl extends WebSocketClient {
 
         public ServerConnectionImpl() {
@@ -175,7 +175,6 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
 
         @Override
         public void onMessage(String messageStr) {
-            Log.v(TAG, Thread.currentThread().hashCode() + " // Message received: " + messageStr);
             Script script = Rhino.GSON.fromJson(messageStr, Script.class);
             mCurrentLine = 0;
             mCurrentScriptSuccess = true;
