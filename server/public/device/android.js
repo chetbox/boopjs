@@ -509,17 +509,17 @@ function crash() {
 
 // Screenshots
 
-function screenshot() {
+function screenshot(selector) {
   var screenshot_container = __container();
   run_on_ui_thread(function(activity) {
-    var decor_view = activity.getWindow().getDecorView();
-    decor_view.destroyDrawingCache();
-    decor_view.setDrawingCacheEnabled(true);
+    var v = selector ? view(selector) : activity.getWindow().getDecorView();
+    v.destroyDrawingCache();
+    v.setDrawingCacheEnabled(true);
     try {
-      var screenshot = decor_view.getDrawingCache();
+      var screenshot = v.getDrawingCache();
       screenshot_container.set_content(screenshot.copy(screenshot.getConfig(), false));
     } finally {
-      decor_view.setDrawingCacheEnabled(false);
+      v.setDrawingCacheEnabled(false);
     }
   });
   return screenshot_container.wait_for_content();
