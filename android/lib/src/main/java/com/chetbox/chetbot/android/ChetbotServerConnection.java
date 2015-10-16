@@ -5,12 +5,12 @@ import android.util.Log;
 
 import com.chetbox.chetbot.android.util.Images;
 import com.chetbox.chetbot.android.util.Logs;
+import com.chetbox.chetbot.android.util.Rhino;
 import com.google.common.base.Throwables;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
+import org.mozilla.javascript.Scriptable;
 
 import java.net.URI;
 
@@ -53,13 +53,11 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
     private static class Result {
         private String device;
         private int line;
-        private String type;
         private Object result;
 
-        public Result(String device, int line, String type, Object result) {
+        public Result(String device, int line, Object result) {
             this.device = device;
             this.line = line;
-            this.type = type;
             this.result = result;
         }
     }
@@ -68,15 +66,13 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
 
         private String device;
         private int line;
-        private String type;
         private Object log;
         private Logs.Level level;
 
-        public LogMessage(String device, int lineNo, Logs.Level level, String type, Object logMessage) {
+        public LogMessage(String device, int lineNo, Logs.Level level, Object logObject) {
             this.device = device;
             this.line = lineNo;
-            this.type = type;
-            this.log = logMessage;
+            this.log = logObject;
             this.level = level;
         }
     }
@@ -139,8 +135,6 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
     };
     private Thread mReconnectThread = null;
 
-    private static Gson sGson = new GsonBuilder().serializeNulls().create();
-
     private final URI mHost;
     private final String mDeviceId;
     private final ScriptHandler mScriptHandler;
@@ -162,43 +156,7 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
     public void close() {
         mServerConnection.close();
     }
-
-    public static boolean isSupportedResultType(Object o) {
-        return o == null
-                || o instanceof String
-                || o instanceof Integer
-                || o instanceof Long
-                || o instanceof Float
-                || o instanceof Double
-                || o instanceof Boolean
-                || o instanceof String[]
-                || o instanceof int[]
-                || o instanceof long[]
-                || o instanceof float[]
-                || o instanceof double[]
-                || o instanceof boolean[]
-                || o instanceof Bitmap;
-    }
-
-    private static Result makeResult(String device, int lineNo, Object data) {
-        if (!isSupportedResultType(data)) {
-            data = null;
-        }
-        String type = (data != null)
-            ? data.getClass().getSimpleName().toUpperCase()
-            : "NULL";
-        if (data instanceof Bitmap) {
-            // Convert to base64 representation for browser rendering
-            data = "data:image/png;base64," + Images.base64Encode(Images.toPNG((Bitmap) data));
-        }
-        return new Result(device, lineNo, type, data);
-    }
-
-    private static LogMessage makeLogMessage(String device, int lineNo, Object data, Logs.Level level) {
-        Result result = makeResult(device, 0, data);
-        return new LogMessage(device, lineNo, level, result.type, result.result);
-    }
-
+    
     private class ServerConnectionImpl extends WebSocketClient {
 
         public ServerConnectionImpl() {
@@ -218,7 +176,7 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
         @Override
         public void onMessage(String messageStr) {
             Log.v(TAG, Thread.currentThread().hashCode() + " // Message received: " + messageStr);
-            Script script = sGson.fromJson(messageStr, Script.class);
+            Script script = Rhino.GSON.fromJson(messageStr, Script.class);
             mCurrentLine = 0;
             mCurrentScriptSuccess = true;
             try {
@@ -230,12 +188,12 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
                     }
                     mCurrentLine = stmt.line;
                     Object result = mScriptHandler.onStatement(stmt, script.name);
-                    sendAsJson(makeResult(script.device, stmt.line, result));
+                    sendAsJson(new Result(script.device, stmt.line, result));
                 }
             } catch (Throwable e) {
                 mCurrentScriptSuccess = false;
                 Error error = new Error(script.device, mCurrentLine, e);
-                Log.e(TAG, "error: " + sGson.toJson(error));
+                Log.e(TAG, "error: " + Rhino.GSON.toJson(error));
                 e.printStackTrace();
                 sendAsJson(error);
             } finally {
@@ -250,7 +208,7 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
             mCurrentScriptSuccess = false;
             if (mDeviceId != null) {
                 UncaughtError error = new UncaughtError(mDeviceId, e);
-                Log.e(TAG, "uncaught error: " + sGson.toJson(error));
+                Log.e(TAG, "uncaught error: " + Rhino.GSON.toJson(error));
                 sendAsJson(error);
             } else {
                 Log.w(TAG, "Not connected. Unable to send to device.");
@@ -259,7 +217,7 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
 
         private void onLogMessage(Logs.Level level, Object data) {
             if (mDeviceId != null) {
-                sendAsJson(makeLogMessage(mDeviceId, mCurrentLine, data, level));
+                sendAsJson(new LogMessage(mDeviceId, mCurrentLine, level, data));
             } else {
                 Log.w(TAG, "Not connected. Unable to send log message to device.");
             }
@@ -278,7 +236,7 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
         }
 
         private void sendAsJson(Object data) {
-            send(sGson.toJson(data));
+            send(Rhino.GSON.toJson(data));
         }
 
         private void reconnectLater() {

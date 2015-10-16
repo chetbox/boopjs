@@ -56,7 +56,6 @@ function setup_repl(server, device_id, id, callbacks) {
       if (!prefix) prefix = '';
       return function(r) {
         var result = r[result_key];
-        console.log(result, result_key, r);
         if (!r.error && (result === undefined || result === null)) {
           return;
         }

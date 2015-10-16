@@ -8,21 +8,19 @@ function scrolltestReportToBottom() {
 }
 
 function resultHTML(response, result_key) {
-  if (!response) {
-    return $('<li>')
-      .addClass('result')
-      .addClass('none');
-  }
+  console.log(response)
   var el = $('<li>')
     .addClass(result_key)
     .addClass(response.level) // for log messages
-    .addClass(response.type.toLowerCase());
+
   var result = response[result_key];
-  if (response.type === 'NULL') {
-    // don't show anything
-    return null;
-  } else if (response.type === 'BITMAP') {
-    el.append(
+  if (response.type === 'NULL' || !response[result_key]) {
+    // (response.type === 'NULL') is an old-style response
+    return el.addClass('none');
+  }
+  if (response.type === 'BITMAP') {
+    // Old style responses {"type": "BITMAP", result_key: "data:..."}
+    return el.addClass('bitmap').append(
       $('<a>')
         .attr({
           target: '_blank',
@@ -33,10 +31,22 @@ function resultHTML(response, result_key) {
             .attr('src', result)
         )
     );
-  } else {
-    el.text(JSON.stringify(result, null, 2));
   }
-  return el;
+  if (result.type === 'BITMAP') {
+    // New style responses {result_key: {"type": "BITMAP", "uri": "data:..."}}
+    return el.addClass('bitmap').append(
+      $('<a>')
+        .attr({
+          target: '_blank',
+          href: result.uri
+        })
+        .append(
+          $('<img>')
+            .attr('src', result.uri)
+        )
+    );
+  }
+  return el.text(JSON.stringify(result, null, 2));
 }
 
 function errorHTML(message) {
