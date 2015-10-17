@@ -66,7 +66,7 @@ exports.add_routes = function(app) {
 
   function check_allowed_code_update(key) {
     return function(req, res, next) {
-      if (_.contains(['name', 'content'], req.params[key])) {
+      if (_.contains(['name', 'content', 'location'], req.params[key])) {
         next();
       } else {
         res.status(400).send('Cannot update code key: ' + req.params[key]);
@@ -324,6 +324,12 @@ exports.add_routes = function(app) {
             id: device_id,
             model: 'nexus5',
             orientation: 'portrait',
+            location: function() {
+              // code.location is JSON parsed below
+              return code.location
+                ? (code.location.lat.toFixed(7) + ',' + code.location.lon.toFixed(7))
+                : null;
+            }
           },
           server: host_address,
           app: {
@@ -332,7 +338,8 @@ exports.add_routes = function(app) {
           },
           autosave: true,
           code: _.extend(code, {
-            name: code.name || code.id
+            name: code.name || code.id,
+            location: code.location && JSON.parse(code.location)
           })
         });
       })
