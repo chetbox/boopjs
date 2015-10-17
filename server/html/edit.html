@@ -323,7 +323,7 @@
             </a>
             <a class="run" href="javascript:run_test(editor, '{{server}}', '{{device.id}}');" title="Run test">
               <paper-icon-button icon="av:play-arrow"></paper-icon-button>
-              <span class="hint">&#8592; Press me</span>
+              {{^user}}<span class="hint">&#8592; Press me</span>{{/user}}
             </a>
             <!-- TODO: implement stop()
             <a class="stop" href="javascript:stop();" title="Stop test">
