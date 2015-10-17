@@ -1,0 +1,11 @@
+<paper-dialog class="location"
+    entry-animation="fade-in-animation"
+    exit-animation="fade-out-animation"
+    withBackdrop="true">
+  <paper-input name="lat" label="Latitude" type="number" min="-90" max="90" no-label-float="true" value="{{location.lat}}" autoFocus="true"></paper-input>
+  <paper-input name="lon" label="Longitude" type="number" min="-180" max="180" no-label-float="true" value="{{location.lon}}"></paper-input>
+  <div style="margin-top: 2em; text-align: right;">
+    <paper-button onclick="close_dialog(this);"><iron-icon icon="clear"></iron-icon>Cancel</paper-button>
+    <paper-button onclick="set_location(this); close_dialog(this);" class="primary"><iron-icon icon="communication:location-on"></iron-icon>Save</paper-button>
+  </div>
+</paper-dialog>
