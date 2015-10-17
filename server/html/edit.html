@@ -120,10 +120,10 @@
     }
 
     #statusbar paper-icon-button {
-      padding-top: 0;
-      padding-bottom: 0;
+      padding: 0;
       margin: 0 0.5em;
       color: rgba(255,255,255,0.67);
+      height: 1.5em;
     }
 
     #editor, #test-report {
@@ -296,17 +296,7 @@
       </paper-toolbar>
       {{/user}}
       {{#user}}
-      <paper-dialog class="location"
-          entry-animation="fade-in-animation"
-          exit-animation="fade-out-animation"
-          withBackdrop="true">
-        <paper-input name="lat" label="Latitude" type="number" min="-90" max="90" no-label-float="true"></paper-input>
-        <paper-input name="lon" label="Longitude" type="number" min="-180" max="180" no-label-float="true"></paper-input>
-        <div style="margin-top: 2em; text-align: right;">
-          <paper-button onclick="close_dialog(this);"><iron-icon icon="clear"></iron-icon>Cancel</paper-button>
-          <paper-button onclick="set_location(this); close_dialog(this);" class="primary"><iron-icon icon="communication:location-on"></iron-icon>Set</paper-button>
-        </div>
-      </paper-dialog>
+      {{> set-location-dialog}}
       {{/user}}
       <div class="content">
         <iframe id="device" src="https://appetize.io/embed/{{app.publicKey}}?device={{device.model}}&amp;osVersion=6.0&amp;scale=75&amp;autoplay=true&amp;orientation={{device.orientation}}&amp;deviceColor=black&amp;xdocMsg=true&amp;params=%7b%22chetbot.server%22%3a%22{{server}}%22%2c%22chetbot.device%22%3a%22{{device.id}}%22%7d" frameborder="0" scrolling="no"></iframe>
@@ -454,13 +444,7 @@
   </script>
 
   <script>
-    // Popup dialogs
-    function open_dialog(cls) {
-      $('paper-dialog.' + cls).get(0).open();
-    }
-    function close_dialog(button) {
-      $(button).parents('paper-dialog').get(0).close();
-    }
+    // Required by partial: set-location-dialog
     function set_location(button) {
       // TODO: Send location to server
       var $dialog = $(button).parents('paper-dialog'),

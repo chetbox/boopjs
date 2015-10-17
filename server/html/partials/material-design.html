@@ -87,3 +87,13 @@
     margin-left: 0.3em;
   }
 </style>
+
+<script>
+  // Popup dialogs
+  function open_dialog(clazz) {
+    $('paper-dialog.' + clazz).get(0).open();
+  }
+  function close_dialog(trigger) {
+    $(trigger).closest('paper-dialog').get(0).close();
+  }
+</script>
