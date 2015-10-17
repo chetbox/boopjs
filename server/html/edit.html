@@ -446,7 +446,6 @@
   <script>
     // Required by partial: set-location-dialog
     function set_location(button) {
-      // TODO: Send location to server
       var $dialog = $(button).parents('paper-dialog'),
           lat = parseFloat($dialog.find('paper-input[name=lat]').get(0).value),
           lon = parseFloat($dialog.find('paper-input[name=lon]').get(0).value),
