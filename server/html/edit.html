@@ -295,6 +295,7 @@
         {{> account-button}}
       </paper-toolbar>
       {{/user}}
+      {{#user}}
       <paper-dialog class="location"
           entry-animation="fade-in-animation"
           exit-animation="fade-out-animation"
@@ -306,10 +307,13 @@
           <paper-button onclick="set_location(this); close_dialog(this);" class="primary"><iron-icon icon="communication:location-on"></iron-icon>Set</paper-button>
         </div>
       </paper-dialog>
+      {{/user}}
       <div class="content">
         <iframe id="device" src="https://appetize.io/embed/{{app.publicKey}}?device={{device.model}}&amp;osVersion=6.0&amp;scale=75&amp;autoplay=true&amp;orientation={{device.orientation}}&amp;deviceColor=black&amp;xdocMsg=true&amp;params=%7b%22chetbot.server%22%3a%22{{server}}%22%2c%22chetbot.device%22%3a%22{{device.id}}%22%7d" frameborder="0" scrolling="no"></iframe>
         <div id="device-controls">
+          {{#user}}
           <paper-fab mini title="Set device location" icon="communication:location-on" class="secondary" onclick="open_dialog('location');"></paper-fab>
+          {{/user}}
           <paper-fab mini title="Restart device" icon="refresh" class="secondary" onclick="reset_device();"></paper-fab>
         </div>
         <div id="editor-container" class="editing">
