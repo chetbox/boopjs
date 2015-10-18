@@ -48,7 +48,7 @@ public class Logs {
 
         @Override
         public Object call(Context context, Scriptable scope, Scriptable thisObj, Object[] args) {
-            Log.println(androidLogLevel(mLogLevel), Chetbot.TAG, Joiner.on(", ").join(args));
+            Log.println(androidLogLevel(mLogLevel), Chetbot.TAG, Joiner.on(", ").useForNull("null").join(args));
             LogMessageHandler logHandler = mLogMessageHandler.get();
             if (logHandler != null) {
                 logHandler.onLogMessage(mLogLevel, args);

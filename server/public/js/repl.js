@@ -56,7 +56,8 @@ function setup_repl(server, device_id, id, callbacks) {
       if (!prefix) prefix = '';
       return function(r) {
         var result = r[result_key];
-        if (!r.error && (result === undefined || result === null)) {
+        if (result_key === 'result' && (result === undefined || result === null)) {
+          // Don't show empty results
           return;
         }
 
@@ -78,7 +79,7 @@ function setup_repl(server, device_id, id, callbacks) {
     // execute code
     run_script(server, device_id, [{line: 1, source: src_to_execute}], {
       onResult: show_result('result', 'result'),
-      onError: show_result('error', 'error', '// Uncaught error: '),
+      onError: show_result('error', 'error', '// Error: '),
       onLogMessage: show_result('log', function(msg) { return msg.level; }, '// ')
     });
 
