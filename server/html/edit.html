@@ -377,7 +377,7 @@
     }
 
     {{#user}}
-    repl = setup_repl('{{server}}', '{{device.id}}', 'repl', {
+    repl = setup_repl('{{../server}}', '{{../device.id}}', 'repl', {
       onClose: toggle_repl
     });
     {{/user}}
