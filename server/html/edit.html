@@ -299,7 +299,7 @@
       {{> set-location-dialog ../code}}
       {{/user}}
       <div class="content">
-        <iframe id="device" src="https://appetize.io/embed/{{app.publicKey}}?device={{device.model}}&amp;osVersion=6.0&amp;scale=75&amp;autoplay=true&amp;orientation={{device.orientation}}&amp;deviceColor=black&amp;xdocMsg=true&amp;params=%7b%22chetbot.server%22%3a%22{{server}}%22%2c%22chetbot.device%22%3a%22{{device.id}}%22%7d{{#device.location}}&amp;location={{.}}{{/device.location}}" frameborder="0" scrolling="no"></iframe>
+        <iframe id="device" src="https://appetize.io/embed/{{app.publicKey}}?device={{device.model}}&amp;osVersion=6.0&amp;autoplay=true&amp;orientation={{device.orientation}}&amp;deviceColor=black&amp;xdocMsg=true&amp;params=%7b%22chetbot.server%22%3a%22{{server}}%22%2c%22chetbot.device%22%3a%22{{device.id}}%22%7d{{#device.location}}&amp;location={{.}}{{/device.location}}" frameborder="0" scrolling="no"></iframe>
         <div id="device-controls">
           {{#user}}
           <paper-fab mini title="Set device location" icon="communication:location-on" class="secondary" onclick="open_dialog('location');"></paper-fab>
