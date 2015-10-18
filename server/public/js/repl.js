@@ -55,6 +55,9 @@ function setup_repl(server, device_id, id, callbacks) {
       }
       if (!prefix) prefix = '';
       return function(r) {
+        if ('error' in r) {
+          console.warn(r.error, r.stacktrace);
+        }
         var result = r[result_key];
         if (result_key === 'result' && (result === undefined || result === null)) {
           // Don't show empty results
