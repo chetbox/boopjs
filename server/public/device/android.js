@@ -527,8 +527,8 @@ function screenshot(selector) {
 
 // IPC
 
-function open_url(url) {
-  var i = new android.content.Intent(android.content.Intent.ACTION_VIEW);
-  i.setData(android.net.Uri.parse(url));
-  activity().startActivity(i);
+function open_uri(uri) {
+  var intent = new android.content.Intent(android.content.Intent.ACTION_VIEW);
+  intent.setData(android.net.Uri.parse(uri));
+  activity().startActivity(intent);
 }
