@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.graphics.Bitmap;
 import android.view.View;
 
-import com.google.common.collect.ImmutableList;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -16,15 +15,13 @@ import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
-import org.json.JSONArray;
+import org.mozilla.javascript.BaseFunction;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.Undefined;
 import org.mozilla.javascript.Wrapper;
 
 import java.lang.reflect.Type;
-
-import javax.annotation.concurrent.Immutable;
 
 public class Rhino {
 
@@ -59,6 +56,14 @@ public class Rhino {
                     activity.addProperty("type", Activity.class.getName());
                     activity.addProperty("name", src.getClass().getName());
                     return activity;
+                }
+            })
+            .registerTypeHierarchyAdapter(BaseFunction.class, new JsonSerializer<BaseFunction>() {
+                @Override
+                public JsonElement serialize(BaseFunction src, Type typeOfSrc, JsonSerializationContext context) {
+                    JsonObject fn = new JsonObject();
+                    fn.addProperty("function", src.getFunctionName());
+                    return fn;
                 }
             })
             .registerTypeAdapter(Bitmap.class, new JsonSerializer<Bitmap>() {
