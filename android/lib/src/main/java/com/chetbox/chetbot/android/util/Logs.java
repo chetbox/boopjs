@@ -48,12 +48,10 @@ public class Logs {
 
         @Override
         public Object call(Context context, Scriptable scope, Scriptable thisObj, Object[] args) {
-            Log.println(androidLogLevel(mLogLevel), Chetbot.TAG, Joiner.on(", ").join(args));
-            for (Object arg : args) {
-                LogMessageHandler logHandler = mLogMessageHandler.get();
-                if (logHandler != null) {
-                    logHandler.onLogMessage(mLogLevel, Rhino.unwrapJavaObject(arg));
-                }
+            Log.println(androidLogLevel(mLogLevel), Chetbot.TAG, Joiner.on(", ").useForNull("null").join(args));
+            LogMessageHandler logHandler = mLogMessageHandler.get();
+            if (logHandler != null) {
+                logHandler.onLogMessage(mLogLevel, args);
             }
             return Undefined.instance;
         }

@@ -1,12 +1,19 @@
 <link href="//fonts.googleapis.com/css?family=Roboto:100,300" rel="stylesheet" type="text/css">
 
+<script src="/components/webcomponentsjs/webcomponents-lite.min.js"></script>
 <link href="/components/paper-header-panel/paper-header-panel.html" rel="import">
 <link href="/components/paper-toolbar/paper-toolbar.html" rel="import">
 <link href="/components/paper-fab/paper-fab.html" rel="import">
 <link href="/components/iron-icons/iron-icons.html" rel="import">
 <link href="/components/iron-icons/av-icons.html" rel="import">
 <link href="/components/iron-icons/social-icons.html" rel="import">
+<link href="/components/iron-icons/communication-icons.html" rel="import">
 <link href="/components/paper-icon-button/paper-icon-button.html" rel="import">
+<link href="/components/paper-dialog/paper-dialog.html" rel="import">
+<link href="/components/neon-animation/animations/fade-in-animation.html" rel="import">
+<link href="/components/neon-animation/animations/fade-out-animation.html" rel="import">
+<link href="/components/paper-input/paper-input.html" rel="import">
+<link href="/components/paper-button/paper-button.html" rel="import">
 
 <style is="custom-style">
   paper-toolbar {
@@ -44,6 +51,14 @@
     position: relative;
     top: -0.1em;
   }
+
+  paper-dialog {
+    min-width: 300px;
+  }
+
+  paper-button.primary {
+    color: #4285f4;
+  }
 </style>
 
 <style type="text/css">
@@ -72,3 +87,13 @@
     margin-left: 0.3em;
   }
 </style>
+
+<script>
+  // Popup dialogs
+  function open_dialog(clazz) {
+    $('paper-dialog.' + clazz).get(0).open();
+  }
+  function close_dialog(trigger) {
+    $(trigger).closest('paper-dialog').get(0).close();
+  }
+</script>

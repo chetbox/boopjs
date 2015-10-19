@@ -60,6 +60,7 @@
 
     #device-controls > * {
       display: inline-block;
+      margin-left: 0.5em;
     }
 
     #controls {
@@ -119,10 +120,10 @@
     }
 
     #statusbar paper-icon-button {
-      padding-top: 0;
-      padding-bottom: 0;
+      padding: 0;
       margin: 0 0.5em;
       color: rgba(255,255,255,0.67);
+      height: 1.5em;
     }
 
     #editor, #test-report {
@@ -176,6 +177,10 @@
     #test-report li.line > ol {
       margin-left: 2em;
       color: rgba(0,0,0,0.87);
+    }
+
+    #test-report li.result.none {
+      display: none;
     }
 
     #test-report li.result, #test-report li.log {
@@ -290,10 +295,16 @@
         {{> account-button}}
       </paper-toolbar>
       {{/user}}
+      {{#user}}
+      {{> set-location-dialog ../code}}
+      {{/user}}
       <div class="content">
-        <iframe id="device" src="https://appetize.io/embed/{{app.publicKey}}?device={{device.model}}&amp;osVersion=6.0&amp;scale=75&amp;autoplay=true&amp;orientation={{device.orientation}}&amp;deviceColor=black&amp;xdocMsg=true&amp;params=%7b%22chetbot.server%22%3a%22{{server}}%22%2c%22chetbot.device%22%3a%22{{device.id}}%22%7d" frameborder="0" scrolling="no"></iframe>
+        <iframe id="device" src="https://appetize.io/embed/{{app.publicKey}}?device={{device.model}}&amp;osVersion=6.0&amp;autoplay=true&amp;orientation={{device.orientation}}&amp;deviceColor=black&amp;xdocMsg=true&amp;params=%7b%22chetbot.server%22%3a%22{{server}}%22%2c%22chetbot.device%22%3a%22{{device.id}}%22%7d{{#device.location}}&amp;location={{.}}{{/device.location}}" frameborder="0" scrolling="no"></iframe>
         <div id="device-controls">
-          <paper-fab mini title="Restart app" icon="refresh" class="secondary" onclick="reset_device();"></paper-fab>
+          {{#user}}
+          <paper-fab mini title="Set device location" icon="communication:location-on" class="secondary" onclick="open_dialog('location');"></paper-fab>
+          {{/user}}
+          <paper-fab mini title="Restart device" icon="refresh" class="secondary" onclick="reset_device();"></paper-fab>
         </div>
         <div id="editor-container" class="editing">
           <div id="controls">
@@ -302,7 +313,7 @@
             </a>
             <a class="run" href="javascript:run_test(editor, '{{server}}', '{{device.id}}');" title="Run test">
               <paper-icon-button icon="av:play-arrow"></paper-icon-button>
-              <span class="hint">&#8592; Press me</span>
+              {{^user}}<span class="hint">&#8592; Press me</span>{{/user}}
             </a>
             <!-- TODO: implement stop()
             <a class="stop" href="javascript:stop();" title="Stop test">
@@ -365,9 +376,11 @@
       }
     }
 
-    repl = setup_repl('{{server}}', '{{device.id}}', 'repl', {
+    {{#user}}
+    repl = setup_repl('{{../server}}', '{{../device.id}}', 'repl', {
       onClose: toggle_repl
     });
+    {{/user}}
   </script>
 
   <!-- autocomplete -->
@@ -390,7 +403,7 @@
       }
     };
     editor.completers = [language_tools.textCompleter, my_completer];
-    repl.completers   = [my_completer];
+    if (repl) repl.completers   = [my_completer];
   </script>
 
   <script src="/js/rename-test.js"></script>
@@ -427,6 +440,32 @@
     function reset_device() {
       device_iframe.contentWindow.postMessage('endSession', '*');
       device_iframe.contentWindow.postMessage('requestSession', '*');
+    }
+  </script>
+
+  <script>
+    // Required by partial: set-location-dialog
+    function set_location(button) {
+      var $dialog = $(button).parents('paper-dialog'),
+          lat = parseFloat($dialog.find('paper-input[name=lat]').get(0).value),
+          lon = parseFloat($dialog.find('paper-input[name=lon]').get(0).value),
+          location_set = !isNaN(lat) && !isNaN(lon);
+      if (location_set) {
+        // Update the location on the device now
+        device_iframe.contentWindow.postMessage({type:'location', value:[lat, lon]}, '*');
+      }
+      // Save location to server
+      $.ajax(location.pathname + '/location', {
+        method: 'PUT',
+        contentType: 'text/plain; charset=UTF-8',
+        data: JSON.stringify(location_set ? {lat:lat, lon:lon} : null), // HACK: stored as plain text with JSON string
+        success: function() {
+          console.log('Location set: ', [lat, lon]);
+        },
+        error: function(e) {
+          console.error(e);
+        }
+      });
     }
   </script>
 
