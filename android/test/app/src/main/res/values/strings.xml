@@ -11,6 +11,7 @@
     <string name="milliseconds">MILLIS</string>
 
     <string name="text_fields">Text fields</string>
+    <string name="open_edittextactivity">Open EditTextActivity</string>
 
     <string name="alerts">Alerts</string>
     <string name="alert_confirmation">Confirmation</string>

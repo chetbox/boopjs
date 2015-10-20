@@ -28,4 +28,9 @@
         android:inputType="textPassword"
         android:hint="Password"
         android:id="@+id/password" />
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/open_edittextactivity"
+        android:text="@string/open_edittextactivity"/>
 </LinearLayout>
