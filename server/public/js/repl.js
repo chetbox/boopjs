@@ -64,6 +64,10 @@ function setup_repl(server, device_id, id, callbacks) {
           return;
         }
 
+        if (result_key === 'log' && result.length === 1) {
+          result = result[0];
+        }
+
         var message_lines = JSON.stringify(result, null, 2)
           .split('\n')
           .map(function(line) { return prefix + line; });
@@ -81,7 +85,7 @@ function setup_repl(server, device_id, id, callbacks) {
 
     // execute code
     run_script(server, device_id, [{line: 1, source: src_to_execute}], {
-      onResult: show_result('result', 'result'),
+      onResult: show_result('result', 'result', '// '),
       onError: show_result('error', 'error', '// Error: '),
       onLogMessage: show_result('log', function(msg) { return msg.level; }, '// ')
     });

@@ -1,4 +1,4 @@
-var version = [0, 7, 0];
+var version = [0, 7, 1];
 
 // Import android.*
 
@@ -523,4 +523,12 @@ function screenshot(selector) {
     }
   });
   return screenshot_container.wait_for_content();
+}
+
+// IPC
+
+function open_uri(uri) {
+  var intent = new android.content.Intent(android.content.Intent.ACTION_VIEW);
+  intent.setData(android.net.Uri.parse(uri));
+  activity().startActivity(intent);
 }
