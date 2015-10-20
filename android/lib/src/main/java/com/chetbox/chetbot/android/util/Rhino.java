@@ -16,6 +16,7 @@ import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
 import org.mozilla.javascript.BaseFunction;
+import org.mozilla.javascript.Callable;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.Undefined;
@@ -63,6 +64,22 @@ public class Rhino {
                 public JsonElement serialize(BaseFunction src, Type typeOfSrc, JsonSerializationContext context) {
                     JsonObject fn = new JsonObject();
                     fn.addProperty("function", src.getFunctionName());
+                    return fn;
+                }
+            })
+            .registerTypeHierarchyAdapter(Callable.class, new JsonSerializer<Callable>() {
+                @Override
+                public JsonElement serialize(Callable src, Type typeOfSrc, JsonSerializationContext context) {
+                    JsonObject fn = new JsonObject();
+                    fn.addProperty("function", src.toString());
+                    return fn;
+                }
+            })
+            .registerTypeHierarchyAdapter(Class.class, new JsonSerializer<Class>() {
+                @Override
+                public JsonElement serialize(Class src, Type typeOfSrc, JsonSerializationContext context) {
+                    JsonObject fn = new JsonObject();
+                    fn.addProperty("java_class", src.toString());
                     return fn;
                 }
             })
