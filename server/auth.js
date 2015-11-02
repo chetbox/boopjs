@@ -34,7 +34,8 @@ passport.use(new GitHubStrategy(
       }),
       {
         avatarUrl: user._json.avatar_url,
-        emails: user.emails.map(function(i) { return i.value; })
+        emails: user.emails.map(function(i) { return i.value; }),
+        last_signed_in: new Date().getTime()
       }
     );
 
