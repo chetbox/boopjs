@@ -105,7 +105,7 @@ public class RootViews {
                 return _applyDefaultRootMatcher(roots);
             } catch (NoActivityResumedException e) {
                 if (++tryCount == maxTries) {
-                    throw e;
+                    throw new RuntimeException("Failed to get resumed activity after " + tryCount + " attempts", e);
                 }
                 Log.w(TAG, e.getMessage() + ", retrying...");
             }
