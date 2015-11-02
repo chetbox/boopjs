@@ -318,19 +318,25 @@ function wait(seconds) {
   java.lang.Thread.sleep(seconds * 1000);
 }
 
-function wait_for(selector, options) {
+function wait_for(wait_for_fn, options) {
   var timeout = (options && options.timeout) || 60;
   var start = android.os.SystemClock.uptimeMillis();
-  var v = null;
-  while (!v) {
-    v = view(selector);
+  if (typeof(wait_for_fn) !== 'function') {
+    var selector = wait_for_fn;
+    wait_for_fn = function() {
+      return view(selector);
+    }
+  }
+  var success = false;
+  while (!success) {
+    success = wait_for_fn();
     if ((android.os.SystemClock.uptimeMillis() - start) > (timeout * 1000)) {
       throw 'Timeout expired';
     } else {
       java.lang.Thread.sleep(50);
     }
   }
-  return v;
+  return success;
 }
 
 function wait_until_idle(options) {
