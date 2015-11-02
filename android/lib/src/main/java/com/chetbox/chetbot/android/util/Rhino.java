@@ -62,17 +62,13 @@ public class Rhino {
             .registerTypeHierarchyAdapter(BaseFunction.class, new JsonSerializer<BaseFunction>() {
                 @Override
                 public JsonElement serialize(BaseFunction src, Type typeOfSrc, JsonSerializationContext context) {
-                    JsonObject fn = new JsonObject();
-                    fn.addProperty("function", src.getFunctionName());
-                    return fn;
+                    return JsonNull.INSTANCE;
                 }
             })
             .registerTypeHierarchyAdapter(Callable.class, new JsonSerializer<Callable>() {
                 @Override
                 public JsonElement serialize(Callable src, Type typeOfSrc, JsonSerializationContext context) {
-                    JsonObject fn = new JsonObject();
-                    fn.addProperty("function", src.toString());
-                    return fn;
+                    return JsonNull.INSTANCE;
                 }
             })
             .registerTypeHierarchyAdapter(Class.class, new JsonSerializer<Class>() {
