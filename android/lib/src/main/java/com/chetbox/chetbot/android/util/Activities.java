@@ -22,7 +22,7 @@ public class Activities {
                 return _getActivity(packageName);
             } catch (ActivityNotFoundException e) {
                 if (++tryCount == maxTries) {
-                    throw e;
+                    throw new RuntimeException("Failed to get activity after " + tryCount + " attempts", e);
                 }
             }
             Uninterruptibles.sleepUninterruptibly(50, TimeUnit.MILLISECONDS);
