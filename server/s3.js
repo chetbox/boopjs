@@ -21,14 +21,15 @@ function s3_url(bucket, file_path) {
   });
 }
 
-module.exports.client_upload_request = function(bucket, file_path) {
+module.exports.client_upload_request = function(bucket, file_path, content_type) {
   var s3 = new AWS.S3();
 
   return Promise.promisify(s3.getSignedUrl, s3)('putObject', {
     Bucket: bucket,
     Key: file_path,
     Expires: 60,
-    ACL: 'public-read'
+    ACL: 'public-read',
+    ContentType: content_type || undefined
   })
   .then(function(data) {
     return {

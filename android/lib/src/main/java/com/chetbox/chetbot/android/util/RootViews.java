@@ -98,18 +98,18 @@ public class RootViews {
     }
 
     private static List<Root> applyDefaultRootMatcher(List<Root> roots) {
-        final int maxTries = 5;
+        final int maxTries = 100;
         int tryCount = 0;
         while (true) {
             try {
                 return _applyDefaultRootMatcher(roots);
             } catch (NoActivityResumedException e) {
                 if (++tryCount == maxTries) {
-                    throw e;
+                    throw new RuntimeException("Failed to get resumed activity after " + tryCount + " attempts", e);
                 }
                 Log.w(TAG, e.getMessage() + ", retrying...");
             }
-            Uninterruptibles.sleepUninterruptibly(50, TimeUnit.MILLISECONDS);
+            Uninterruptibles.sleepUninterruptibly(100, TimeUnit.MILLISECONDS);
         }
     }
 

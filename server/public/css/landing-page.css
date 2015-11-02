@@ -168,3 +168,23 @@ footer {
 p.copyright {
     margin: 15px 0 0;
 }
+
+code {
+    padding: 2em;
+    border: none;
+    position: relative;
+    top: 3em;
+}
+
+.navbar-default .navbar-nav>li>a.login-button {
+  margin-top: 8px;
+}
+
+a.login-button, a.login-button:hover {
+  padding: 0.5em 1em !important;
+  background-color: #FF5722 !important;
+  color: rgba(255,255,255,0.87) !important;
+  border-radius: 0.25em;
+  text-decoration: none;
+  display: inline-block;
+}

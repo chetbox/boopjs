@@ -15,17 +15,18 @@ public class Activities {
     private static final String TAG = Activities.class.getSimpleName();
 
     public static Activity getActivity(String packageName) {
-        final int maxTries = 5;
+        final int maxTries = 100;
         int tryCount = 0;
         while (true) {
             try {
                 return _getActivity(packageName);
             } catch (ActivityNotFoundException e) {
                 if (++tryCount == maxTries) {
-                    throw e;
+                    throw new RuntimeException("Failed to get activity after " + tryCount + " attempts", e);
                 }
+                Log.w(TAG, e.getMessage() + ", retrying...");
             }
-            Uninterruptibles.sleepUninterruptibly(50, TimeUnit.MILLISECONDS);
+            Uninterruptibles.sleepUninterruptibly(100, TimeUnit.MILLISECONDS);
         }
     }
 

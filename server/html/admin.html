@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Admin - ChetBot</title>
+    <title>Admin - boop.js</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" href="/favicon.ico">
 
@@ -54,6 +54,7 @@
             <tr>
               <td>ID</td>
               <td>GitHub profile</td>
+              <td>Last signed in</td>
               <td>Apps</td>
             </tr>
           </thead>
@@ -65,6 +66,9 @@
               </td>
               <td class="github-user">
                 <a target="_blank" href="{{profileUrl}}" title="{{username}} on GitHub">{{username}}</a>
+              </td>
+              <td class="last-signed-in date">
+                {{date_relative last_signed_in}}
               </td>
               <td class="apps">
                 <ul>

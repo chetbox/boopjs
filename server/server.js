@@ -1,6 +1,7 @@
 var express = require('express');
 var app = express();
 var express_handlebars = require('express-handlebars');
+var moment = require('moment');
 var body_parser = require('body-parser');
 
 var index = require('./index');
@@ -20,6 +21,14 @@ var hbs = express_handlebars.create({
     extname: '.html',
     layoutsDir: __dirname + '/html',
     partialsDir: __dirname + '/html/partials',
+    helpers: {
+      date_relative: function(d) {
+        if (d === undefined) {
+          return '?';
+        }
+        return moment(d).fromNow();
+      }
+    },
 });
 
 app.engine('html', hbs.engine);

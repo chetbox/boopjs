@@ -100,7 +100,7 @@ public class InteractionTests extends StopwatchTest {
                 instanceOf(EditText.class));
     }
 
-    @Test public void waitForViewCondition() {
+    @Test public void waitForView() {
         exec(   "tap('start');",
                 "wait_for({id: 'seconds', text: '02'});",
                 "tap('stop');");
@@ -110,9 +110,32 @@ public class InteractionTests extends StopwatchTest {
     }
 
     @Test(expected = JavaScriptException.class)
-    public void waitForViewConditionTimeout() {
+    public void waitForViewTimeout() {
         exec(   "tap('start');",
                 "wait_for({id: 'seconds', text: '03'}, {timeout: 2});");
+    }
+
+    @Test public void waitForFunction() {
+        exec(   "tap('start');",
+                "wait_for(function() {",
+                "  return text(_secondsText_) == '02';",
+                "});",
+                "tap('stop');");
+
+        assertThat(secondsText.getText().toString(),
+                equalTo("02"));
+    }
+
+    @Test(expected = JavaScriptException.class)
+    public void waitForFunctionTimeout() {
+        exec(   "tap('start');",
+                "wait_for(function() {",
+                "  return text(_secondsText_) == '03';",
+                "}, {timeout: 2});",
+                "tap('stop');");
+
+        assertThat(secondsText.getText().toString(),
+                equalTo("02"));
     }
 
 }
