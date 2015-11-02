@@ -98,7 +98,7 @@ public class RootViews {
     }
 
     private static List<Root> applyDefaultRootMatcher(List<Root> roots) {
-        final int maxTries = 5;
+        final int maxTries = 100;
         int tryCount = 0;
         while (true) {
             try {
@@ -109,7 +109,7 @@ public class RootViews {
                 }
                 Log.w(TAG, e.getMessage() + ", retrying...");
             }
-            Uninterruptibles.sleepUninterruptibly(50, TimeUnit.MILLISECONDS);
+            Uninterruptibles.sleepUninterruptibly(100, TimeUnit.MILLISECONDS);
         }
     }
 
