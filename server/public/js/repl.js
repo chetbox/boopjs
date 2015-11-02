@@ -12,7 +12,7 @@ function setup_repl(server, device_id, id, callbacks) {
 
   var history = [];
   var history_cursor = history.length;
-
+  var pending = 0;
 
   function show_from_history(new_cursor_value) {
     if (new_cursor_value < 0) return;
@@ -27,7 +27,7 @@ function setup_repl(server, device_id, id, callbacks) {
       doc.removeLines(line_to_update, line_to_update);
       doc.insertLines(line_to_update, [new_line]);
     }
-    repl.gotoLine(line_to_update + 1);
+    repl.gotoLine(line_to_update + 1, Number.MAX_SAFE_INTEGER, false);
   }
 
   function add_to_history(line) {
@@ -40,8 +40,8 @@ function setup_repl(server, device_id, id, callbacks) {
   }
 
   function run() {
-    repl.setReadOnly(true);
     $repl.addClass('running');
+    pending++;
 
     var doc = repl.getSession().getDocument();
     var src_to_execute = doc.getLine(doc.getLength() - 1);
@@ -55,6 +55,11 @@ function setup_repl(server, device_id, id, callbacks) {
       }
       if (!prefix) prefix = '';
       return function(r) {
+        pending--;
+        if (!pending) {
+          $repl.removeClass('running');
+        }
+
         if ('error' in r) {
           console.warn(r.error, r.stacktrace);
         }
@@ -89,12 +94,6 @@ function setup_repl(server, device_id, id, callbacks) {
       onError: show_result('error', 'error', '// Error: '),
       onLogMessage: show_result('log', function(msg) { return msg.level; }, '// ')
     });
-
-    repl.setReadOnly(true);
-    setTimeout(function() {
-      repl.setReadOnly(false);
-      $repl.removeClass('running');
-    }, 2000);
   }
 
   repl.commands.addCommands([
