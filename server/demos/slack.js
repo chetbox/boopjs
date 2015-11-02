@@ -18,7 +18,10 @@ function sign_in(team, email, password) {
 function open_conversation(conversation_name) {
     tap('Jump to…');
     type_text(conversation_name);
-    wait(1);
+    wait_for(function() {
+      // Search box + search result
+      return count(conversation_name) == 2;
+    });
     tap(bottommost(conversation_name));
 }
 function send_message(message) {
