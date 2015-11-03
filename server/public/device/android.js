@@ -319,7 +319,7 @@ function wait(seconds) {
 }
 
 function wait_for(wait_for_fn, options) {
-  var timeout = (options && options.timeout) || 60;
+  var timeout = (options && options.timeout) || 10;
   var start = android.os.SystemClock.uptimeMillis();
   if (typeof(wait_for_fn) !== 'function') {
     var selector = wait_for_fn;
@@ -331,7 +331,7 @@ function wait_for(wait_for_fn, options) {
   while (!success) {
     success = wait_for_fn();
     if ((android.os.SystemClock.uptimeMillis() - start) > (timeout * 1000)) {
-      throw 'Timeout expired';
+      throw 'Timeout expired (' + timeout + 's)';
     } else {
       java.lang.Thread.sleep(50);
     }
