@@ -1,7 +1,4 @@
 // Here are a few examples to get you started.
-//
-// Use the links above for the full JavaScript API docs or to get in touch if
-// you need help.
 
 // Find the view with the text "Apple"
 view('Apple');
