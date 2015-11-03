@@ -4,6 +4,7 @@ exports.add_routes = function(app) {
   var _ = require('underscore');
   var Promise = require('bluebird');
   var url = require('url');
+  var fs = require('fs');
   var host_address = require('config').get('host.address');
 
   var db = require('./db');
@@ -15,7 +16,7 @@ exports.add_routes = function(app) {
   var inject_chetbot = require('./apps/android/inject-chetbot');
   var android_app_info = require('./apps/android/info');
 
-  var NEW_TEST_TEMPLATE = '// Write your test here\n\n';
+  var welcome_code = fs.readFileSync(__dirname + '/demos/welcome.js', 'utf8');
 
   function ensure_code_belongs_to_app(req, res, next) {
     db.code().find({hash: req.params.app_id, range: req.params.code_id})
@@ -173,7 +174,7 @@ exports.add_routes = function(app) {
           db.code().insert({
             id: new_code_id,
             app_id: new_app_id,
-            content: NEW_TEST_TEMPLATE
+            content: welcome_code
           })
         ]);
       })
@@ -296,7 +297,7 @@ exports.add_routes = function(app) {
       db.code().insert({
         id: new_code_id,
         app_id: req.params.app_id,
-        content: NEW_TEST_TEMPLATE
+        content: welcome_code
       })
       .then(function() {
         res.redirect('/app/' + req.params.app_id + '/edit/' + new_code_id);
