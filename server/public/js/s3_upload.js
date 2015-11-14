@@ -1,7 +1,7 @@
 function s3_upload(file_input, target_input, opts) {
 
   function ga(a,b,c,d,e) {
-    if (opts.ga) { return opts.google_analytics(a,b,c,d,e); }
+    if (opts.google_analytics) { return opts.google_analytics(a,b,c,d,e); }
   }
 
   function progress(msg) {
