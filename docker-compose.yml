@@ -1,0 +1,10 @@
+web:
+  build: .
+  ports:
+   - "80:80"
+  volumes:
+   - server/config:/opt/chetbot/server/config
+  links:
+   - email
+email:
+  image: chetbox/correo:1.0.0
