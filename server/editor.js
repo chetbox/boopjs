@@ -15,6 +15,7 @@ exports.add_routes = function(app) {
   var appetizeio = require('./apps/appetizeio');
   var inject_chetbot = require('./apps/android/inject-chetbot');
   var android_app_info = require('./apps/android/info');
+  var email = require('./reporting/email');
 
   var welcome_code = fs.readFileSync(__dirname + '/demos/welcome.js', 'utf8');
 
@@ -157,30 +158,33 @@ exports.add_routes = function(app) {
       })
       .spread(function(apk_info, modified_apk_url, appetize_resp) {
         console.log('Creating app', new_app_id);
-        return Promise.all([
+        var app = _.extend({
+          id: new_app_id,
+          admins: [req.user.id],
+          platform: 'android',
+          user_app_url: user_apk_url,
+          app_url: modified_apk_url,
+          publicKey: appetize_resp.publicKey,
+          privateKey: appetize_resp.privateKey
+        }, apk_info);
+        var code = {
+          id: new_code_id,
+          app_id: new_app_id,
+          content: welcome_code
+        };
+        return [
           db.users().find(req.user.id),
-          db.apps().insert(
-            _.extend({
-              id: new_app_id,
-              admins: [req.user.id],
-              platform: 'android',
-              user_app_url: user_apk_url,
-              app_url: modified_apk_url,
-              publicKey: appetize_resp.publicKey,
-              privateKey: appetize_resp.privateKey
-            },
-            apk_info)
-          ),
-          db.code().insert({
-            id: new_code_id,
-            app_id: new_app_id,
-            content: welcome_code
-          })
-        ]);
+          app,
+          db.apps().insert(app),
+          db.code().insert(code)
+        ];
       })
-      .spread(function(user) {
+      .spread(function(user, app) {
         user.apps = _.union(user.apps, [new_app_id]); // Keep existing info (dynasty's .update is broken)
-        return db.users().update(user);
+        return [user, app, db.users().update(user)];
+      })
+      .spread(function(user, app) {
+        email.send_to_admins(email.message.new_app(user, app));
       })
       .then(function() {
         // Take the user straight to their first test
