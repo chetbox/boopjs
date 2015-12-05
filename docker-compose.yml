@@ -3,8 +3,11 @@ web:
   ports:
    - "80:80"
   volumes:
-   - server/config:/opt/chetbot/server/config
+   - ./server/config:/opt/chetbot/server/config:ro
   links:
    - email
 email:
-  image: chetbox/correo:1.0.0
+  image: chetbox/correo:1.0.1
+  volumes:
+  - ./server/config:/app/config:ro
+
