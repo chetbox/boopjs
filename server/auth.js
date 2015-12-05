@@ -7,6 +7,7 @@ var flash = require('connect-flash');
 
 var db = require('./db');
 var fail_on_error = require('./util').fail_on_error;
+var email = require('./reporting/email');
 
 passport.serializeUser(function(user, done) {
   done(null, user.id);
@@ -28,7 +29,7 @@ passport.use(new GitHubStrategy(
   function(accessToken, refreshToken, user, done) {
     console.log('User authenticated: ' + user.username);
     // TODO: generate internal user ID for session serialisation
-    var serializable_user = _.extend(
+    var new_db_user = _.extend(
       _.pick(user, function(val, key) {
         return val && _.contains(['id', 'username', 'displayName', 'profileUrl', 'provider'], key)
       }),
@@ -40,18 +41,24 @@ passport.use(new GitHubStrategy(
     );
 
     // Make Chet an admin
-    if (serializable_user.username == 'chetbox') {
-      serializable_user.admin = 1;
+    if (new_db_user.username == 'chetbox') {
+      new_db_user.admin = 1;
     }
 
     // TODO: fix grossness ('apps' stored as part of user object)
     db.users()
     .find(user.id)
     .then(function(db_user) {
-      return db.users().insert( _.extend(db_user || {}, serializable_user) );
+      if (!db_user) {
+        email.send_to_admins(email.message.new_user(new_db_user));
+      }
+      return db_user;
+    })
+    .then(function(db_user) {
+      return db.users().insert( _.extend(db_user || {}, new_db_user) );
     })
     .then(function() {
-      done(null, serializable_user);
+      done(null, new_db_user);
     })
     .catch(done);
   }
