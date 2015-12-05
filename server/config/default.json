@@ -18,5 +18,13 @@
   },
   "appetize_io": {
     "token": "APPETIZEIO_TOKEN"
+  },
+  "email": {
+    "correo": {
+      "send_url": "CORREO_SEND_URL"
+    },
+    "admins": [
+      "ADMIN_EMAIL_ADDRESS"
+    ]
   }
 }
