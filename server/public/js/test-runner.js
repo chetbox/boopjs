@@ -57,11 +57,11 @@ function errorHTML(message) {
     .append( $('<pre>').text(message.stacktrace) );
 }
 
-function run_test(editor, server, device_id) {
+function run_test(source, server, device_id) {
   ga('send', 'event', 'button', 'click', 'run');
 
   var statements = esprima.parse(
-    editor.getSession().getDocument().getValue(),
+    source,
     {loc: true}
   ).body.map(function(command) {
     return {
@@ -88,14 +88,12 @@ function run_test(editor, server, device_id) {
       });
     },
     onStart: function() {
-      editor.setReadOnly(true);
       editorContainerEl
         .addClass('running')
         .removeClass('editing');
     },
     onFinish: function() {
       editorContainerEl.removeClass('running');
-      editor.setReadOnly(false);
     },
     onResult: function(message) {
       ga('send', 'event', 'test-step', 'result', message.error ? 'error' : 'success');

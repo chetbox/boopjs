@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{code.name}} - boop.js</title>
+    <link rel="icon" href="{{app.icon}}">
+    <style type="text/css">
+      body {
+        background: #dFe8eC;
+      }
+
+      #code {
+        display: none;
+      }
+
+      #test-report {
+        position: fixed;
+        top: 0;
+        left: 380px;
+        right: 0;
+        bottom: 0;
+      }
+    </style>
+    <script src="/components/jquery/dist/jquery.min.js"></script>
+  </head>
+  <body>
+    <div class="content">
+      {{> device}}
+<pre id="code">
+{{code.content}}
+</pre>
+      {{> test-report}}
+    </div>
+  </body>
+
+  <!-- test runner -->
+  <script src="/js/esprima.min.js" charset="utf-8"></script>
+  <script src="/js/escodegen.min.js" charset="utf-8"></script>
+  <script src="/js/script-runner.js"></script>
+  <script src="/js/test-runner.js"></script>
+
+  <!-- Run test immediately -->
+  <script charset="utf-8">
+    window.addEventListener('message', function(event) {
+      if (event.data == 'firstFrameReceived') {
+        console.log('Starting');
+        setTimeout(function() {
+          run_test($('#code').text(), '{{server}}', '{{device.id}}');
+        }, 1000);
+      }
+    });
+  </script>
+
+  {{> google-analytics}}
+
+</html>
