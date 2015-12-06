@@ -1,4 +1,5 @@
 <div id="editor-container" class="editing">
+  <link rel="stylesheet" href="/css/repl.css"/>
   <style type="text/css" scoped>
     #editor-container {
       position: fixed;
@@ -85,7 +86,7 @@
     <a class="back" href="javascript:showEditor();" title="Back to editor">
       <paper-icon-button icon="create"></paper-icon-button>
     </a>
-    <a class="run" href="javascript:run_test(editor, '{{server}}', '{{device.id}}');" title="Run test">
+    <a class="run" href="javascript:run_test(editor.getSession().getDocument().getValue(), '{{server}}', '{{device.id}}');" title="Run test">
       <paper-icon-button icon="av:play-arrow"></paper-icon-button>
       {{^user}}<span class="hint">&#8592; Press me</span>{{/user}}
     </a>
