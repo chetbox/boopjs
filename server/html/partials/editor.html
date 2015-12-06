@@ -71,6 +71,31 @@
     #editor-container:not(.editing) #editor {
       display: none;
     }
+
+    #controls {
+      padding: 0 12px;
+      height: 64px;
+    }
+
+    body:not(.logged-in) #controls {
+      background: #00BCD4;
+    }
+
+    #controls > * {
+      font-size: 16px;
+      vertical-align: middle;
+      line-height: 1.0;
+      margin-top: 12px;
+    }
+
+    #controls a {
+      display: none;
+      color: #fff;
+    }
+
+    body.saving #controls .status.saving {
+      opacity: 1;
+    }
   </style>
   <style type="text/css" media="print" scoped>
     #editor-container {
@@ -80,6 +105,10 @@
     #editor, #test-report {
       top: 0;
       left: 0;
+    }
+
+    iframe, #controls {
+      display: none;
     }
   </style>
   <div id="controls">
