@@ -1,0 +1,100 @@
+<div id="test-report" class="content-panel">
+  <style type="text/css" scoped>
+    #test-report {
+      font-size: 12px;
+      background: #cde;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+      color: rgba(0,0,0,0.87);
+      padding-top: 0.5em;
+      overflow: auto;
+    }
+
+    #test-report > * {
+      margin: 0 1em;
+    }
+
+    ol {
+      list-style: none;
+      padding: 0;
+    }
+
+    li.line {
+      margin: 0;
+      margin-bottom: 0.5em;
+    }
+
+    li.line > ol {
+      margin-left: 2em;
+      color: rgba(0,0,0,0.87);
+    }
+
+    li.result.none {
+      display: none;
+    }
+
+    li.result, li.log {
+      margin-right: 1em;
+    }
+
+    li.result::before {
+      content: '\21AA';
+      opacity: 0.25;
+      margin-right: 0.5em;
+    }
+
+    .bitmap img {
+      max-height: 300px;
+      margin-top: 0.5em;
+      border: none;
+    }
+
+    li.final-result {
+      font-weight: bold;
+      margin-top: 1em;
+      margin-bottom: 1em;
+    }
+
+    .success {
+      color: #43A047;
+    }
+
+    .line::before {
+      content: ' ';
+      display: inline-block;
+      width: 1em;
+      margin-right: 1em;
+    }
+
+    .line.success::before {
+      content: '\2713'
+    }
+    .line.error::before {
+      content: '\2717'
+    }
+
+    ol > li.error {
+      color: #D32F2F;
+    }
+
+    li.log { color: #777; }
+    li.log.debug { color: #999; }
+    li.log.info  { color: #777; }
+    li.log.warn  { color: #c90; }
+    li.log.error { color: #D32F2F; }
+
+    li.log::before { margin-right: 1em; }
+    li.log.debug::before { content: 'D'; }
+    li.log.info::before  { content: 'I'; }
+    li.log.warn::before  { content: 'W'; }
+    li.log.error::before { content: 'E'; }
+
+    .uncaught.error::before {
+      content: 'Uncaught error: ';
+    }
+
+    pre {
+      font-family: inherit;
+    }
+  </style>
+  <ol></ol>
+</div>
