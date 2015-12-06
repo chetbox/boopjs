@@ -11,6 +11,7 @@ exports.add_routes = function(app) {
   var auth = require('./auth');
   var devices = require('./devices');
   var s3 = require('./s3');
+  var test_runner = require('./test_runner');
   var fail_on_error = require('./util').fail_on_error;
   var appetizeio = require('./apps/appetizeio');
   var inject_chetbot = require('./apps/android/inject-chetbot');
@@ -18,6 +19,11 @@ exports.add_routes = function(app) {
   var email = require('./reporting/email');
 
   var welcome_code = fs.readFileSync(__dirname + '/demos/welcome.js', 'utf8');
+
+  var DEFAULT_DEVICE = {
+    model: 'nexus5',
+    orientation: 'portrait',
+  };
 
   function ensure_code_belongs_to_app(req, res, next) {
     db.code().find({hash: req.params.app_id, range: req.params.code_id})
@@ -315,7 +321,6 @@ exports.add_routes = function(app) {
     ensure_user_can_access_app,
     ensure_code_belongs_to_app,
     function(req, res) {
-      var template = req.query.run && JSON.parse(req.query.run) ? 'run' : 'edit';
       Promise.join(
         db.apps().find(req.params.app_id),
         db.code().find({hash: req.params.app_id, range: req.params.code_id}),
@@ -325,25 +330,61 @@ exports.add_routes = function(app) {
         if (!code || !app) {
           return res.sendStatus(404);
         }
-        res.render(template, {
+        res.render('edit', {
           user: req.user,
-          device: {
+          device: _.extend(DEFAULT_DEVICE, {
             id: device_id,
-            model: 'nexus5',
-            orientation: 'portrait',
             location: function() {
               // code.location is JSON parsed below
               return code.location
                 ? (code.location.lat.toFixed(7) + ',' + code.location.lon.toFixed(7))
                 : null;
             }
-          },
+          }),
           server: host_address,
           app: {
             icon: app.icon,
             publicKey: app.publicKey
           },
           autosave: true,
+          code: _.extend(code, {
+            name: code.name || code.id,
+            location: code.location && JSON.parse(code.location)
+          })
+        });
+      })
+      .catch(fail_on_error(res));
+    }
+  );
+
+  app.get('/app/:app_id/run/:code_id',
+    test_runner.consume_access_token('access_token'),
+    ensure_code_belongs_to_app,
+    function(req, res) {
+      Promise.join(
+        db.apps().find(req.params.app_id),
+        db.code().find({hash: req.params.app_id, range: req.params.code_id}),
+        devices.create_device({user: null})
+      )
+      .spread(function(app, code, device_id) {
+        if (!code || !app) {
+          return res.sendStatus(404);
+        }
+        res.render('run', {
+          device: _.extend(DEFAULT_DEVICE, {
+            id: device_id,
+            location: function() {
+              // code.location is JSON parsed below
+              return code.location
+                ? (code.location.lat.toFixed(7) + ',' + code.location.lon.toFixed(7))
+                : null;
+            }
+          }),
+          server: host_address,
+          app: {
+            icon: app.icon,
+            publicKey: app.publicKey
+          },
           code: _.extend(code, {
             name: code.name || code.id,
             location: code.location && JSON.parse(code.location)
