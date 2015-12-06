@@ -1,6 +1,7 @@
 function run_script(server, device_id, statements, callbacks) {
 
   function callback(event, data) {
+    $(document).trigger('test-progress', event, data);
     if (callbacks[event]) callbacks[event](data);
   }
 
@@ -26,11 +27,8 @@ function run_script(server, device_id, statements, callbacks) {
     var message = JSON.parse(event.data);
     if ('error' in message) {
       callback('onError', message);
-      if (!('line' in message)) {
-        // Uncaught error
-        callback('onFinish');
-        ws.close();
-      }
+      callback('onFinish');
+      ws.close();
     } else if ('result' in message) {
       callback('onResult', message);
     } else if ('log' in message) {
