@@ -19,6 +19,10 @@ var TABLES = {
   'devices': {
     key_schema: {hash: ['id', 'string']},
     throughput: {read: 100, write: 100}
+  },
+  'run_tokens': {
+    key_schema: {hash: ['endpoint', 'string'], range: ['token', 'string']},
+    throughput: {read: 200, write: 200}
   }
 };
 

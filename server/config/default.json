@@ -26,5 +26,9 @@
     "admins": [
       "ADMIN_EMAIL_ADDRESS"
     ]
+  },
+  "test_runner": {
+    "protocol": "http",
+    "host": "TEST_RUNNER_HOST"
   }
 }

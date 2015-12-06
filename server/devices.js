@@ -3,6 +3,8 @@ var shortid = require('shortid');
 
 var db = require('./db');
 
+// TODO: delete devices when inactive
+
 exports.create_device = function(options) {
   var device_id = shortid.generate();
   return db.devices().insert({
