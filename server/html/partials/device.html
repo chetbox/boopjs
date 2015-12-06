@@ -1,72 +1,18 @@
-<div id="device-container">
-  <style type="text/css" scoped>
-    #device {
-      position: absolute;
-      top: 20px;
-      left: 40px;
-      width: 300px;
-      height: 597px;
-    }
-
-    #device-controls {
-      position: absolute;
-      text-align: right;
-      top: 15px;
-      left: 40px;
-      width: 320px;
-    }
-
-    #device-controls > * {
-      display: inline-block;
-      margin-left: 0.5em;
-    }
-
-    #controls {
-      padding: 0 12px;
-      height: 64px;
-    }
-
-    body:not(.logged-in) #controls {
-      background: #00BCD4;
-    }
-
-    #controls > * {
-      font-size: 16px;
-      vertical-align: middle;
-      line-height: 1.0;
-      margin-top: 12px;
-    }
-
-    #controls a {
-      display: none;
-      color: #fff;
-    }
-
-    body.saving #controls .status.saving {
-      opacity: 1;
-    }
-  </style>
-  <style type="text/css" media="print" scoped>
-    iframe, #controls {
-      display: none;
-    }
-  </style>
-  <iframe
-    id="device"
-    src="https://appetize.io/embed/{{app.publicKey}}?device={{device.model}}&amp;osVersion=6.0&amp;autoplay=true&amp;orientation={{device.orientation}}&amp;deviceColor=black&amp;xdocMsg=true&amp;params=%7b%22chetbot.server%22%3a%22{{server}}%22%2c%22chetbot.device%22%3a%22{{device.id}}%22%7d{{#device.location}}&amp;location={{.}}{{/device.location}}"
-    frameborder="0"
-    scrolling="no">
-  </iframe>
-  <div id="device-controls">
-    {{#user}}
-    <paper-fab mini title="Set device location" icon="communication:location-on" class="secondary" onclick="open_dialog('location');"></paper-fab>
-    {{/user}}
-    <paper-fab mini title="Restart device" icon="refresh" class="secondary" onclick="reset_device();"></paper-fab>
-  </div>
-  {{#user}}
-  {{> set-location-dialog ../code}}
-  {{/user}}
-</div>
+<style type="text/css">
+  #device {
+    position: absolute;
+    top: 20px;
+    left: 40px;
+    width: 300px;
+    height: 597px;
+  }
+</style>
+<iframe
+  id="device"
+  src="https://appetize.io/embed/{{app.publicKey}}?device={{device.model}}&amp;osVersion=6.0&amp;autoplay=true&amp;orientation={{device.orientation}}&amp;deviceColor=black&amp;xdocMsg=true&amp;params=%7b%22chetbot.server%22%3a%22{{server}}%22%2c%22chetbot.device%22%3a%22{{device.id}}%22%7d{{#device.location}}&amp;location={{.}}{{/device.location}}"
+  frameborder="0"
+  scrolling="no">
+</iframe>
 
 <!-- heartbeat to prevent device timing out -->
 <script>
@@ -74,9 +20,4 @@
   setInterval(function() {
     device_iframe.contentWindow.postMessage('heartbeat', '*');
   }, 15 * 1000);
-
-  function reset_device() {
-    device_iframe.contentWindow.postMessage('endSession', '*');
-    device_iframe.contentWindow.postMessage('requestSession', '*');
-  }
 </script>

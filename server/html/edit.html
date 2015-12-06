@@ -71,7 +71,10 @@
       {{/user}}
 
       <div class="content">
-        {{> device}}
+        <div id="device-container">
+          {{> device}}
+          {{> device-controls}}
+        </div>
 {{> editor}}
       </div>
     </paper-header-panel>

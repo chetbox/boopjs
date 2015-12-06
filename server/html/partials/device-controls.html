@@ -1,0 +1,31 @@
+<div id="device-controls">
+  <style type="text/css" scoped>
+    #device-controls {
+      position: absolute;
+      text-align: right;
+      top: 15px;
+      left: 40px;
+      width: 320px;
+    }
+
+    #device-controls > *:not(style) {
+      display: inline-block;
+      margin-left: 0.5em;
+    }
+  </style>
+  {{#user}}
+  <paper-fab mini title="Set device location" icon="communication:location-on" class="secondary" onclick="open_dialog('location');"></paper-fab>
+  {{/user}}
+  <paper-fab mini title="Restart device" icon="refresh" class="secondary" onclick="reset_device();"></paper-fab>
+</div>
+{{#user}}
+{{> set-location-dialog ../code}}
+{{/user}}
+
+<!-- reset button -->
+<script charset="utf-8">
+  function reset_device() {
+    device_iframe.contentWindow.postMessage('endSession', '*');
+    device_iframe.contentWindow.postMessage('requestSession', '*');
+  }
+</script>

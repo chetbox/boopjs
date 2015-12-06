@@ -315,7 +315,7 @@ exports.add_routes = function(app) {
     ensure_user_can_access_app,
     ensure_code_belongs_to_app,
     function(req, res) {
-      var template = JSON.parse(req.query.run) ? 'run' : 'edit';
+      var template = req.query.run && JSON.parse(req.query.run) ? 'run' : 'edit';
       Promise.join(
         db.apps().find(req.params.app_id),
         db.code().find({hash: req.params.app_id, range: req.params.code_id}),
