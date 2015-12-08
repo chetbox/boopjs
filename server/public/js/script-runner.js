@@ -1,7 +1,7 @@
 function run_script(server, device_id, statements, callbacks) {
 
   function callback(event, data) {
-    $(document).trigger('test-progress', event, data);
+    $(document).trigger('test-progress', [event, data]);
     if (callbacks[event]) callbacks[event](data);
   }
 
@@ -27,7 +27,7 @@ function run_script(server, device_id, statements, callbacks) {
     var message = JSON.parse(event.data);
     if ('error' in message) {
       callback('onError', message);
-      callback('onFinish');
+      callback('onFinish', false);
       ws.close();
     } else if ('result' in message) {
       callback('onResult', message);
@@ -35,7 +35,7 @@ function run_script(server, device_id, statements, callbacks) {
       callback('onLogMessage', message);
     } else if ('success' in message) {
       callback('onSuccess', message);
-      callback('onFinish');
+      callback('onFinish', true);
       ws.close();
     }
   };
