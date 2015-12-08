@@ -8,7 +8,7 @@ var path = require('path');
 var sh = require('shelljs');
 var url = require('url');
 
-AWS.config.update(config.get('s3'));
+AWS.config.update(config.get('aws.s3'));
 
 var tmp_dir = path.join(os.tmpdir(), 'chetbot.s3');
 sh.mkdir('-p', tmp_dir);
