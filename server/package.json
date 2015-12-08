@@ -19,7 +19,7 @@
   "homepage": "https://github.com/chetbox/chetbot#readme",
   "dependencies": {
     "adm-zip": "^0.4.7",
-    "aws-sdk": "^2.1.37",
+    "aws-sdk": "^2.2.22",
     "bluebird": "^2.9.32",
     "body-parser": "^1.13.2",
     "bower": "^1.4.1",
