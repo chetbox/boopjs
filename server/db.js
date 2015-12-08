@@ -55,12 +55,7 @@ _.each(TABLES, function(_, name) {
 // In progress: Migration away from Dyanasty
 
 var AWS = require('aws-sdk');
-AWS.config.update(config.get('aws.dynamodb'));
-var dynamodb = new AWS.DynamoDB.DocumentClient({
-  // service: {
-    // endpoint: config.dynamodb.endpoint
-  // }
-});
+var dynamodb = new AWS.DynamoDB.DocumentClient(config.get('aws.dynamodb'));
 require('bluebird').promisifyAll(Object.getPrototypeOf(dynamodb));
 
 // Provide a neat, promisified API with table already set
