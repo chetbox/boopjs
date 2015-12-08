@@ -6,23 +6,23 @@ var TABLE_PREFIX = 'chetbot.';
 var TABLES = {
   'users': {
     key_schema: {hash: ['id', 'string']},
-    throughput: {write: 10, read: 10}
+    throughput: {write: 1, read: 1}
   },
   'apps': {
     key_schema: {hash: ['id', 'string']},
-    throughput: {write: 10, read: 10}
+    throughput: {write: 1, read: 1}
   },
   'code': {
     key_schema: {hash: ['app_id', 'string'], range: ['id', 'string']},
-    throughput: {write: 10, read: 10}
+    throughput: {write: 1, read: 1}
   },
   'devices': {
     key_schema: {hash: ['id', 'string']},
-    throughput: {read: 100, write: 100}
+    throughput: {read: 1, write: 1}
   },
   'run_tokens': {
     key_schema: {hash: ['endpoint', 'string'], range: ['token', 'string']},
-    throughput: {read: 200, write: 200}
+    throughput: {read: 1, write: 1}
   }
 };
 
