@@ -24,12 +24,16 @@ exports.add_routes = function(app) {
 
   app.ws('/api/client',
     function(ws, req) {
-      var required = ['device', 'app', 'code'];
+      var required = ['device', 'app'];
       new Promise(function(resolve, reject) {
-        if (required.every(function(arg_name) {
+        if (!req.user) throw 'Not logged in';
+      })
+      .then(function() {
+        if (!required.every(function(arg_name) {
           return req.query[arg_name];
-        })) resolve();
-        else reject('"'+ required.join('", "') + '" not specified. (Got ' + JSON.stringify(req.query) + ')');
+        })) {
+          throw '"'+ required.join('", "') + '" not specified. (Got ' + JSON.stringify(req.query) + ')';
+        }
       })
       .then(function(check_device_access) {
         devices.check_device_access(req.query.device, req.user);
@@ -46,7 +50,7 @@ exports.add_routes = function(app) {
       .spread(function(device, app, code) {
         if (!device) throw 'Device does not exist: ' + req.query.device;
         if (!app) throw 'App does not exist: ' + req.query.app;
-        if (!code) throw 'Code does not exist for app: ' + req.query.code;
+        if (!code) throw 'Code \'' + req.query.code + '\' does not exist for app: ' + req.query.app;
         if (!req.user.admin && !_.contains(req.user.apps, app.id))
           throw 'User does not have access to app'; // TODO: demo?
         return [app, code];

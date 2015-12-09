@@ -16,7 +16,10 @@ function run_script(server, device_id, app_id, code_id, statements, callbacks) {
     'ws://' + server + '/api/client'
     + '?device=' + encodeURIComponent(device_id)
     + '&app=' + encodeURIComponent(app_id)
-    + '&code=' + encodeURIComponent(code_id)
+    + (code_id
+        ? '&code=' + encodeURIComponent(code_id) 
+        : ''
+      )
   );
   ws.onopen = function() {
     callback('onStart');
