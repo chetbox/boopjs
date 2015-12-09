@@ -26,17 +26,13 @@ exports.add_routes = function(app) {
     function(ws, req) {
       var required = ['device', 'app'];
       new Promise(function(resolve, reject) {
-        if (!req.user) throw 'Not logged in';
+        if (required.every(function(arg_name) {
+          return req.query[arg_name];
+        })) resolve();
+        else reject('"'+ required.join('", "') + '" not specified. (Got ' + JSON.stringify(req.query) + ')');
       })
       .then(function() {
-        if (!required.every(function(arg_name) {
-          return req.query[arg_name];
-        })) {
-          throw '"'+ required.join('", "') + '" not specified. (Got ' + JSON.stringify(req.query) + ')';
-        }
-      })
-      .then(function(check_device_access) {
-        devices.check_device_access(req.query.device, req.user);
+        return devices.check_device_access(req.query.device, req.user);
       })
       .then(function() {
         return [
