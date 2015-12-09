@@ -58,17 +58,24 @@ var AWS = require('aws-sdk');
 var dynamodb = new AWS.DynamoDB.DocumentClient(config.get('aws.dynamodb'));
 require('bluebird').promisifyAll(Object.getPrototypeOf(dynamodb));
 
-// Provide a neat, promisified API with table already set
+// Provide a neat, promisified API with TableName already set
 // e.g. new_api.devices.put({...})
-exports.v2 = _.map(TABLES, function(_, name) {
-  var table = TABLE_PREFIX + name;
-  var fns = {};
-  ['update', 'put', 'get', 'scan', 'query', 'delete'].forEach(function(fn_name) {
+exports.v2 = Object.keys(TABLES).reduce(function(fns, table_short_name) {
+  fns[table_short_name] = ['update', 'put', 'get', 'scan', 'query', 'delete'].reduce(function(fns, fn_name) {
     fns[fn_name] = function(params) {
-      return dynamodb[fn_name + 'Async'](_.merge(
+      return dynamodb[fn_name + 'Async'](_.extend(
         params,
-        { TableName: table }
-      ));
+        { TableName: TABLE_PREFIX + table_short_name }
+      ))
+      .then(function(result) {
+        // Patch 'get' to the return the "Item"
+        if (fn_name === 'get') {
+          return result.Item;
+        }
+        return result;
+      });
     };
-  });
-});
+    return fns;
+  }, {});
+  return fns;
+}, {});

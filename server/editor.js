@@ -343,6 +343,7 @@ exports.add_routes = function(app) {
           }),
           server: host_address,
           app: {
+            id: app.id,
             icon: app.icon,
             publicKey: app.publicKey
           },
