@@ -127,18 +127,19 @@ exports.add_routes = function(app) {
         console.log('response:', messageStr.substring(0, 200));
         var client = clients_connected[ws.device_registered];
 
-        // TODO: Cope with client disconnecting (save result_key on device ws)
-        if (client) {
-          if (client.result_key) {
-            // Save this result
-            db.v2.results.update({
-              Key: client.result_key,
-              UpdateExpression: 'SET report = list_append(report, :result)',
-              ExpressionAttributeValues: {':result': [message]}
-            })
-            .catch(fail_on_error(client));
-          }
+        ws.result_key = ws.result_key || (client && client.result_key);
+        if (ws.result_key) {
+          // Save this result
+          db.v2.results.update({
+            Key: ws.result_key,
+            UpdateExpression: 'SET report = list_append(report, :result)',
+            ExpressionAttributeValues: {':result': [message]}
+          })
+          .catch(fail_on_error(client));
+        }
 
+        if (client) {
+          ws.result_key = ws.result_key || client.result_key;
           client.send(messageStr);
         } else {
           console.warn('No client connected for device "' + ws.device_registered + '". Ignoring.');
