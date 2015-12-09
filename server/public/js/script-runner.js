@@ -1,4 +1,4 @@
-function run_script(server, device_id, statements, callbacks) {
+function run_script(server, device_id, app_id, code_id, statements, callbacks) {
 
   function callback(event, data) {
     $(document).trigger('test-progress', [event, data]);
@@ -7,13 +7,17 @@ function run_script(server, device_id, statements, callbacks) {
 
   var script = {
     statements: statements,
-    name: window.location.pathname.replace(/.*\//, ''),
-    device: device_id
+    name: window.location.pathname.replace(/.*\//, '')
   };
 
   callback('beforeStart', script.statements);
 
-  var ws = new WebSocket('ws://' + server + '/api/client');
+  var ws = new WebSocket(
+    'ws://' + server + '/api/client'
+    + '?device=' + encodeURIComponent(device_id)
+    + '&app=' + encodeURIComponent(app_id)
+    + '&code=' + encodeURIComponent(code_id)
+  );
   ws.onopen = function() {
     callback('onStart');
     ws.send(JSON.stringify(script));
