@@ -1,4 +1,4 @@
-function setup_repl(server, device_id, app_id, id, callbacks) {
+function setup_repl(server, device_id, id, callbacks) {
   $repl = $('#' + id);
 
   var repl = ace.edit(id);
