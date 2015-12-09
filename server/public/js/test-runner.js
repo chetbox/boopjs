@@ -57,7 +57,7 @@ function errorHTML(message) {
     .append( $('<pre>').text(message.stacktrace) );
 }
 
-function run_test(source, server, device_id, app_id, code_id) {
+function run_test(source, server, device_id, code_id) {
   ga('send', 'event', 'button', 'click', 'run');
 
   var statements = esprima.parse(
@@ -74,7 +74,7 @@ function run_test(source, server, device_id, app_id, code_id) {
     return message.line ? testReportEl.find('.line-' + message.line + ' > ol') : testReportEl;
   }
 
-  run_script(server, device_id, app_id, code_id, statements, {
+  run_script(server, device_id, code_id, statements, {
     beforeStart: function(statements) {
       testReportEl.empty();
       statements.forEach(function(stmt) {

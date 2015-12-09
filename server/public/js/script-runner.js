@@ -1,4 +1,4 @@
-function run_script(server, device_id, app_id, code_id, statements, callbacks) {
+function run_script(server, device_id, code_id, statements, callbacks) {
 
   function callback(event, data) {
     $(document).trigger('test-progress', [event, data]);
@@ -15,9 +15,8 @@ function run_script(server, device_id, app_id, code_id, statements, callbacks) {
   var ws = new WebSocket(
     'ws://' + server + '/api/client'
     + '?device=' + encodeURIComponent(device_id)
-    + '&app=' + encodeURIComponent(app_id)
     + (code_id
-        ? '&code=' + encodeURIComponent(code_id) 
+        ? '&code=' + encodeURIComponent(code_id)
         : ''
       )
   );

@@ -24,12 +24,13 @@ exports.add_routes = function(app) {
 
   app.ws('/api/client',
     function(ws, req) {
-      var required = ['device', 'app'];
+      var required = ['device'];
       new Promise(function(resolve, reject) {
-        if (required.every(function(arg_name) {
-          return req.query[arg_name];
-        })) resolve();
-        else reject('"'+ required.join('", "') + '" not specified. (Got ' + JSON.stringify(req.query) + ')');
+        if (!req.query.device) {
+          reject('"device" not specified.');
+          return;
+        }
+        resolve();
       })
       .then(function() {
         return devices.check_device_access(req.query.device, req.user);
@@ -37,21 +38,22 @@ exports.add_routes = function(app) {
       .then(function() {
         return [
           db.v2.devices.get({Key: {id: req.query.device}}),
-          db.v2.apps.get({Key: {id: req.query.app}}),
-          req.query.code
+          req.query.code && req.query.app
             ? db.v2.code.get({Key: {id: req.query.code, app_id: req.query.app}})
             : { id: null } // => REPL or demo. Do not save.
         ];
       })
-      .spread(function(device, app, code) {
+      .spread(function(device, code) {
         if (!device) throw 'Device does not exist: ' + req.query.device;
-        if (!app) throw 'App does not exist: ' + req.query.app;
         if (!code) throw 'Code \'' + req.query.code + '\' does not exist for app: ' + req.query.app;
-        if (!req.user.admin && !_.contains(req.user.apps, app.id))
-          throw 'User does not have access to app'; // TODO: demo?
-        return [app, code];
+        if (!(req.user && req.user.admin)
+            && !device.skip_auth
+            && !_.contains(req.user.apps, req.query.app)) {
+          throw 'User does not have access to app';
+        }
+        return code;
       })
-      .spread(function(app, code) {
+      .then(function(code) {
         if (!code.id) return; // Not running a saved script, do not save
         var key = { code_id: code.id, started_at: Date.now() };
         return req.query.started_at
