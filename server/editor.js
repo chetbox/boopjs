@@ -263,7 +263,6 @@ exports.add_routes = function(app) {
         ];
       })
       .spread(function(app, code, results) {
-        console.log(results);
         if (!app) {
           return res.sendStatus(404);
         }
