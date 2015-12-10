@@ -4,8 +4,11 @@ exports.add_routes = function(app) {
   var Promise = require('bluebird');
 
   var auth = require('./auth');
-  var devices = require('./devices');
   var db = require('./db');
+  var model = {
+    results: require('./model/results'),
+    devices: require('./model/devices')
+  }
 
   var expressWs = require('express-ws')(app);
 
@@ -15,6 +18,7 @@ exports.add_routes = function(app) {
   function fail_on_error(ws, close_immediately) {
     return function(e) {
       console.error(e.stack || e);
+      ws.result_key = undefined;
       ws.send(JSON.stringify({
         error: e.toString()
       }));
@@ -24,26 +28,18 @@ exports.add_routes = function(app) {
 
   app.ws('/api/client',
     function(ws, req) {
-      var required = ['device'];
-      new Promise(function(resolve, reject) {
-        if (!req.query.device) {
-          reject('"device" not specified.');
-          return;
-        }
-        resolve();
-      })
-      .then(function() {
-        return devices.check_device_access(req.query.device, req.user);
-      })
+      var now = Date.now();
+      model.devices.check_device_access(req.query.device, req.user)
       .then(function() {
         return [
           db.v2.devices.get({Key: {id: req.query.device}}),
+          db.v2.apps.get({Key: {id: req.query.app}}),
           req.query.code && req.query.app
             ? db.v2.code.get({Key: {id: req.query.code, app_id: req.query.app}})
             : { id: null } // => REPL or demo. Do not save.
         ];
       })
-      .spread(function(device, code) {
+      .spread(function(device, app, code) {
         if (!device) throw 'Device does not exist: ' + req.query.device;
         if (!code) throw 'Code \'' + req.query.code + '\' does not exist for app: ' + req.query.app;
         if (!(req.user && req.user.admin)
@@ -51,44 +47,41 @@ exports.add_routes = function(app) {
             && !_.contains(req.user.apps, req.query.app)) {
           throw 'User does not have access to app';
         }
-        return code;
+        return [app, code];
       })
-      .then(function(code) {
-        if (!code.id) return; // Not running a saved script, do not save
-        var key = { code_id: code.id, started_at: Date.now() };
+      .spread(function(app, code) {
+        if (!code.id) return; // Not running a saved script, do not save results
         return req.query.started_at
-          ? db.v2.results.get({ // Check results exist
-              code_id: req.query.code,
-              started_at: req.query.started_at
-            }).then(function(result) {
-              console.log('Using existing report:', result);
-              if (!result)
-                throw 'Report started at ' + req.query.started_at + ' not found';
-            })
-          : db.v2.results.put({ // Create a new result
-              Item: _.extend({}, key, { report: [] })
-            }).then(function() {
-              console.log('Creating new report:', key);
-              return key;
-            });
+          ? model.results.check_exists(code.id, req.query.started_at)
+          : model.results.create(code.id, now, app);
       })
       .then(function(result_key) {
-        // Allow /device endpoint to find the key
+        // Allow /api/device endpoint to find the key when saving results
         ws.result_key = result_key;
       })
       .catch(fail_on_error(ws, true));
 
       ws.on('message',
         function(messageStr) {
-          // TODO: store all statements to execute in Report[]
+          var message = JSON.parse(messageStr);
 
-          clients_connected[req.query.device] = ws;
-          var device_socket = devices_connected[req.query.device];
-          if (device_socket) {
-            device_socket.send(messageStr);
-          } else {
-            fail_on_error(ws)('Device not in use: ' + req.query.device);
-          }
+          (ws.result_key
+            ? model.results.set_report( // We're saving results so we'll need a copy of the script
+                ws.result_key,
+                model.results.report_from_statements(message.statements)
+              )
+            : Promise.resolve()
+          )
+          .then(function() {
+            clients_connected[req.query.device] = ws;
+            var device_socket = devices_connected[req.query.device];
+            if (device_socket) {
+              device_socket.send(messageStr);
+            } else {
+              fail_on_error(ws)('Device not in use: ' + req.query.device);
+            }
+          })
+          .catch(fail_on_error(ws));
         }
       );
       ws.on('close', function() {
@@ -114,7 +107,7 @@ exports.add_routes = function(app) {
 
       if (message.register_device) {
         console.log('registering device: ' + message.register_device);
-        devices.check_device_exists(message.register_device)
+        model.devices.check_device_exists(message.register_device)
         .then(function() {
           ws.device_registered = message.register_device;
           devices_connected[message.register_device] = ws;
@@ -127,17 +120,11 @@ exports.add_routes = function(app) {
 
         ws.result_key = (client && client.result_key) || ws.result_key;
         if (ws.result_key) {
-          // Save this result
-          db.v2.results.update({
-            Key: ws.result_key,
-            UpdateExpression: 'SET report = list_append(report, :result)',
-            ExpressionAttributeValues: {':result': [message]}
-          })
+          model.results.update(ws.result_key, message)
           .catch(fail_on_error(client));
         }
 
         if (client) {
-          ws.result_key = ws.result_key || client.result_key;
           client.send(messageStr);
         } else {
           console.warn('No client connected for device "' + ws.device_registered + '". Ignoring.');
