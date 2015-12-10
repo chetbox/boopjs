@@ -62,13 +62,20 @@
       #code .result {
         padding-right: 0.5em;
       }
-      
+
       #code .result .success {
         color: #4CAF50;
       }
 
       #code .result .failure {
         color: #F44336;
+      }
+
+      #code .last-run {
+        font-size: 0.67em;
+        display: block;
+        font-weight: 300;
+        color: #B6B6B6;
       }
 
       #app-update .status {
@@ -153,6 +160,9 @@
               </td>
               <td>
                 <a href="/app/{{app_id}}/edit/{{id}}">{{name}}</a>
+                {{#result}}
+                <span class="last-run">{{date_relative started_at}}</span>
+                {{/result}}
               </td>
               <td>
                 <a href="javascript:rename('/app/{{app_id}}/edit/{{id}}', '{{name}}');">
