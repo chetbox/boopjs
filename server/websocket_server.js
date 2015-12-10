@@ -30,18 +30,22 @@ exports.add_routes = function(app) {
     function(ws, req) {
       var now = Date.now();
       model.devices.check_device_access(req.query.device, req.user)
-      .then(function() {
+      .then(function(device) {
         return [
-          db.v2.devices.get({Key: {id: req.query.device}}),
-          db.v2.apps.get({Key: {id: req.query.app}}),
+          device,
+          req.query.app
+            ? db.v2.apps.get({Key: {id: req.query.app}})
+            : Promise.resolve(),
           req.query.code && req.query.app
             ? db.v2.code.get({Key: {id: req.query.code, app_id: req.query.app}})
-            : { id: null } // => REPL or demo. Do not save.
-        ];
+              .then(function(code) {
+                if (!code) throw 'Code "' + req.query.code + '" does not exist';
+                return code;
+              })
+            : Promise.resolve()
+        ]
       })
       .spread(function(device, app, code) {
-        if (!device) throw 'Device does not exist: ' + req.query.device;
-        if (!code) throw 'Code \'' + req.query.code + '\' does not exist for app: ' + req.query.app;
         if (!(req.user && req.user.admin)
             && !device.skip_auth
             && !_.contains(req.user.apps, req.query.app)) {
@@ -50,7 +54,7 @@ exports.add_routes = function(app) {
         return [app, code];
       })
       .spread(function(app, code) {
-        if (!code.id) return; // Not running a saved script, do not save results
+        if (!code) return; // Not running a saved script, do not save results
         return req.query.started_at
           ? model.results.check_exists(code.id, req.query.started_at)
           : model.results.create(code.id, now, app);
