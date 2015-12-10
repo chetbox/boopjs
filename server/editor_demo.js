@@ -4,7 +4,7 @@ exports.add_routes = function(app) {
   var shortid = require('shortid');
   var host_address = require('config').get('host.address');
 
-  var devices = require('./devices');
+  var devices = require('./model/devices');
 
   var demo_code = fs.readFileSync(__dirname + '/demos/slack.js');
 

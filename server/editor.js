@@ -9,7 +9,7 @@ exports.add_routes = function(app) {
 
   var db = require('./db');
   var auth = require('./auth');
-  var devices = require('./devices');
+  var devices = require('./model/devices');
   var s3 = require('./s3');
   var test_runner = require('./test_runner');
   var fail_on_error = require('./util').fail_on_error;
