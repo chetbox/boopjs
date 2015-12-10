@@ -59,6 +59,18 @@
         margin-bottom: -1em;
       }
 
+      #code .result {
+        padding-right: 0.5em;
+      }
+      
+      #code .result .success {
+        color: #4CAF50;
+      }
+
+      #code .result .failure {
+        color: #F44336;
+      }
+
       #app-update .status {
         display: none;
         color: #999;
@@ -131,6 +143,14 @@
           <tbody>
             {{#code}}
             <tr>
+              <td class="result">
+                <a href="/app/{{app_id}}/edit/{{id}}">
+                  {{#result}}
+                    {{#success}}<iron-icon icon="check" class="success" />{{/success}}
+                    {{#error}}<iron-icon icon="clear" class="failure" />{{/error}}
+                  {{/result}}
+                </a>
+              </td>
               <td>
                 <a href="/app/{{app_id}}/edit/{{id}}">{{name}}</a>
               </td>
