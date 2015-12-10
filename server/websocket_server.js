@@ -125,7 +125,7 @@ exports.add_routes = function(app) {
         console.log('response:', messageStr.substring(0, 200));
         var client = clients_connected[ws.device_registered];
 
-        ws.result_key = ws.result_key || (client && client.result_key);
+        ws.result_key = (client && client.result_key) || ws.result_key;
         if (ws.result_key) {
           // Save this result
           db.v2.results.update({
