@@ -22,6 +22,10 @@ exports.consume_access_token = function(access_token_query_key) {
   return function(req, res, next) {
     var endpoint = url.parse(req.originalUrl).pathname;
     var token = req.query[access_token_query_key];
+    if (!token) {
+      res.status(400).send(access_token_query_key + ' not specified');
+      return;
+    }
     db.run_tokens().find({hash: endpoint, range: token})
     .then(function(run_token) {
       if (run_token) {
