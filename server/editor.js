@@ -19,7 +19,8 @@ exports.add_routes = function(app) {
 
   var model = {
     results: require('./model/results'),
-    devices: require('./model/devices')
+    devices: require('./model/devices'),
+    run_tokens: require('./model/run_tokens')
   }
 
   var welcome_code = fs.readFileSync(__dirname + '/demos/welcome.js', 'utf8');
@@ -373,7 +374,7 @@ exports.add_routes = function(app) {
   );
 
   app.get('/app/:app_id/run/:code_id',
-    test_runner.consume_access_token('access_token'),
+    model.run_tokens.middleware.consume('access_token'),
     ensure_code_belongs_to_app,
     function(req, res) {
       Promise.join(
