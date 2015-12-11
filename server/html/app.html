@@ -71,6 +71,15 @@
         color: #F44336;
       }
 
+      #code .result .running {
+        color: #9E9E9E;
+        animation:spin 4s linear infinite;
+      }
+
+      @keyframes spin {
+        100% { transform:rotate(360deg); }
+      }
+
       #code .last-run {
         font-size: 0.67em;
         display: block;
@@ -155,6 +164,9 @@
                   {{#result}}
                     {{#success}}<iron-icon icon="check" class="success" />{{/success}}
                     {{#error}}<iron-icon icon="clear" class="failure" />{{/error}}
+                    {{#unless success}}{{#unless error}}
+                      <iron-icon icon="autorenew" class="running" />
+                    {{/unless}}{{/unless}}
                   {{/result}}
                 </a>
               </td>
