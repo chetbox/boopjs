@@ -9,15 +9,26 @@ exports.add_routes = function(app) {
 
   var db = require('./db');
   var auth = require('./auth');
-  var devices = require('./devices');
   var s3 = require('./s3');
+  var test_runner = require('./test_runner');
   var fail_on_error = require('./util').fail_on_error;
   var appetizeio = require('./apps/appetizeio');
   var inject_chetbot = require('./apps/android/inject-chetbot');
   var android_app_info = require('./apps/android/info');
   var email = require('./reporting/email');
 
+  var model = {
+    results: require('./model/results'),
+    devices: require('./model/devices'),
+    run_tokens: require('./model/run_tokens')
+  }
+
   var welcome_code = fs.readFileSync(__dirname + '/demos/welcome.js', 'utf8');
+
+  var DEFAULT_DEVICE = {
+    model: 'nexus5',
+    orientation: 'portrait',
+  };
 
   function ensure_code_belongs_to_app(req, res, next) {
     db.code().find({hash: req.params.app_id, range: req.params.code_id})
@@ -244,14 +255,24 @@ exports.add_routes = function(app) {
         db.code().findAll(req.params.app_id)
       ])
       .spread(function(app, code) {
+        return [
+          app,
+          code,
+          model.results.all_latest(
+            code.map(function(c) { return c.id; })
+          )
+        ];
+      })
+      .spread(function(app, code, results) {
         if (!app) {
           return res.sendStatus(404);
         }
         res.render('app', {
           user: req.user,
           app: app,
-          code: code.map(function(c) {
+          code: code.map(function(c, i) {
             c.name = c.name || c.id;
+            c.result = results[i];
             return c;
           })
         });
@@ -318,7 +339,7 @@ exports.add_routes = function(app) {
       Promise.join(
         db.apps().find(req.params.app_id),
         db.code().find({hash: req.params.app_id, range: req.params.code_id}),
-        devices.create_device({user: req.user})
+        model.devices.create_device({user: req.user})
       )
       .spread(function(app, code, device_id) {
         if (!code || !app) {
@@ -326,23 +347,60 @@ exports.add_routes = function(app) {
         }
         res.render('edit', {
           user: req.user,
-          device: {
+          device: _.extend(DEFAULT_DEVICE, {
             id: device_id,
-            model: 'nexus5',
-            orientation: 'portrait',
             location: function() {
               // code.location is JSON parsed below
               return code.location
                 ? (code.location.lat.toFixed(7) + ',' + code.location.lon.toFixed(7))
                 : null;
             }
+          }),
+          server: host_address,
+          app: {
+            id: app.id,
+            icon: app.icon,
+            publicKey: app.publicKey
           },
+          autosave: true,
+          code: _.extend(code, {
+            name: code.name || code.id,
+            location: code.location && JSON.parse(code.location)
+          })
+        });
+      })
+      .catch(fail_on_error(res));
+    }
+  );
+
+  app.get('/app/:app_id/run/:code_id',
+    model.run_tokens.middleware.consume('access_token'),
+    ensure_code_belongs_to_app,
+    function(req, res) {
+      Promise.join(
+        db.apps().find(req.params.app_id),
+        db.code().find({hash: req.params.app_id, range: req.params.code_id}),
+        model.devices.create_device({user: null})
+      )
+      .spread(function(app, code, device_id) {
+        if (!code || !app) {
+          return res.sendStatus(404);
+        }
+        res.render('run', {
+          device: _.extend(DEFAULT_DEVICE, {
+            id: device_id,
+            location: function() {
+              // code.location is JSON parsed below
+              return code.location
+                ? (code.location.lat.toFixed(7) + ',' + code.location.lon.toFixed(7))
+                : null;
+            }
+          }),
           server: host_address,
           app: {
             icon: app.icon,
             publicKey: app.publicKey
           },
-          autosave: true,
           code: _.extend(code, {
             name: code.name || code.id,
             location: code.location && JSON.parse(code.location)

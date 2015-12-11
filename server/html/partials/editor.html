@@ -1,0 +1,255 @@
+<div id="editor-container" class="editing">
+  <link rel="stylesheet" href="/css/repl.css"/>
+  <style type="text/css" scoped>
+    #editor-container {
+      position: fixed;
+      top: 0;
+      left: 380px;
+      right: 0;
+      bottom: 0;
+    }
+
+    #editor-container:not(.editing) #controls a.back,
+    #editor-container.editing:not(.running) #controls a.run,
+    #editor-container.running #controls a.stop {
+      display: inline-block;
+    }
+
+    #statusbar {
+      background: #193c43;
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 24px;
+      bottom: 0;
+      transition: bottom .2s ease-out;
+      text-align: right;
+      z-index: 5;
+      box-shadow: 0 -5px 5px -5px rgba(0,0,0,0.5), 0 5px 5px -5px rgba(0,0,0,0.5);
+    }
+
+    .show-repl #statusbar {
+      bottom: 150px;
+    }
+
+    #statusbar paper-icon-button {
+      padding: 0;
+      margin: 0 0.5em;
+      color: rgba(255,255,255,0.67);
+      height: 1.5em;
+    }
+
+    .content-panel {
+      display: block;
+      position: absolute;
+      top: 64px;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      transition: bottom .2s ease-out;
+      {{#user}}
+      bottom: 24px; /* make room for #statusbar */
+      {{/user}}
+    }
+
+    .show-repl .content-panel {
+      bottom: 174px;
+    }
+
+    /* Make the editor look better loading */
+    #editor {
+      background: #1D1F21;
+    }
+    #editor .ace_gutter {
+      background: #25282c;
+    }
+
+    #editor-container.editing #test-report {
+      display: none;
+    }
+
+    #editor-container:not(.editing) #editor {
+      display: none;
+    }
+
+    #controls {
+      padding: 0 12px;
+      height: 64px;
+    }
+
+    body:not(.logged-in) #controls {
+      background: #00BCD4;
+    }
+
+    #controls > * {
+      font-size: 16px;
+      vertical-align: middle;
+      line-height: 1.0;
+      margin-top: 12px;
+    }
+
+    #controls a {
+      display: none;
+      color: #fff;
+    }
+
+    body.saving #controls .status.saving {
+      opacity: 1;
+    }
+  </style>
+  <style type="text/css" media="print" scoped>
+    #editor-container {
+      left: 0;
+    }
+
+    #editor, #test-report {
+      top: 0;
+      left: 0;
+    }
+
+    iframe, #controls {
+      display: none;
+    }
+  </style>
+  <div id="controls">
+    <a class="back" href="javascript:showEditor();" title="Back to editor">
+      <paper-icon-button icon="create"></paper-icon-button>
+    </a>
+    <a class="run" href="javascript:run_test(editor.getSession().getDocument().getValue(), '{{server}}', '{{device.id}}', '{{app.id}}', '{{code.id}}');" title="Run test">
+      <paper-icon-button icon="av:play-arrow"></paper-icon-button>
+      {{^user}}<span class="hint">&#8592; Press me</span>{{/user}}
+    </a>
+  </div>
+  <div id="editor" class="content-panel">{{code.content}}</div>
+  {{> test-report}}
+  {{#user}}
+  <div id="statusbar">
+    <a href="javascript:toggle_repl();">
+      <paper-icon-button icon="code"></paper-icon-button>
+    </a>
+  </div>
+  <div id="repl"></div>
+  {{/user}}
+</div>
+
+<!-- editor -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.1.9/ace.js" charset="utf-8"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.1.9/ext-language_tools.js" charset="utf-8"></script>
+<script>
+  var language_tools = ace.require('ace/ext/language_tools');
+
+  var editor = ace.edit('editor');
+  editor.setTheme('ace/theme/tomorrow_night');
+  editor.getSession().setMode('ace/mode/javascript');
+  editor.setOptions({
+    enableLiveAutocompletion: true,
+    enableSnippets: false
+  });
+</script>
+
+{{#autosave}}
+<script src="/js/chetbot-autosave.js"></script>
+<script>
+  autosave(editor);
+</script>
+{{/autosave}}
+
+<!-- repl -->
+<script type="text/javascript" src="/js/repl.js"></script>
+<script type="text/javascript">
+  var repl;
+
+  function toggle_repl() {
+    $('body').toggleClass('show-repl');
+    if ($('body').hasClass('show-repl')) {
+      repl.focus();
+    } else {
+      editor.focus();
+    }
+  }
+
+  {{#user}}
+  repl = setup_repl('{{../server}}', '{{../device.id}}', '{{../app.id}}', 'repl', {
+    onClose: toggle_repl
+  });
+  {{/user}}
+</script>
+
+<!-- autocomplete -->
+<script type="text/javascript">
+  // TODO: fetch bultin functions from server
+  var builtin_fns = [
+    'function', 'for', 'var', 'while', 'do', // JS
+    'activity', 'content_view', 'run_on_ui_thread', // Activity
+    'tap', 'press', 'type_text', 'hide_keyboard', 'wait', 'screenshot', 'open_drawer', 'close_drawer', // interaction
+    'view', 'views', 'bottommost', 'topmost', 'leftmost', 'rightmost', 'centermost', 'outermost', 'closest_to', 'furthest_from',  // selectors
+    'location', 'size', 'text', 'id', 'class_of', 'visible', 'count', 'all_ids', // inspection
+    'assert_true', 'assert_false', 'assert_equal', 'assert_visible', // assertions
+    'wait', 'wait_until_idle', 'wait_for', // wait
+    'open_uri' // IPC
+  ];
+  var my_completer = {
+    getCompletions: function(editor, session, pos, prefix, callback) {
+      callback(null, builtin_fns.map(function(f) {
+        return {caption: f, snippet: f};
+      }));
+    }
+  };
+  editor.completers = [language_tools.textCompleter, my_completer];
+  if (repl) repl.completers   = [my_completer];
+</script>
+
+<!-- keyboard shortcuts -->
+<script type="text/javascript">
+  $(document).keydown(function(e) {
+    if (e.which === 'S'.charCodeAt(0) && (e.ctrlKey || e.metaKey)) {
+      save(editor);
+      return false;
+    }
+    if (e.which === 'I'.charCodeAt(0) && (e.ctrlKey || e.metaKey)) {
+      toggle_repl();
+      return false;
+    }
+    if (e.which === 'R'.charCodeAt(0) && e.ctrlKey) {
+      eval( $('#controls a.run:visible').attr('href') );
+      return false;
+    }
+    if (e.which == 27 /* ESC */) {
+      eval( $('#controls a.back:visible').attr('href') );
+      return false;
+    }
+  });
+</script>
+
+<!-- set device location -->
+<script>
+  // Required by partial: set-location-dialog
+  function set_location(button) {
+    var $dialog = $(button).parents('paper-dialog'),
+        lat = parseFloat($dialog.find('paper-input[name=lat]').get(0).value),
+        lon = parseFloat($dialog.find('paper-input[name=lon]').get(0).value),
+        location_set = !isNaN(lat) && !isNaN(lon);
+    if (location_set) {
+      // Update the location on the device now
+      device_iframe.contentWindow.postMessage({type:'location', value:[lat, lon]}, '*');
+    }
+    // Save location to server
+    $.ajax(location.pathname + '/location', {
+      method: 'PUT',
+      contentType: 'text/plain; charset=UTF-8',
+      data: JSON.stringify(location_set ? {lat:lat, lon:lon} : null), // HACK: stored as plain text with JSON string
+      success: function() {
+        console.log('Location set: ', [lat, lon]);
+      },
+      error: function(e) {
+        console.error(e);
+      }
+    });
+  }
+</script>
+
+<!-- test runner -->
+<script src="/js/esprima.min.js" charset="utf-8"></script>
+<script src="/js/escodegen.min.js" charset="utf-8"></script>
+<script src="/js/script-runner.js"></script>
+<script src="/js/test-runner.js"></script>

@@ -1,3 +1,6 @@
+// Set random seed
+require('shortid').seed(56873);
+
 var express = require('express');
 var app = express();
 var express_handlebars = require('express-handlebars');

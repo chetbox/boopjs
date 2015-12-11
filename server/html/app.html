@@ -41,8 +41,8 @@
         text-align: left;
       }
 
-      #code tr {
-        margin: 0.5em 0;
+      #code tr > td {
+        padding-bottom: 0.5em;
       }
 
       #code tr a {
@@ -57,6 +57,34 @@
         color: #ddd;
         padding: 0.5em 0;
         margin-bottom: -1em;
+      }
+
+      #code .result {
+        padding-right: 0.5em;
+      }
+
+      #code .result .success {
+        color: #4CAF50;
+      }
+
+      #code .result .failure {
+        color: #F44336;
+      }
+
+      #code .result .running {
+        color: #9E9E9E;
+        animation:spin 4s linear infinite;
+      }
+
+      @keyframes spin {
+        100% { transform:rotate(360deg); }
+      }
+
+      #code .last-run {
+        font-size: 0.67em;
+        display: block;
+        font-weight: 300;
+        color: #B6B6B6;
       }
 
       #app-update .status {
@@ -131,8 +159,22 @@
           <tbody>
             {{#code}}
             <tr>
+              <td class="result">
+                <a href="/app/{{app_id}}/edit/{{id}}">
+                  {{#result}}
+                    {{#success}}<iron-icon icon="check" class="success" />{{/success}}
+                    {{#error}}<iron-icon icon="clear" class="failure" />{{/error}}
+                    {{#unless success}}{{#unless error}}
+                      <iron-icon icon="autorenew" class="running" />
+                    {{/unless}}{{/unless}}
+                  {{/result}}
+                </a>
+              </td>
               <td>
                 <a href="/app/{{app_id}}/edit/{{id}}">{{name}}</a>
+                {{#result}}
+                <span class="last-run">{{date_relative started_at}}</span>
+                {{/result}}
               </td>
               <td>
                 <a href="javascript:rename('/app/{{app_id}}/edit/{{id}}', '{{name}}');">

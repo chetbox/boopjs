@@ -7,14 +7,18 @@
     "clientID": "GITHUB_CLIENT_ID",
     "clientSecret": "GITHUB_CLIENT_SECRET"
   },
-  "dynamodb": {
-    "accessKeyId": "DYNAMODB_ACCESS_KEY_ID",
-    "secretAccessKey": "DYNAMODB_SECRET_ACCESS_KEY",
-    "region": "us-west-1"
-  },
-  "s3": {
-    "accessKeyId": "DYNAMODB_ACCESS_KEY_ID",
-    "secretAccessKey": "DYNAMODB_SECRET_ACCESS_KEY"
+  "aws": {
+    "s3": {
+      "accessKeyId": "AWS_ACCESS_KEY_ID",
+      "secretAccessKey": "AWS_SECRET_ACCESS_KEY",
+      "region": "us-west-1"
+    },
+    "dynamodb": {
+      "accessKeyId": "AWS_ACCESS_KEY_ID",
+      "secretAccessKey": "AWS_SECRET_ACCESS_KEY",
+      "region": "us-west-1",
+      "endpoint": "http://localhost:8000"
+    }
   },
   "appetize_io": {
     "token": "APPETIZEIO_TOKEN"
@@ -26,5 +30,9 @@
     "admins": [
       "ADMIN_EMAIL_ADDRESS"
     ]
+  },
+  "test_runner": {
+    "protocol": "http",
+    "host": "TEST_RUNNER_HOST"
   }
 }
