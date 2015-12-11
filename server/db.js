@@ -1,6 +1,7 @@
 var config = require('config');
 var dynasty = require('dynasty')(config.get('aws.dynamodb'));
 var _ = require('underscore');
+var debug = require('debug')(require('path').relative(process.cwd(), __filename).replace(/\.js$/, ''));
 
 var TABLE_PREFIX = 'chetbot.';
 var TABLES = {
@@ -48,6 +49,7 @@ dynasty.list()
 
 _.each(TABLES, function(_, name) {
   exports[name] = function() {
+    debug(name);
     return dynasty.table(TABLE_PREFIX + name);
   };
 });
@@ -63,6 +65,7 @@ require('bluebird').promisifyAll(Object.getPrototypeOf(dynamodb));
 exports.v2 = Object.keys(TABLES).reduce(function(fns, table_short_name) {
   fns[table_short_name] = ['update', 'put', 'get', 'scan', 'query', 'delete'].reduce(function(fns, fn_name) {
     fns[fn_name] = function(params) {
+      debug(TABLE_PREFIX + table_short_name, fn_name);
       return dynamodb[fn_name + 'Async'](_.extend(
         params,
         { TableName: TABLE_PREFIX + table_short_name }
