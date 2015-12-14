@@ -6,16 +6,15 @@ var model = {
   run_tokens: require('./model/run_tokens')
 };
 
-exports.run = function(app_id, code_id) {
-  var endpoint = '/app/' + app_id + '/run/' + code_id;
+module.exports = function(endpoint) {
   return model.run_tokens.create(endpoint)
   .then(function(access_token) {
     return request.postAsync({
-      url: config.test_runner.protocol + '://' + config.test_runner.host + '/run',
+      url: config.test_runner.protocol + '://' + config.test_runner.host + '/open',
       json: true,
       body: {
-        url: config.host + '://' + endpoint + '?access_token=' + access_token,
-        script: '// TODO: close when test finishes'
+        url: config.host.protocol + '://' + config.host.address + endpoint + '?access_token=' + access_token,
+        script: "$(document).on('test-progress', function(e, name) { if (name === 'onFinish') close(); });"
       }
     });
   })

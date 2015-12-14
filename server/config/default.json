@@ -33,6 +33,6 @@
   },
   "test_runner": {
     "protocol": "http",
-    "host": "TEST_RUNNER_HOST"
+    "host": "GHOULIO_SERVER"
   }
 }

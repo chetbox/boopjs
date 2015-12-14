@@ -177,6 +177,11 @@
                 {{/result}}
               </td>
               <td>
+                <a href="javascript:run('{{app_id}}', '{{id}}');">
+                  <paper-icon-button class="compact" icon="av:play-arrow"></paper-icon-button>
+                </a>
+              </td>
+              <td>
                 <a href="javascript:rename('/app/{{app_id}}/edit/{{id}}', '{{name}}');">
                   <paper-icon-button class="compact" icon="create"></paper-icon-button>
                 </a>
@@ -237,6 +242,16 @@
 
     function delete_this() {
       return ajax_delete('/app/{{app.id}}', '{{app.name}}', '/apps');
+    }
+
+    function run(app_id, code_id) {
+      $.ajax('/app/' + app_id + '/test/' + code_id + '/run', {
+        method: 'POST'
+      }).done(function() {
+        location.reload();
+      }).fail(function(xhr, status, e) {
+        alert(e.toString());
+      });
     }
   </script>
 </html>
