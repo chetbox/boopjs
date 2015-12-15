@@ -31,7 +31,6 @@ CMD npm start
 
 # Add project
 ADD . /opt/chetbot
-VOLUME /opt/chetbot/server/config
 
 # Configure project
 RUN npm install --unsafe-perm
