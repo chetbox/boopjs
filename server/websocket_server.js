@@ -28,13 +28,16 @@ exports.add_routes = function(app) {
 
   app.ws('/api/client',
     function(ws, req) {
-      var now = Date.now();
       model.devices.check_device_access(req.query.device, req.user)
       .then(function(device) {
         return [
           device,
           req.query.app
             ? db.v2.apps.get({Key: {id: req.query.app}})
+              .then(function(app) {
+                if (!app) throw 'App "' + req.query.app + '" does not exist';
+                return app;
+              })
             : Promise.resolve(),
           req.query.code && req.query.app
             ? db.v2.code.get({Key: {id: req.query.code, app_id: req.query.app}})
@@ -42,26 +45,23 @@ exports.add_routes = function(app) {
                 if (!code) throw 'Code "' + req.query.code + '" does not exist';
                 return code;
               })
+            : Promise.resolve(),
+          req.query.code && req.query.started_at
+            ? model.results.get(req.query.code, req.query.started_at)
             : Promise.resolve()
         ]
       })
-      .spread(function(device, app, code) {
+      .spread(function(device, app, code, result) {
         if (!(req.user && req.user.admin)
             && !device.skip_auth
             && !_.contains(req.user.apps, req.query.app)) {
           throw 'User does not have access to app';
         }
-        return [app, code];
-      })
-      .spread(function(app, code) {
-        if (!code) return; // Not running a saved script, do not save results
-        return req.query.started_at
-          ? model.results.check_exists(code.id, req.query.started_at)
-          : model.results.create(code.id, now, app);
-      })
-      .then(function(result_key) {
+
         // Allow /api/device endpoint to find the key when saving results
-        ws.result_key = result_key;
+        if (result) {
+          ws.result_key = model.results.key(result);
+        }
       })
       .catch(fail_on_error(ws, true));
 

@@ -374,11 +374,7 @@ exports.add_routes = function(app) {
     ensure_user_can_access_app,
     ensure_code_belongs_to_app,
     function(req, res) {
-      var test_run_endpoint = '/app/' + req.params.app_id + '/test/' + req.params.code_id + '/autorun';
-      model.run_tokens.create(test_run_endpoint)
-      .then(function(token) {
-        return run_test(test_run_endpoint);
-      })
+      run_test(req.params.app_id, req.params.code_id)
       .then(function() {
         res.sendStatus(200);
       })
@@ -387,17 +383,18 @@ exports.add_routes = function(app) {
   );
 
   // Page opened by the test runner
-  app.get('/app/:app_id/test/:code_id/autorun',
+  app.get('/app/:app_id/test/:code_id/autorun/:started_at',
     model.run_tokens.middleware.consume('access_token'),
     ensure_code_belongs_to_app,
     function(req, res) {
       Promise.join(
         db.apps().find(req.params.app_id),
         db.code().find({hash: req.params.app_id, range: req.params.code_id}),
+        model.results.get(req.params.code_id, req.params.started_at),
         model.devices.create_device({user: null})
       )
-      .spread(function(app, code, device_id) {
-        if (!code || !app) {
+      .spread(function(app, code, result, device_id) {
+        if (!code || !app || !result) {
           return res.sendStatus(404);
         }
         res.render('run', {
@@ -415,7 +412,8 @@ exports.add_routes = function(app) {
           code: _.extend(code, {
             name: code.name || code.id,
             location: code.location && JSON.parse(code.location)
-          })
+          }),
+          started_at: result.started_at
         });
       })
       .catch(fail_on_error(res));
