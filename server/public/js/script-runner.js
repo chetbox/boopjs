@@ -16,8 +16,12 @@ function run_script(server, device_id, app_id, code_id, started_at, statements, 
     'ws://' + server + '/api/client'
     + '?device=' + encodeURIComponent(device_id)
     + '&app=' + encodeURIComponent(app_id)
+    + (code_id
+        ? '&code=' + encodeURIComponent(code_id)
+        : ''
+      )
     + (code_id && started_at
-        ? '&code=' + encodeURIComponent(code_id) + '&started_at=' + encodeURIComponent(started_at)
+        ? '&started_at=' + encodeURIComponent(started_at)
         : ''
       )
   );
