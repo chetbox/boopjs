@@ -78,13 +78,16 @@ exports.update = function(key, response) {
     return (('line' in response)
       ? db.v2.results.update({
           Key: key,
-          UpdateExpression: 'SET report[' + response.line + '].success = :result',
+          UpdateExpression: 'SET report[' + response.line + '].#error = :error',
           ConditionExpression: 'attribute_not_exists(success) AND attribute_not_exists(#error)',
           ExpressionAttributeNames: {
             '#error': 'error'
           },
           ExpressionAttributeValues: {
-            ':result': _.omit(response, 'line')
+            ':error': {
+              description: response.error,
+              stacktrace: response.stacktrace
+            }
           }
         })
       : Promise.resolve())
