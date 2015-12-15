@@ -16,8 +16,7 @@
     "dynamodb": {
       "accessKeyId": "AWS_ACCESS_KEY_ID",
       "secretAccessKey": "AWS_SECRET_ACCESS_KEY",
-      "region": "us-west-1",
-      "endpoint": "http://localhost:8000"
+      "region": "us-west-1"
     }
   },
   "appetize_io": {

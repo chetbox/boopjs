@@ -22,16 +22,14 @@ exports.key = function(result) {
 
 exports.create = function(code_id, started_at, app) {
   debug('create', code_id, started_at, app.identifier);
-  return db.v2.results.put({
-    Item: {
-      code_id: code_id,
-      started_at: started_at,
-      app: app
-    }
-  })
+  return db.v2.results.put({ Item: {
+    code_id: code_id,
+    started_at: started_at,
+    app: app
+  }})
   .then(function() {
     return { code_id: code_id, started_at: started_at };
-  })
+  });
 }
 
 exports.get = function(code_id, started_at) {
@@ -101,7 +99,7 @@ exports.update = function(key, response) {
         ExpressionAttributeValues: {
           ':error': {
             description: response.error,
-            stacktrace: response.stracktrace
+            stacktrace: response.stacktrace
           }
         }
       });
