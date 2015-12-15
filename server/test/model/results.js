@@ -215,7 +215,7 @@ describe('model.results', function() {
       .then(function() {
         return [
           results.update(key, {line: 1, result: 'First.'}),
-          results.update(key, {line: 3, result: 'third---'})
+          results.update(key, {line: 3, result: ['Th', 'ir', 'd']})
         ];
       })
       .spread(function() {
@@ -230,9 +230,47 @@ describe('model.results', function() {
             null,
             {source: 'one()', success: {result: 'First.'}},
             null,
-            {source: 'three()', success: {result: 'third---'}}
+            {source: 'three()', success: {result: ['Th', 'ir', 'd']}}
           ],
           success: true
+        }]);
+      })
+      .then(done);
+    });
+
+    it('error executing line', function(done) {
+      var key;
+      results.create('code_line_error', 123456, APP)
+      .then(function(_key) {
+        key = _key;
+        return results.set_report(key, [
+          null,
+          {source: 'one()'},
+          {source: 'two()'},
+          {source: 'three()'}
+        ]);
+      })
+      .then(function() {
+        return [
+          results.update(key, {line: 1, result: 'First.'}),
+          results.update(key, {line: 2, error: 'Error on line 2', stacktrace: 'Line 2\nError'})
+        ];
+      })
+      .spread(function() {
+        return results.update(key, {success: false});
+      })
+      .then(function() {
+        return assert_items([{
+          code_id: 'code_line_error',
+          started_at: 123456,
+          app: APP,
+          report: [
+            null,
+            {source: 'one()', success: {result: 'First.'}},
+            {source: 'two()', error: {description: 'Error on line 2', stacktrace: 'Line 2\nError'}},
+            {source: 'three()'}
+          ],
+          error: {description: 'Error on line 2', stacktrace: 'Line 2\nError'}
         }]);
       })
       .then(done);
