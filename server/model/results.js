@@ -3,7 +3,7 @@ var Promise = require('bluebird');
 var db = require('../db');
 var debug = require('debug')(require('path').relative(process.cwd(), __filename).replace(/\.js$/, ''));
 
-exports.report_from_statements= function(statements) {
+exports.report_from_statements = function(statements) {
   return statements.reduce(function(report, stmt) {
     while (report.length < stmt.line) {
       report.push(null);
@@ -58,48 +58,73 @@ exports.set_report = function(key, report) {
 
 exports.update = function(key, response) {
   debug('update', key, 'with', Object.keys(response));
+
+  if ('line' in response && typeof(response.line) !== 'number') {
+    return Promise.reject('"line" must be an integer');
+  }
+
   if ('result' in response) { // Statement successful
-    if (typeof(response.line) !== 'number')
-      return Promise.reject('"line" must be an integer');
     return db.v2.results.update({
       Key: key,
       UpdateExpression: 'SET report[' + response.line + '].success = :result',
+      ConditionExpression: 'attribute_not_exists(success) AND attribute_not_exists(#error) AND attribute_exists(report)',
+      ExpressionAttributeNames: {
+        '#error': 'error'
+      },
       ExpressionAttributeValues: {
         ':result': _.omit(response, 'line')
-      },
-      ConditionExpression: 'attribute_exists(report)'
+      }
     });
   }
   if ('error' in response) {
-    return Promise.join(
-      db.v2.results.update({
+    return (('line' in response)
+      ? db.v2.results.update({
+          Key: key,
+          UpdateExpression: 'SET report[' + response.line + '].success = :result',
+          ConditionExpression: 'attribute_not_exists(success) AND attribute_not_exists(#error)',
+          ExpressionAttributeNames: {
+            '#error': 'error'
+          },
+          ExpressionAttributeValues: {
+            ':result': _.omit(response, 'line')
+          }
+        })
+      : Promise.resolve())
+    .then(function() {
+      return db.v2.results.update({
         Key: key,
-        AttributeUpdates: {
-          success: { Action: 'PUT', Value: false },
-          error: { Action: 'PUT', Value: {
+        UpdateExpression: 'SET #error = :error',
+        ConditionExpression: 'attribute_not_exists(success) AND attribute_not_exists(#error)',
+        ExpressionAttributeNames: {
+          '#error': 'error'
+        },
+        ExpressionAttributeValues: {
+          ':error': {
             description: response.error,
             stacktrace: response.stracktrace
-          }}
+          }
         }
-      }),
-      ('line' in response)
-        ? db.v2.results.update({
-            Key: key,
-            UpdateExpression: 'SET report[' + response.line + '].success = :result',
-            ExpressionAttributeValues: {
-              ':result': _.omit(response, 'line')
-            }
-          })
-        : Promise.resolve()
-    );
-  }
-  if ('success' in response) { // Completed successfully
-    return db.v2.results.update({
-      Key: key,
-      AttributeUpdates: {
-        success: { Action: 'PUT', Value: response.success },
-      }
+      });
     });
+  }
+  if ('success' in response) {
+    if (response.success) {
+      // Completed successfully
+      return db.v2.results.update({
+        Key: key,
+        UpdateExpression: 'SET success = :success',
+        ConditionExpression: 'attribute_not_exists(success) AND attribute_not_exists(#error)',
+        ExpressionAttributeNames: {
+          '#error': 'error'
+        },
+        ExpressionAttributeValues: {
+          ':success': response.success
+        }
+      });
+    } else {
+      // Not successful. The error has already been logged.
+      return Promise.resolve();
+    }
   }
   return Promise.reject('Don\'t know what to do with: ' + JSON.stringify(response));
 }
