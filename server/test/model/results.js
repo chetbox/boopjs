@@ -23,35 +23,6 @@ function assert_report(key, expected) {
 }
 
 var APP = { id: 'app7890', name: 'Antelope' };
-var REPORT = {
-  EMPTY: [
-    null
-  ],
-  NOT_RUN: [
-    null,
-    {source: 'one()'},
-    null,
-    {source: 'three()'}
-  ],
-  LINE_1_SUCCESSFUL: [
-    null,
-    {source: 'one()', success: {result: 'First.'}},
-    null,
-    {source: 'three()'}
-  ],
-  LINE_1_FAILED: [
-    null,
-    {source: 'one()', error: {description: 'Error one', stracktrace: 'trace'}},
-    null,
-    {source: 'three()'}
-  ],
-  LINE_3_SUCCESSFUL: [
-    null,
-    {source: 'one()', success: {result: 'First.'}},
-    null,
-    {source: 'three()', success: {result: 'Third.'}}
-  ]
-};
 
 describe('model.results', function() {
 
