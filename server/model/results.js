@@ -13,6 +13,13 @@ exports.report_from_statements= function(statements) {
   }, []);
 }
 
+exports.key = function(result) {
+  return {
+    code_id: result.code_id,
+    started_at: result.started_at
+  };
+}
+
 exports.create = function(code_id, started_at, app) {
   debug('create', code_id, started_at, app.identifier);
   return db.v2.results.put({
@@ -27,15 +34,15 @@ exports.create = function(code_id, started_at, app) {
   })
 }
 
-exports.check_exists = function(code_id, started_at) {
-  debug('check_exists', code_id, started_at);
-  return db.v2.results.get({
+exports.get = function(code_id, started_at) {
+  debug('get', code_id, started_at);
+  return db.v2.results.get({ Key: {
     code_id: code_id,
-    started_at: started_at
-  })
+    started_at: typeof(started_at) === 'string' ? parseInt(started_at) : started_at
+  }})
   .then(function(result) {
-    if (!result) throw 'Report for ' + code_id + ' started at ' + req.query.started_at + ' not found';
-    return { code_id: result.code_id, started_at: result.started_at };
+    if (!result) throw 'Report for ' + code_id + ' started at ' + started_at + ' not found';
+    return result;
   });
 }
 

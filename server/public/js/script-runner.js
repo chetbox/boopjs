@@ -1,4 +1,4 @@
-function run_script(server, device_id, app_id, code_id, statements, callbacks) {
+function run_script(server, device_id, app_id, code_id, started_at, statements, callbacks) {
 
   function callback(event, data) {
     $(document).trigger('test-progress', [event, data]);
@@ -16,8 +16,8 @@ function run_script(server, device_id, app_id, code_id, statements, callbacks) {
     'ws://' + server + '/api/client'
     + '?device=' + encodeURIComponent(device_id)
     + '&app=' + encodeURIComponent(app_id)
-    + (code_id
-        ? '&code=' + encodeURIComponent(code_id)
+    + (code_id && started_at
+        ? '&code=' + encodeURIComponent(code_id) + '&started_at=' + encodeURIComponent(started_at)
         : ''
       )
   );
