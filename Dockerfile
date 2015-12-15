@@ -40,4 +40,8 @@ RUN npm install --unsafe-perm
 RUN /opt/chetbot/scripts/gen-smali
 
 # Run tests
+RUN mkdir -p /opt/dynamodb-local
+RUN wget -qO- http://dynamodb-local.s3-website-us-west-2.amazonaws.com/dynamodb_local_latest.tar.gz \
+    | tar zxv -C /opt/dynamodb-local
+ENV DYNAMODB_LOCAL "java -Djava.library.path=/opt/dynamodb-local/DynamoDBLocal_lib -jar /opt/dynamodb-local/DynamoDBLocal.jar"
 RUN npm test
