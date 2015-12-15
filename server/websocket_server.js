@@ -28,6 +28,7 @@ exports.add_routes = function(app) {
 
   app.ws('/api/client',
     function(ws, req) {
+      var now = Date.now();
       model.devices.check_device_access(req.query.device, req.user)
       .then(function(device) {
         return [
@@ -45,19 +46,25 @@ exports.add_routes = function(app) {
                 if (!code) throw 'Code "' + req.query.code + '" does not exist';
                 return code;
               })
-            : Promise.resolve(),
-          req.query.code && req.query.started_at
-            ? model.results.get(req.query.code, req.query.started_at)
             : Promise.resolve()
         ]
       })
-      .spread(function(device, app, code, result) {
+      .spread(function(device, app, code) {
         if (!(req.user && req.user.admin)
             && !device.skip_auth
             && !_.contains(req.user.apps, req.query.app)) {
           throw 'User does not have access to app';
         }
-
+        return [code, app];
+      })
+      .spread(function(code, app) {
+        return code
+          ? (req.query.started_at
+            ? model.results.get(code.id, req.query.started_at) // Run on server (already "started" in DB)
+            : model.results.create(code.id, now, app))         // Run by user
+          : Promise.resolve();
+      })
+      .then(function(result) {
         // Allow /api/device endpoint to find the key when saving results
         if (result) {
           ws.result_key = model.results.key(result);
