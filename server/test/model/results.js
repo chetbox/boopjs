@@ -27,7 +27,9 @@ var APP = { id: 'app7890', name: 'Antelope' };
 describe('model.results', function() {
 
   before(function(done) {
-    db_process = spawn(DYNAMODB_LOCAL, ['-inMemory', '-port', '8765'], {
+    var dynamo_db_local = DYNAMODB_LOCAL.split(' ')[0],
+        dynamo_db_local_args = DYNAMODB_LOCAL.split(' ').slice(1);
+    db_process = spawn(dynamo_db_local, dynamo_db_local_args.concat(['-inMemory', '-port', '8765']), {
       detached: true
     });
     setTimeout(done, 250);
