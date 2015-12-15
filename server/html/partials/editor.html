@@ -96,11 +96,13 @@
     #editor-container #controls a.run {
       position: relative;
       top: 0;
-      transition: top 200ms ease-out;
+      transition: top 200ms ease-out, opacity 200ms ease-out;
+      opacity: 1;
     }
 
     #editor-container:not(.device-ready) #controls a.run {
       top: 4em;
+      opacity: 0;
     }
 
     body.saving #controls .status.saving {
