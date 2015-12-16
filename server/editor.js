@@ -153,7 +153,7 @@ exports.add_routes = function(app) {
         .then(function() {
           // Keep existing info (dynasty's .update is broken)
           as_user.apps = _.union(as_user.apps, [new_app_id]);
-          return db.users().update(as_user);
+          return db.users().insert(as_user);
         })
         .then(function() {
           res.redirect('/app/' + new_app_id);
@@ -192,7 +192,7 @@ exports.add_routes = function(app) {
       })
       .spread(function(user, app) {
         user.apps = _.union(user.apps, [new_app_id]); // Keep existing info (dynasty's .update is broken)
-        return [user, app, db.users().update(user)];
+        return [user, app, db.users().insert(user)];
       })
       .spread(function(user, app) {
         email.send_to_admins(email.message.new_app(user, app));
@@ -236,7 +236,7 @@ exports.add_routes = function(app) {
         existing_app.privateKey = appetize_resp.privateKey; // ensure this is set
         existing_app.publicKey = appetize_resp.publicKey; // ensure this is set
         existing_app = _.extend(existing_app, apk_info);
-        return db.apps().update(existing_app);
+        return db.apps().insert(existing_app);
       })
       .then(function() {
         // refresh
@@ -462,8 +462,8 @@ exports.add_routes = function(app) {
         range: req.params.code_id
       })
       .then(function(code) {
-        code[req.params.code_key] = req.body;
-        return db.code().update(code);
+        code[req.params.code_key] = req.body || ' ';
+        return db.code().insert(code);
       })
       .then(function() {
         res.sendStatus(200);
