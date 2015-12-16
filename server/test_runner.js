@@ -1,6 +1,7 @@
 var config = require('config');
 var Promise = require('bluebird');
 var request = Promise.promisifyAll(require('request'));
+var debug = require('debug')(require('path').relative(process.cwd(), __filename).replace(/\.js$/, ''));
 
 var db = require('./db');
 var model = {
@@ -11,6 +12,7 @@ var model = {
 module.exports = function(app_id, code_id) {
   var now = Date.now();
   var endpoint = '/app/' + app_id + '/test/' + code_id + '/autorun/' + now;
+  debug('Running', endpoint);
   return db.v2.apps.get({Key: {id: app_id}})
   .then(function(app) {
     if (!app) throw 'App ' + app_id + ' does not exist';
