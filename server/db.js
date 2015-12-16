@@ -31,21 +31,23 @@ var TABLES = {
   }
 };
 
-dynasty.list()
-.then(function(data) {
-  return Promise.all(
-    _.map(TABLES, function(options, name) {
-      var full_name = TABLE_PREFIX + name;
-      if (data.TableNames.indexOf(full_name) === -1) {
-        return dynasty.create(full_name, options);
-      }
-    })
-  );
-})
-.catch(function(e) {
-  console.error(e.stack);
-  process.exit(1);
-});
+exports.setup = function() {
+  return dynasty.list()
+  .then(function(data) {
+    return Promise.all(
+      _.map(TABLES, function(options, name) {
+        var full_name = TABLE_PREFIX + name;
+        if (data.TableNames.indexOf(full_name) === -1) {
+          return dynasty.create(full_name, options);
+        }
+      })
+    );
+  })
+  .catch(function(e) {
+    console.error(e.stack);
+    process.exit(1);
+  });
+}
 
 _.each(TABLES, function(_, name) {
   exports[name] = function() {

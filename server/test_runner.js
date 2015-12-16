@@ -2,20 +2,33 @@ var config = require('config');
 var Promise = require('bluebird');
 var request = Promise.promisifyAll(require('request'));
 
+var db = require('./db');
 var model = {
-  run_tokens: require('./model/run_tokens')
+  run_tokens: require('./model/run_tokens'),
+  results: require('./model/results')
 };
 
-exports.run = function(app_id, code_id) {
-  var endpoint = '/app/' + app_id + '/run/' + code_id;
-  return model.run_tokens.create(endpoint)
+module.exports = function(app_id, code_id) {
+  var now = Date.now();
+  var endpoint = '/app/' + app_id + '/test/' + code_id + '/autorun/' + now;
+  return db.v2.apps.get({Key: {id: app_id}})
+  .then(function(app) {
+    if (!app) throw 'App ' + app_id + ' does not exist';
+
+    // Create somewhere to store the test results
+    return model.results.create(code_id, now, app)
+  })
+  .then(function() {
+    // Create a run token for the test runner
+    return model.run_tokens.create(endpoint);
+  })
   .then(function(access_token) {
     return request.postAsync({
-      url: config.test_runner.protocol + '://' + config.test_runner.host + '/run',
+      url: config.test_runner.protocol + '://' + config.test_runner.host + '/open',
       json: true,
       body: {
-        url: config.host + '://' + endpoint + '?access_token=' + access_token,
-        script: '// TODO: close when test finishes'
+        url: config.host.protocol + '://' + config.host.address + endpoint + '?access_token=' + access_token,
+        script: "$(document).on('test-progress', function(e, name) { if (name === 'onFinish') close(); });"
       }
     });
   })

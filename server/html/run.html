@@ -44,7 +44,7 @@
       if (event.data == 'firstFrameReceived') {
         console.log('Starting');
         setTimeout(function() {
-          run_test($('#code').text(), '{{server}}', '{{device.id}}');
+          run_test($('#code').text(), '{{server}}', '{{device.id}}', '{{app.id}}', '{{code.id}}', '{{started_at}}');
         }, 1000);
       }
     });

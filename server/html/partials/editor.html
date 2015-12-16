@@ -93,6 +93,18 @@
       color: #fff;
     }
 
+    #editor-container #controls a.run {
+      position: relative;
+      top: 0;
+      transition: top 200ms ease-out, opacity 200ms ease-out;
+      opacity: 1;
+    }
+
+    #editor-container:not(.device-ready) #controls a.run {
+      top: 4em;
+      opacity: 0;
+    }
+
     body.saving #controls .status.saving {
       opacity: 1;
     }
@@ -131,6 +143,15 @@
   <div id="repl"></div>
   {{/user}}
 </div>
+
+<!-- enable run button when device loads -->
+<script>
+window.addEventListener('message', function(event) {
+  if (event.data == 'firstFrameReceived') {
+    $('#editor-container').addClass('device-ready');
+  }
+});
+</script>
 
 <!-- editor -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.1.9/ace.js" charset="utf-8"></script>

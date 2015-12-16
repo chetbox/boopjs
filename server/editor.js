@@ -10,7 +10,7 @@ exports.add_routes = function(app) {
   var db = require('./db');
   var auth = require('./auth');
   var s3 = require('./s3');
-  var test_runner = require('./test_runner');
+  var run_test = require('./test_runner');
   var fail_on_error = require('./util').fail_on_error;
   var appetizeio = require('./apps/appetizeio');
   var inject_chetbot = require('./apps/android/inject-chetbot');
@@ -357,11 +357,7 @@ exports.add_routes = function(app) {
             }
           }),
           server: host_address,
-          app: {
-            id: app.id,
-            icon: app.icon,
-            publicKey: app.publicKey
-          },
+          app: app,
           autosave: true,
           code: _.extend(code, {
             name: code.name || code.id,
@@ -373,17 +369,32 @@ exports.add_routes = function(app) {
     }
   );
 
-  app.get('/app/:app_id/run/:code_id',
+  app.post('/app/:app_id/test/:code_id/run',
+    auth.login_required,
+    ensure_user_can_access_app,
+    ensure_code_belongs_to_app,
+    function(req, res) {
+      run_test(req.params.app_id, req.params.code_id)
+      .then(function() {
+        res.sendStatus(200);
+      })
+      .catch(fail_on_error(res));
+    }
+  );
+
+  // Page opened by the test runner
+  app.get('/app/:app_id/test/:code_id/autorun/:started_at',
     model.run_tokens.middleware.consume('access_token'),
     ensure_code_belongs_to_app,
     function(req, res) {
       Promise.join(
         db.apps().find(req.params.app_id),
         db.code().find({hash: req.params.app_id, range: req.params.code_id}),
+        model.results.get(req.params.code_id, req.params.started_at),
         model.devices.create_device({user: null})
       )
-      .spread(function(app, code, device_id) {
-        if (!code || !app) {
+      .spread(function(app, code, result, device_id) {
+        if (!code || !app || !result) {
           return res.sendStatus(404);
         }
         res.render('run', {
@@ -397,14 +408,12 @@ exports.add_routes = function(app) {
             }
           }),
           server: host_address,
-          app: {
-            icon: app.icon,
-            publicKey: app.publicKey
-          },
+          app: app,
           code: _.extend(code, {
             name: code.name || code.id,
             location: code.location && JSON.parse(code.location)
-          })
+          }),
+          started_at: result.started_at
         });
       })
       .catch(fail_on_error(res));

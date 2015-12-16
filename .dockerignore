@@ -5,5 +5,4 @@ android/lib/build
 android/test/app/build
 android/test/build
 server/node_modules
-server/config
 server/apps/android/deps/*

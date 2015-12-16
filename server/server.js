@@ -7,6 +7,7 @@ var express_handlebars = require('express-handlebars');
 var moment = require('moment');
 var body_parser = require('body-parser');
 
+var db = require('./db');
 var index = require('./index');
 var editor_demo = require('./editor_demo');
 var editor = require('./editor');
@@ -16,6 +17,10 @@ var editor = require('./editor');
 
 var port = process.env.PORT || 8001;
 
+
+// Database
+
+db.setup();
 
 // Mustache setup
 
