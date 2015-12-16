@@ -462,7 +462,7 @@ exports.add_routes = function(app) {
         range: req.params.code_id
       })
       .then(function(code) {
-        code[req.params.code_key] = req.body;
+        code[req.params.code_key] = req.body || ' ';
         return db.code().insert(code);
       })
       .then(function() {
