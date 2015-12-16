@@ -18,11 +18,13 @@ exports.add_routes = function(app) {
   function fail_on_error(ws, close_immediately) {
     return function(e) {
       console.error(e.stack || e);
-      ws.result_key = undefined;
-      ws.send(JSON.stringify({
-        error: e.toString()
-      }));
-      if (close_immediately) ws.close();
+      if (ws) {
+        ws.result_key = undefined;
+        ws.send(JSON.stringify({
+          error: e.toString()
+        }));
+        if (close_immediately) ws.close();
+      }
     }
   }
 
@@ -108,10 +110,6 @@ exports.add_routes = function(app) {
   );
 
   app.ws('/api/device', function(ws, req) {
-
-    function set_status(finished, message) {
-      // TODO
-    }
 
     ws.on('message', function(messageStr) {
       var message = JSON.parse(messageStr);
