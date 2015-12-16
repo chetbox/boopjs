@@ -1,7 +1,7 @@
 var config = require('config');
 var dynasty = require('dynasty')(config.get('aws.dynamodb'));
 var _ = require('underscore');
-var debug = require('debug')(require('path').relative(process.cwd(), __filename).replace(/\.js$/, ''));
+var debug = require('debug')('chetbot/' + require('path').relative(process.cwd(), __filename).replace(/\.js$/, ''));
 
 var TABLE_PREFIX = 'chetbot.';
 var TABLES = {
