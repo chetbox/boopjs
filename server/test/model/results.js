@@ -32,7 +32,7 @@ describe('model.results', function() {
     db_process = spawn(dynamo_db_local, dynamo_db_local_args.concat(['-inMemory', '-port', '8765']), {
       detached: true
     });
-    setTimeout(done, 250);
+    setTimeout(done, 500);
   });
 
   beforeEach(function(done) {
