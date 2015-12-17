@@ -29,7 +29,7 @@ exports.message = {
   },
   new_app: function(user, app) {
     return {
-      subject: util.format('%s uploaded %s', user.username, app.name),
+      subject: util.format('%s uploaded %s', user.displayName, app.name),
       body: util.format('%s (%s) uploaded an %s app\n', user.displayName, user.username, app.platform) +
             util.format('%s: %s\n\n', user.provider, user.profileUrl) +
             util.format('%s (%s)\n', app.name, app.identifier) +
