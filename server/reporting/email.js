@@ -23,7 +23,8 @@ exports.message = {
     return {
       subject: util.format('%s signed up', user.displayName),
       body: util.format('%s (%s) signed up\n', user.displayName, user.username) +
-            util.format('%s: %s\n\n', user.provider, user.profileUrl) +
+            util.format('%s: %s\n', user.provider, user.profileUrl) +
+            util.format('email: %s\n\n', user.emails && user.emails.join(' ')) +
             util.format('Admin: %s://%s/admin\n', config.host.protocol, config.host.address)
     };
   },
@@ -31,7 +32,8 @@ exports.message = {
     return {
       subject: util.format('%s uploaded %s', user.displayName, app.name),
       body: util.format('%s (%s) uploaded an %s app\n', user.displayName, user.username, app.platform) +
-            util.format('%s: %s\n\n', user.provider, user.profileUrl) +
+            util.format('%s: %s\n', user.provider, user.profileUrl) +
+            util.format('email: %s\n\n', user.emails && user.emails.join(' ')) +
             util.format('%s (%s)\n', app.name, app.identifier) +
             util.format('%s://%s/app/%s\n\n', config.host.protocol, config.host.address, app.id) +
             util.format('Admin: %s://%s/admin\n', config.host.protocol, config.host.address)
