@@ -180,6 +180,7 @@ exports.add_routes = function(app) {
         }, apk_info);
         var code = {
           id: new_code_id,
+          name: 'Untitled test',
           app_id: new_app_id,
           content: welcome_code
         };
@@ -271,7 +272,7 @@ exports.add_routes = function(app) {
           user: req.user,
           app: app,
           code: code.map(function(c, i) {
-            c.name = c.name || c.id;
+            c.name = c.name || 'Untitled test';
             c.result = results[i];
             return c;
           })
@@ -321,6 +322,7 @@ exports.add_routes = function(app) {
       var new_code_id = shortid.generate();
       db.code().insert({
         id: new_code_id,
+        name: 'Untitled test',
         app_id: req.params.app_id,
         content: welcome_code
       })
@@ -360,7 +362,7 @@ exports.add_routes = function(app) {
           app: app,
           autosave: true,
           code: _.extend(code, {
-            name: code.name || code.id,
+            name: code.name || 'Untitled test',
             location: code.location && JSON.parse(code.location)
           })
         });
@@ -410,7 +412,7 @@ exports.add_routes = function(app) {
           server: host_address,
           app: app,
           code: _.extend(code, {
-            name: code.name || code.id,
+            name: code.name,
             location: code.location && JSON.parse(code.location)
           }),
           started_at: result.started_at
