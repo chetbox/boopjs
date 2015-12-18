@@ -29,9 +29,13 @@
         margin-top: 0;
       }
 
-      h2 .identifier, h2 .version {
+      h2 .identifier {
         font-size: 0.67em;
         opacity: 0.5;
+      }
+
+      h2 .version {
+        opacity: 0.33;
       }
 
       #code {
@@ -92,6 +96,24 @@
         color: #999;
       }
 
+      #actions {
+        margin-bottom: 1.5em;
+      }
+
+      #actions paper-button {
+        background: #FFC107;
+        color: rgba(255, 255, 255, 0.87);
+        font-weight: 300;
+      }
+
+      #actions paper-button > iron-icon:first-child {
+        margin-right: 0.5em;
+      }
+
+      #app-update {
+        margin-top: 1em;
+      }
+
       input[type=file] {
         color: transparent;
         width: 12em;
@@ -145,16 +167,14 @@
         {{#app}}
         <div id="header">
           <img id="app-icon" src="{{icon}}" title="{{name}}"/>
-          <h2>{{name}}<br><span class="identifier">{{identifier}}</span><br><span class="version">{{version}}</span></h2>
+          <h2>{{name}} <span class="version">{{version}}</span><br><span class="identifier">{{identifier}}</span></h2>
+        </div>
+        <div id="actions">
+          <a href="javascript:run_all('{{id}}')">
+            <paper-button raised><iron-icon icon="av:play-arrow"></iron-icon>Run all</paper-button>
+          </a>
         </div>
         {{/app}}
-        <div id="app-update">
-          <p class="status"></p>
-          <input type="file" accept=".apk"/>
-          <form method="POST">
-            <input type="hidden" name="app_url" />
-          </form>
-        </div>
         <table id="code">
           <tbody>
             {{#code}}
@@ -195,6 +215,13 @@
             {{/code}}
           </tbody>
         </table>
+        <div id="app-update">
+          <p class="status"></p>
+          <input type="file" accept=".apk"/>
+          <form method="POST">
+            <input type="hidden" name="app_url" />
+          </form>
+        </div>
       </div>
       <div id="fab">
         <form id="add_test" method="POST" action="/app/{{app.id}}/edit">
@@ -252,6 +279,18 @@
       ga('send', 'event', 'button', 'click', 'run');
 
       $.ajax('/app/' + app_id + '/test/' + code_id + '/run', {
+        method: 'POST'
+      }).done(function() {
+        location.reload();
+      }).fail(function(xhr, status, e) {
+        alert(e.toString());
+      });
+    }
+
+    function run_all(app_id) {
+      ga('send', 'event', 'button', 'click', 'run all');
+
+      $.ajax('/app/' + app_id + '/run', {
         method: 'POST'
       }).done(function() {
         location.reload();

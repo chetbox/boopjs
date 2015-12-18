@@ -384,6 +384,25 @@ exports.add_routes = function(app) {
     }
   );
 
+  app.post('/app/:app_id/run',
+    auth.login_required,
+    ensure_user_can_access_app,
+    function(req, res) {
+      return db.code().findAll(req.params.app_id)
+      .then(function(code) {
+        return Promise.all(
+          code.map(function(c) {
+            return run_test(req.params.app_id, c.id);
+          })
+        );
+      })
+      .then(function() {
+        res.sendStatus(200);
+      })
+      .catch(fail_on_error(res));
+    }
+  );
+
   // Page opened by the test runner
   app.get('/app/:app_id/test/:code_id/autorun/:started_at',
     model.run_tokens.middleware.consume('access_token'),
