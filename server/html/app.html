@@ -224,6 +224,8 @@
 
   <script>
     function ajax_delete(url, description, redirect) {
+      ga('send', 'event', 'button', 'click', 'delete code');
+
       if (!confirm('Are you sure you want to delete "' + description + '"?')) {
         return;
       }
@@ -241,10 +243,14 @@
     }
 
     function delete_this() {
+      ga('send', 'event', 'button', 'click', 'delete app');
+
       return ajax_delete('/app/{{app.id}}', '{{app.name}}', '/apps');
     }
 
     function run(app_id, code_id) {
+      ga('send', 'event', 'button', 'click', 'run');
+
       $.ajax('/app/' + app_id + '/test/' + code_id + '/run', {
         method: 'POST'
       }).done(function() {
