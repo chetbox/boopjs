@@ -9,8 +9,10 @@ var db;
 var results;
 
 function assert_items(expected) {
+  var r;
   return db.results.scan({})
   .then(function(results) {
+    r = results;
     assert.deepEqual(results.Items, expected)
   });
 }
@@ -124,7 +126,7 @@ describe('model.results', function() {
 
   });
 
-  describe('update results', function() {
+  describe('updating results', function() {
 
     it('successful empty test', function() {
       var key;
@@ -155,7 +157,7 @@ describe('model.results', function() {
         return results.set_report(key, [null])
       })
       .then(function() {
-        return results.update(key, {error: 'Unhandled', stacktrace: 'Unhandled\nException'});
+        return results.update(key, {device: null, error: 'forced crash', stacktrace: 'java.lang.RuntimeException', type: 'unhandled'});
       })
       .then(function() {
         return assert_items([{
@@ -163,7 +165,7 @@ describe('model.results', function() {
           started_at: 123456,
           app: APP,
           report: [null],
-          error: {description: 'Unhandled', stacktrace: 'Unhandled\nException'}
+          error: {description: 'forced crash', stacktrace: 'java.lang.RuntimeException'}
         }]);
       });
     });
@@ -242,45 +244,7 @@ describe('model.results', function() {
       });
     });
 
-    it('throws an error if finishing an already successful test', function(done) {
-      var key;
-      return results.create('code_finish_twice_success', 123456, APP)
-      .then(function(_key) {
-        key = _key;
-        return results.set_report(key, [null]);
-      })
-      .then(function() { return results.update(key, {success: true}); })
-      // Successful again?!
-      .then(function() { return results.update(key, {success: true}); })
-      .then(function() { done('Expecting an update error'); })
-      .catch(function(e) { assert(e instanceof Error); })
-      // An error?! We already finished successfully dammit!
-      .then(function() { return results.update(key, {error: 'Uh oh', stacktrace: 'Bad things happened'}); })
-      .then(function() { done('Expecting an update error'); })
-      .catch(function(e) { assert(e instanceof Error); })
-      .then(done);
-    });
-
-    it('throws an error if finishing an already failed test', function(done) {
-      var key;
-      return results.create('code_finish_twice_error', 123456, APP)
-      .then(function(_key) {
-        key = _key;
-        return results.set_report(key, [null]);
-      })
-      .then(function() { return results.update(key, {error: 'Things went wrong', stacktrace: 'This wasn\'t planned'}); })
-      // Now it's successful?!
-      .then(function() { return results.update(key, {success: true}); })
-      .then(function() { done('Expecting an update error'); })
-      .catch(function(e) { assert(e instanceof Error); })
-      // Another error?! We already finished! How dare you.
-      .then(function() { return results.update(key, {error: 'Uh oh', stacktrace: 'Bad things happened'}); })
-      .then(function() { done('Expecting an update error'); })
-      .catch(function(e) { assert(e instanceof Error); })
-      .then(done);
-    });
-
-    it('throws an error if updating an already successful test', function(done) {
+    it('update received after a test has succeeded', function() {
       var key;
       return results.create('code_update_successful', 123456, APP)
       .then(function(_key) {
@@ -291,16 +255,24 @@ describe('model.results', function() {
         ]);
       })
       .then(function() { return results.update(key, {success: true}); })
-      // Now a test result??
-      .then(function() { return results.update(key, {line: 1, result: null}); })
-      .then(function() { done('Expecting an update error'); })
-      .catch(function(e) { assert(e instanceof Error); })
-      .then(done);
+      .then(function() { return results.update(key, {line: 1, result: null, type: 'NULL'}); })
+      .then(function() {
+        return assert_items([{
+          code_id: 'code_update_successful',
+          started_at: 123456,
+          app: APP,
+          report: [
+            null,
+            {source: 'one()', success: {result: null, type: 'NULL'}}
+          ],
+          success: true
+        }]);
+      });
     });
 
-    it('throws an error if updating an already failed test', function(done) {
+    it('update received after a test has already failed', function() {
       var key;
-      return results.create('code_updated_failed', 123456, APP)
+      return results.create('code_update_failed', 123456, APP)
       .then(function(_key) {
         key = _key;
         return results.set_report(key, [
@@ -309,72 +281,121 @@ describe('model.results', function() {
         ]);
       })
       .then(function() { return results.update(key, {error: 'Things went down', stacktrace: 'Bad things'}); })
-      // Now a test result??
-      .then(function() { return results.update(key, {line: 1, result: null}); })
-      .then(function() { done('Expecting an update error'); })
-      .catch(function(e) { assert(e instanceof Error); })
-      .then(done);
-    });
-
-    it('throws an error if the same line is successful twice', function(done) {
-      var key;
-      results.create('code_update_line_twice_success', 123456, APP)
-      .then(function(_key) {
-        key = _key;
-        return results.set_report(key, [
-          null,
-          {source: 'one()'}
-        ]);
-      })
-      .then(function() { return results.update(key, {line: 1, result: 'first'}); })
-      // Another result from the same line?!
-      .then(function() { return results.update(key, {line: 1, result: 'second'}); })
-      .then(function() { done('Expecting an update error'); })
-      .catch(function(e) { assert(e instanceof Error); })
+      .then(function() { return results.update(key, {line: 1, result: null, type: 'NULL'}); })
       .then(function() {
         return assert_items([{
-          code_id: 'code_update_line_twice_success',
+          code_id: 'code_update_failed',
           started_at: 123456,
           app: APP,
           report: [
             null,
-            {source: 'one()', success: {result: 'first'}}
-          ]
-        }])
-      })
-      .then(done);
-    });
-
-    it('throws an error if updating the same line twice', function(done) {
-      var key;
-      results.create('code_update_line_twice_failure', 123456, APP)
-      .then(function(_key) {
-        key = _key;
-        return results.set_report(key, [
-          null,
-          {source: 'one()'}
-        ]);
-      })
-      .then(function() { return results.update(key, {line: 1, error: 'first', stacktrace: '1111'}); })
-      // Another error from the same line?!
-      .then(function() { return results.update(key, {line: 1, error: 'second', stacktrace: '2222'}); })
-      .then(function() { done('Expecting an update error'); })
-      .catch(function(e) { assert(e instanceof Error); })
-      .then(function() {
-        return assert_items([{
-          code_id: 'code_update_line_twice_failure',
-          started_at: 123456,
-          app: APP,
-          report: [
-            null,
-            {source: 'one()', error: {description: 'first', stacktrace: '1111'}}
+            {source: 'one()', success: {result: null, type: 'NULL'}}
           ],
-          error: {description: 'first', stacktrace: '1111'}
-        }])
-      })
-      .then(done);
+          error: {description: 'Things went down', stacktrace: 'Bad things'}
+        }]);
+      });
     });
 
-  });
 
+    describe('failure cases', function() {
+
+      it('finishing an already successful test', function(done) {
+        var key;
+        results.create('code_finish_twice_success', 123456, APP)
+        .then(function(_key) {
+          key = _key;
+          return results.set_report(key, [null]);
+        })
+        .then(function() { return results.update(key, {success: true}); })
+        // Successful again?!
+        .then(function() { return results.update(key, {success: true}); })
+        .then(function() { done('Expecting an update error'); })
+        .catch(function(e) { assert(e instanceof Error); })
+        // An error?! We already finished successfully dammit!
+        .then(function() { return results.update(key, {error: 'Uh oh', stacktrace: 'Bad things happened'}); })
+        .then(function() { done('Expecting an update error'); })
+        .catch(function(e) { assert(e instanceof Error); })
+        .then(done);
+      });
+
+      it('finishing an already failed test', function(done) {
+        var key;
+        results.create('code_finish_twice_error', 123456, APP)
+        .then(function(_key) {
+          key = _key;
+          return results.set_report(key, [null]);
+        })
+        .then(function() { return results.update(key, {error: 'Things went wrong', stacktrace: 'This wasn\'t planned'}); })
+        // Now it's successful?!
+        .then(function() { return results.update(key, {success: true}); })
+        .then(function() { done('Expecting an update error'); })
+        .catch(function(e) { assert(e instanceof Error); })
+        // Another error?! We already finished! How dare you.
+        .then(function() { return results.update(key, {error: 'Uh oh', stacktrace: 'Bad things happened'}); })
+        .then(function() { done('Expecting an update error'); })
+        .catch(function(e) { assert(e instanceof Error); })
+        .then(done);
+      });
+
+      it('the same line is successful twice', function(done) {
+        var key;
+        results.create('code_update_line_twice_success', 123456, APP)
+        .then(function(_key) {
+          key = _key;
+          return results.set_report(key, [
+            null,
+            {source: 'one()'}
+          ]);
+        })
+        .then(function() { return results.update(key, {line: 1, result: 'first'}); })
+        // Another result from the same line?!
+        .then(function() { return results.update(key, {line: 1, result: 'second'}); })
+        .then(function() { done('Expecting an update error'); })
+        .catch(function(e) { assert(e instanceof Error); })
+        .then(function() {
+          return assert_items([{
+            code_id: 'code_update_line_twice_success',
+            started_at: 123456,
+            app: APP,
+            report: [
+              null,
+              {source: 'one()', success: {result: 'first'}}
+            ]
+          }])
+        })
+        .then(done);
+      });
+
+      it('updating the same line twice', function(done) {
+        var key;
+        results.create('code_update_line_twice', 123456, APP)
+        .then(function(_key) {
+          key = _key;
+          return results.set_report(key, [
+            null,
+            {source: 'one()'}
+          ]);
+        })
+        .then(function() { return results.update(key, {line: 1, error: 'first', stacktrace: '1111'}); })
+        // Another error from the same line?!
+        .then(function() { return results.update(key, {line: 1, error: 'second', stacktrace: '2222'}); })
+        .then(function() { done('Expecting an update error'); })
+        .catch(function(e) { assert(e instanceof Error); })
+        .then(function() {
+          return assert_items([{
+            code_id: 'code_update_line_twice',
+            started_at: 123456,
+            app: APP,
+            report: [
+              null,
+              {source: 'one()', error: {description: 'first', stacktrace: '1111'}}
+            ],
+            error: {description: 'first', stacktrace: '1111'}
+          }])
+        })
+        .then(done);
+      });
+
+    });
+  });
 });
