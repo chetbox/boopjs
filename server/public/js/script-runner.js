@@ -25,10 +25,7 @@ function run_script(server, device_id, app_id, code_id, started_at, statements, 
         : ''
       )
   );
-  ws.onopen = function() {
-    callback('onStart');
-    ws.send(JSON.stringify(script));
-  };
+  ws.onopen = function() {};
   ws.onerror = function(e) {
     callback('onError', {error: e, type: 'websocket'});
     callback('onFinish');
@@ -36,7 +33,10 @@ function run_script(server, device_id, app_id, code_id, started_at, statements, 
   };
   ws.onmessage = function(event) {
     var message = JSON.parse(event.data);
-    if ('error' in message) {
+    if ('ready' in message) {
+      callback('onStart');
+      ws.send(JSON.stringify(script));
+    } else if ('error' in message) {
       callback('onError', message);
       callback('onFinish', false);
     } else if ('result' in message) {
