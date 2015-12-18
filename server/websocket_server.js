@@ -78,6 +78,9 @@ exports.add_routes = function(app) {
         ws.result_key = key;
       }
     })
+    .then(function() {
+      ws.send(JSON.stringify({ready: true}));
+    })
     .catch(fail_on_error(ws, true));
 
     ws.on('message',

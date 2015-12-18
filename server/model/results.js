@@ -66,13 +66,12 @@ exports.update = function(key, response) {
       Key: key,
       UpdateExpression: 'SET report[' + response.line + '].success = :result',
       ConditionExpression:
-        'attribute_not_exists(success) ' +
-        'AND attribute_not_exists(#error) ' +
-        'AND attribute_exists(report) ' +
-        'AND attribute_not_exists(report[' + response.line + '].success)',
-      ExpressionAttributeNames: {
-        '#error': 'error'
-      },
+        'attribute_exists(report) ' +
+        'AND attribute_not_exists(report[' + response.line + '].success) ' +
+        'AND attribute_not_exists(report[' + response.line + '].#error)',
+        ExpressionAttributeNames: {
+          '#error': 'error'
+        },
       ExpressionAttributeValues: {
         ':result': _.omit(response, 'line')
       }
@@ -84,10 +83,10 @@ exports.update = function(key, response) {
           Key: key,
           UpdateExpression: 'SET report[' + response.line + '].#error = :error',
           ConditionExpression:
-            'attribute_not_exists(success) ' +
-            'AND attribute_not_exists(#error) ' +
+            'attribute_not_exists(#error) ' +
             'AND attribute_exists(report) ' +
-            'AND attribute_not_exists(report[' + response.line + '].success)',
+            'AND attribute_not_exists(report[' + response.line + '].success) ' +
+            'AND attribute_not_exists(report[' + response.line + '].#error)',
           ExpressionAttributeNames: {
             '#error': 'error'
           },
