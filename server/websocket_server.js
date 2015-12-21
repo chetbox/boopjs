@@ -20,7 +20,7 @@ exports.add_routes = function(app) {
   function fail_on_error(ws, close_immediately) {
     return function(e) {
       console.error(e.stack || e);
-      if (ws) {
+      if (ws && ws.readyState === 1 /* (Open) */) {
         ws.result_key = undefined;
         ws.send(JSON.stringify({
           error: e.toString()
