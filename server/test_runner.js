@@ -9,6 +9,12 @@ var model = {
   results: require('./model/results')
 };
 
+var CLOSE_WHEN_FINISHED = function() {
+  $(document).on('test-progress', function(e, name) {
+    if (name === 'onFinish') close();
+  });
+};
+
 module.exports = function(app_id, code_id) {
   var now = Date.now();
   var endpoint = '/app/' + app_id + '/test/' + code_id + '/autorun/' + now;
@@ -30,7 +36,7 @@ module.exports = function(app_id, code_id) {
       json: true,
       body: {
         url: config.host.protocol + '://' + config.host.address + endpoint + '?access_token=' + access_token,
-        script: "$(document).on('test-progress', function(e, name) { if (name === 'onFinish') close(); });"
+        script: '(' + CLOSE_WHEN_FINISHED.toString() + ')()'
       }
     });
   })
