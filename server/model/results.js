@@ -3,6 +3,8 @@ var Promise = require('bluebird');
 var db = require('../db');
 var debug = require('debug')('chetbot/' + require('path').relative(process.cwd(), __filename).replace(/\.js$/, ''));
 
+Promise.longStackTraces();
+
 exports.report_from_statements = function(statements) {
   return statements.reduce(function(report, stmt) {
     while (report.length < stmt.line) {
