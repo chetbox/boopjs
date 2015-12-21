@@ -14,10 +14,20 @@
   scrolling="no">
 </iframe>
 
-<!-- heartbeat to prevent device timing out -->
 <script>
+  // Heartbeat to prevent device timing out
   var device_iframe = document.getElementById('device');
   setInterval(function() {
     device_iframe.contentWindow.postMessage('heartbeat', '*');
   }, 15 * 1000);
+
+  // Ensure the device is running
+  setInterval(function() {
+    device_iframe.contentWindow.postMessage('requestSession', '*');
+  }, 5 * 1000);
+
+  // Appetize.io logging
+  window.addEventListener('message', function(event) {
+    console.log('appetize.io: ' + event.data);
+  });
 </script>
