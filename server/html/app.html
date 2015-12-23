@@ -180,7 +180,7 @@
             {{#code}}
             <tr>
               <td class="result">
-                <a href="/app/{{app_id}}/edit/{{id}}">
+                <a href="/app/{{app_id}}/test/{{id}}/edit">
                   {{#result}}
                     {{#success}}<iron-icon icon="check" class="success" title="Test passed" />{{/success}}
                     {{#error}}<iron-icon icon="clear" class="failure" title="{{description}}" />{{/error}}
@@ -191,7 +191,7 @@
                 </a>
               </td>
               <td>
-                <a href="/app/{{app_id}}/edit/{{id}}" title="Test editor">{{name}}</a>
+                <a href="/app/{{app_id}}/test/{{id}}/edit" title="Test editor">{{name}}</a>
                 {{#result}}
                 <span class="last-run">{{date_relative started_at}}</span>
                 {{/result}}
@@ -202,12 +202,12 @@
                 </a>
               </td>
               <td>
-                <a href="javascript:rename('/app/{{app_id}}/edit/{{id}}', '{{name}}');" title="Rename">
+                <a href="javascript:rename('/app/{{app_id}}/test/{{id}}', '{{name}}');" title="Rename">
                   <paper-icon-button class="compact" icon="create"></paper-icon-button>
                 </a>
               </td>
             <td>
-              <a href="javascript:ajax_delete('/app/{{app_id}}/edit/{{id}}', '{{id}}');" title="Delete">
+              <a href="javascript:ajax_delete('/app/{{app_id}}/test/{{id}}', '{{id}}');" title="Delete">
                 <paper-icon-button class="compact" icon="delete"></paper-icon-button>
               </a>
             </td>
@@ -224,7 +224,7 @@
         </div>
       </div>
       <div id="fab">
-        <form id="add_test" method="POST" action="/app/{{app.id}}/edit">
+        <form id="add_test" method="POST" action="/app/{{app.id}}/test">
           <paper-fab title="Add test" icon="add" onclick="document.getElementById('add_test').submit();"></paper-fab>
         </form>
       </div>

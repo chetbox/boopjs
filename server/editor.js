@@ -200,7 +200,7 @@ exports.add_routes = function(app) {
       })
       .then(function() {
         // Take the user straight to their first test
-        res.redirect('/app/' + new_app_id + '/edit/' + new_code_id);
+        res.redirect('/app/' + new_app_id + '/test/' + new_code_id + '/edit');
       })
       .catch(fail_on_error(res));
     }
@@ -315,7 +315,7 @@ exports.add_routes = function(app) {
     }
   );
 
-  app.post('/app/:app_id/edit/',
+  app.post('/app/:app_id/test',
     auth.login_required,
     ensure_user_can_access_app,
     function(req, res) {
@@ -327,13 +327,13 @@ exports.add_routes = function(app) {
         content: welcome_code
       })
       .then(function() {
-        res.redirect('/app/' + req.params.app_id + '/edit/' + new_code_id);
+        res.redirect('/app/' + req.params.app_id + '/test/' + new_code_id + '/edit');
       })
       .catch(fail_on_error(res));
     }
   );
 
-  app.get('/app/:app_id/edit/:code_id',
+  app.get('/app/:app_id/test/:code_id/edit',
     auth.login_required,
     ensure_user_can_access_app,
     ensure_code_belongs_to_app,
@@ -441,7 +441,7 @@ exports.add_routes = function(app) {
     }
   );
 
-  app.delete('/app/:app_id/edit/:code_id',
+  app.delete('/app/:app_id/test/:code_id',
     auth.login_required,
     ensure_user_can_access_app,
     ensure_code_belongs_to_app,
@@ -454,7 +454,7 @@ exports.add_routes = function(app) {
     }
   );
 
-  app.get('/app/:app_id/edit/:code_id/code',
+  app.get('/app/:app_id/test/:code_id/code',
     auth.login_required, // TODO: return forbidden if no access
     ensure_user_can_access_app,
     ensure_code_belongs_to_app,
@@ -472,7 +472,7 @@ exports.add_routes = function(app) {
     }
   );
 
-  app.put('/app/:app_id/edit/:code_id/:code_key',
+  app.put('/app/:app_id/test/:code_id/:code_key',
     auth.login_required, // TODO: return forbidden if no access
     ensure_user_can_access_app,
     ensure_code_belongs_to_app,
