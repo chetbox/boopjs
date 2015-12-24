@@ -154,8 +154,9 @@
         </a>
 
         <div class="title">
-          {{../app.name}}
-          {{> delete-button app}}
+          <a href="/apps" alt="Apps">
+            boop.js
+          </a>
         </div>
 
         {{> feedback-button}}
@@ -195,6 +196,11 @@
                 {{#result}}
                 <span class="last-run">{{date_relative started_at}}</span>
                 {{/result}}
+              </td>
+              <td>
+                <a href="/app/{{app_id}}/test/{{id}}/reports" title="All reports">
+                  <paper-icon-button class="compact" icon="receipt"></paper-icon-button>
+                </a>
               </td>
               <td>
                 <a href="javascript:run('{{app_id}}', '{{id}}');" title="Run">

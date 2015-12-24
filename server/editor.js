@@ -371,6 +371,34 @@ exports.add_routes = function(app) {
     }
   );
 
+  app.get('/app/:app_id/test/:code_id/reports',
+    auth.login_required,
+    ensure_user_can_access_app,
+    ensure_code_belongs_to_app,
+    function(req, res) {
+      Promise.join(
+        db.apps().find(req.params.app_id),
+        db.code().find({hash: req.params.app_id, range: req.params.code_id}),
+        model.results.all(req.params.code_id)
+      )
+      .spread(function(app, code, results) {
+        if (!app || !code) {
+          return res.sendStatus(404);
+        }
+        res.render('reports', {
+          user: req.user,
+          app: app,
+          code: _.extend(code, {
+            name: code.name || 'Untitled test',
+            location: code.location && JSON.parse(code.location)
+          }),
+          results: results
+        });
+      })
+      .catch(fail_on_error(res));
+    }
+  );
+
   app.post('/app/:app_id/test/:code_id/run',
     auth.login_required,
     ensure_user_can_access_app,
