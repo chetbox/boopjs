@@ -40,9 +40,8 @@
       <div class="content">
         <div id="header">
           <h2 class="code">
-            <a href="/app/{{result.app.id}}/test/{{result.code_id}}/edit" title="Edit {{code.name}}">
-              {{code.name}} <span class="date">{{date_relative result.started_at}}</span>
-            </a>
+            <a href="/app/{{result.app.id}}/test/{{result.code_id}}/edit" title="Edit {{code.name}}">{{code.name}}</a>
+            <span class="date">{{date_relative result.started_at}}</span>
           </h2>
         </div>
         {{> test-report}}
