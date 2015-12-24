@@ -162,6 +162,24 @@ exports.latest = function(code_id) {
   });
 }
 
+exports.all = function(code_id) {
+  // TODO: paging
+  debug('all', code_id);
+  return db.v2.results.query({
+    KeyConditions: {
+      code_id: {
+        ComparisonOperator: 'EQ',
+        AttributeValueList: [code_id]
+      }
+    },
+    ScanIndexForward: false,
+    Limit: 50
+  })
+  .then(function(results) {
+    return results.Items && results.Items;
+  });
+}
+
 exports.all_latest = function(code_ids) {
   // TODO: optimise
   return Promise.all(
