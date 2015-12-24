@@ -124,7 +124,7 @@
                   </a>
                 </h3>
                 <a class="status" href="/app/{{../app.id}}/test/{{code_id}}/report/{{started_at}}" title="Version {{app.version}}, {{date_relative started_at}}">
-                  {{#success}}<span class="success"></span>{{/success}}
+                  {{#success}}<span class="success">Passed</span>{{/success}}
                   {{#error}}<span class="error">{{description}}</span>{{/error}}
                   {{#unless success}}{{#unless error}}
                     <span class="pending">Pending</span>
