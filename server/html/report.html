@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{code.name}} report - {{result.app.name}} - boop.js</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="{{app.icon}}">
+
+    {{> material-design}}
+
+    <style type="text/css">
+      .content {
+        text-align: center;
+      }
+
+      #header {
+        text-align: center;
+        padding-top: 1em;
+      }
+
+      #header h3 {
+        margin: 0;
+        padding: 0.5em 0;
+        background-color: #B6B6B6;
+        color: rgba(255,255,255,0.87);
+      }
+
+    </style>
+  </head>
+  <body class="fullbleed">
+    <paper-header-panel class="cyan">
+      {{#user}}
+      <paper-toolbar>
+        <a href="/app/{{../result.app.id}}/test/{{../result.code_id}}/reports">
+          <paper-icon-button icon="arrow-back"></paper-icon-button>
+        </a>
+
+        <div class="title">
+          <a href="/app/{{../result.app.id}}/test/{{../result.code_id}}/reports">
+            {{../code.name}}
+          </a>
+        </div>
+
+        {{> feedback-button}}
+        {{> admin-button}}
+        {{> account-button}}
+      </paper-toolbar>
+      {{/user}}
+      <div class="content">
+        <div id="header">
+          {{> app-info result.app}}
+          <h2 class="code">
+            <a href="/app/{{id}}/test/{{code_id}}/edit" title="Edit {{code.name}}">
+              {{code.name}}
+            </a>
+          </h2>
+          <h3>{{date_relative result.started_at}}</h3>
+        </div>
+        {{> test-report}}
+      </div>
+    </paper-header-panel>
+  </body>
+
+  {{> google-analytics}}
+
+</html>

@@ -399,6 +399,28 @@ exports.add_routes = function(app) {
     }
   );
 
+  app.get('/app/:app_id/test/:code_id/report/:started_at',
+    auth.login_required,
+    ensure_user_can_access_app,
+    ensure_code_belongs_to_app,
+    function(req, res) {
+      Promise.join(
+        db.code().find({hash: req.params.app_id, range: req.params.code_id}),
+        model.results.get(req.params.code_id, req.params.started_at)
+      )
+      .spread(function(code, result) {
+        res.render('report', {
+          user: req.user,
+          result: result,
+          code: _.extend(code, {
+            name: code.name || 'Untitled test'
+          })
+        });
+      })
+      .catch(fail_on_error(res));
+    }
+  );
+
   app.post('/app/:app_id/test/:code_id/run',
     auth.login_required,
     ensure_user_can_access_app,
