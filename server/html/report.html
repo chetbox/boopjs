@@ -22,6 +22,36 @@
         margin-left: 0.5em;
         font-weight: 100;
       }
+
+      #report {
+        text-align: left;
+        list-style: none;
+        padding: 0 1em;
+        overflow-y: auto;
+      }
+
+      #report > li {
+        white-space: nowrap;
+      }
+
+      #report > li:first-child {
+        display: none;
+      }
+
+      #report > li pre {
+        display: inline-block;
+        margin: 0;
+      }
+
+      #report > li .line {
+        margin-right: 0.5em;
+        opacity: 0.5;
+        width: 2em;
+        display: inline-block;
+        text-align: right;
+        font-size: 0.8em;
+        font-weight: 300;
+      }
     </style>
   </head>
   <body class="fullbleed">
@@ -44,7 +74,13 @@
             <span class="date">{{date_relative result.started_at}}</span>
           </h2>
         </div>
-        {{> test-report}}
+        <ol id="report" start="0">
+          {{#result.report}}
+            <li class="{{result.report}}">
+              <span class="line">{{@index}}</span> <pre>{{format_result .}}</pre>
+            </li>
+          {{/result.report}}
+        </ol>
       </div>
     </paper-header-panel>
   </body>

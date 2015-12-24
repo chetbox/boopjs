@@ -35,6 +35,9 @@ var hbs = express_handlebars.create({
           return '?';
         }
         return moment(d).fromNow();
+      },
+      format_result: function(r) {
+        return JSON.stringify(r);
       }
     },
 });
