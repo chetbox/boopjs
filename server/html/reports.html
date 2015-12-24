@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>{{code.name}} reports - {{app.name}}  - boop.js</title>
+    <title>{{code.name}} reports - {{app.name}} - boop.js</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" href="{{app.icon}}">
 
@@ -24,10 +24,31 @@
         text-align: left;
       }
 
-      #results h3 {
-        margin-bottom: 0.5em;
-        margin-top: 0.5em;
+      .info {
+        padding-top: 0.5em;
+        padding-bottom: 0.5em;
       }
+
+      .info h3 {
+        margin-bottom: 0;
+        margin-top: 0;
+        font-size: inherit;
+        font-weight: inherit;
+      }
+
+      .status {
+        font-weight: 300;
+        font-size: 0.67em;
+        opacity: 0.67;
+        display: block;
+        max-width: 12em;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .status .error { color: #df574b; }
+      .status .pending { color: #727272; }
 
       .result {
         padding-right: 0.5em;
@@ -88,7 +109,7 @@
             {{#results}}
             <tr>
               <td class="result">
-                <a href="/app/{{id}}/test/{{code_id}}/report/{{../started_at}}" title="{{app.version}}, {{date_relative started_at}}">
+                <a href="/app/{{id}}/test/{{code_id}}/report/{{../started_at}}" title="Version {{app.version}}, {{date_relative started_at}}">
                   {{#success}}<iron-icon icon="check" class="success" title="Test passed" />{{/success}}
                   {{#error}}<iron-icon icon="clear" class="failure" title="{{description}}" />{{/error}}
                   {{#unless success}}{{#unless error}}
@@ -96,20 +117,24 @@
                   {{/unless}}{{/unless}}
                 </a>
               </td>
-              <td>
-                <h3 class="info">
-                  <a href="/app/{{id}}/test/{{code_id}}/report/{{../started_at}}" title="{{app.version}}, {{date_relative started_at}}">
+              <td class="info">
+                <h3>
+                  <a href="/app/{{id}}/test/{{code_id}}/report/{{../started_at}}" title="Version {{app.version}}, {{date_relative started_at}}">
                     <span class="date">{{date_relative started_at}}</span> <span class="version">{{app.version}}</span>
                   </a>
                 </h3>
+                <a class="status" href="/app/{{id}}/test/{{code_id}}/report/{{../started_at}}" title="Version {{app.version}}, {{date_relative started_at}}">
+                  {{#success}}<span class="success"></span>{{/success}}
+                  {{#error}}<span class="error">{{description}}</span>{{/error}}
+                  {{#unless success}}{{#unless error}}
+                    <span class="pending">Pending</span>
+                  {{/unless}}{{/unless}}
+                </a>
               </td>
             </tr>
             {{/results}}
           </tbody>
         </table>
-      </div>
-      <div id="fab">
-        <paper-fab title="Run" icon="av:play-arrow" onclick="alert('TODO');"></paper-fab>
       </div>
     </paper-header-panel>
   </body>
