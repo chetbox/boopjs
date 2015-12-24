@@ -4,6 +4,7 @@ require('shortid').seed(56873);
 var express = require('express');
 var app = express();
 var express_handlebars = require('express-handlebars');
+var Handlebars = require('handlebars');
 var moment = require('moment');
 var body_parser = require('body-parser');
 
@@ -36,8 +37,8 @@ var hbs = express_handlebars.create({
         }
         return moment(d).fromNow();
       },
-      format_result: function(r) {
-        return JSON.stringify(r);
+      stringify: function(r) {
+        return new Handlebars.SafeString(Handlebars.Utils.escapeExpression(JSON.stringify(r, null, 2)));
       }
     },
 });
