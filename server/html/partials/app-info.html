@@ -1,0 +1,24 @@
+<div class="app">
+  <style scoped>
+    .app-icon {
+      height: 100px;
+      width: 100px;
+      border-radius: 18px;
+      margin: 50px 50px 5px 50px;
+      -webkit-filter: drop-shadow(0 0 2px rgba(0,0,0,0.2));
+      filter: drop-shadow(0 0 4px rgba(0,0,0,0.2));
+    }
+    
+    h2 .identifier {
+      font-size: 0.67em;
+      opacity: 0.5;
+    }
+
+    h2 .version {
+      opacity: 0.33;
+    }
+  </style>
+
+  <img class="app-icon" src="{{icon}}" title="{{name}}"/>
+  <h2>{{name}} <span class="version">{{version}}</span><br><span class="identifier">{{identifier}}</span></h2>
+</div>
