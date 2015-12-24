@@ -43,7 +43,7 @@
         margin: 0;
       }
 
-      #report > li .line {
+      #report > li .line-no {
         margin-right: 0.5em;
         opacity: 0.5;
         width: 2em;
@@ -51,6 +51,30 @@
         text-align: right;
         font-size: 0.8em;
         font-weight: 300;
+      }
+
+      #report > li.success .source {
+        color: #43A047;
+      }
+
+      #report > li.error .source {
+        color: #D32F2F;
+      }
+
+      #report > li > span:not(.line-no) {
+        display: block;
+        margin-left: 3.25em;
+      }
+
+      #report .line .source::before {
+        content: ' ';
+        margin-right: 0.5em;
+      }
+      #report .line.success .source::before {
+        content: '\2713'
+      }
+      #report .line.error .source::before {
+        content: '\2717'
       }
     </style>
   </head>
@@ -76,9 +100,22 @@
         </div>
         <ol id="report" start="0">
           {{#result.report}}
-            <li class="{{result.report}}">
-              <span class="line">{{@index}}</span> <pre>{{format_result .}}</pre>
-            </li>
+            {{#.}}
+              <li class="line {{#success}} success{{/success}} {{#error}} error{{/error}}">
+                <span class="line-no">{{@index}}</span>
+                <pre class="source">{{source}}</pre>
+                {{#success}}
+                  <span class="success"><pre>{{{stringify result}}}</pre></span>
+                {{/success}}
+                {{#error}}
+                  <span class="error"><pre>{{description}}</pre></span>
+                  <span class="stacktrace"><pre>{{stacktrace}}</pre></span>
+                {{/error}}
+                {{#unless success}}{{#unless error}}
+                  <span>{{result}}</span>
+                {{/unless}}{{/unless}}
+              </li>
+            {{/.}}
           {{/result.report}}
         </ol>
       </div>
