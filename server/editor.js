@@ -375,7 +375,7 @@ exports.add_routes = function(app) {
     auth.login_required,
     ensure_user_can_access_app,
     ensure_code_belongs_to_app,
-    function(req, res) {
+    function(req, res, next) {
       Promise.join(
         db.apps().find(req.params.app_id),
         db.code().find({hash: req.params.app_id, range: req.params.code_id}),
@@ -395,7 +395,7 @@ exports.add_routes = function(app) {
           results: results
         });
       })
-      .catch(fail_on_error(res));
+      .catch(next);
     }
   );
 
@@ -403,7 +403,7 @@ exports.add_routes = function(app) {
     auth.login_required,
     ensure_user_can_access_app,
     ensure_code_belongs_to_app,
-    function(req, res) {
+    function(req, res, next) {
       Promise.join(
         db.code().find({hash: req.params.app_id, range: req.params.code_id}),
         model.results.get(req.params.code_id, req.params.started_at)
@@ -417,7 +417,7 @@ exports.add_routes = function(app) {
           })
         });
       })
-      .catch(fail_on_error(res));
+      .catch(next);
     }
   );
 
@@ -437,7 +437,7 @@ exports.add_routes = function(app) {
   app.post('/app/:app_id/run',
     auth.login_required,
     ensure_user_can_access_app,
-    function(req, res) {
+    function(req, res, next) {
       return db.code().findAll(req.params.app_id)
       .then(function(code) {
         return Promise.all(
@@ -449,7 +449,7 @@ exports.add_routes = function(app) {
       .then(function() {
         res.sendStatus(200);
       })
-      .catch(fail_on_error(res));
+      .catch(next);
     }
   );
 
