@@ -124,7 +124,7 @@ function run_test(source, server, device_id, app_id, code_id, started_at) {
       );
     },
     onError: function(message) {
-      ga('send', 'event', 'test-result', 'error', message.type);
+      ga('send', 'event', 'test-error', message.type, message.error);
 
       result_container(message)
         .append(errorHTML(message))
