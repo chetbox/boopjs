@@ -180,11 +180,15 @@ code {
   margin-top: 8px;
 }
 
-a.login-button, a.login-button:hover {
+.nav>li>a.login-button, .nav>li>a.login-button:hover {
   padding: 0.5em 1em !important;
   background-color: #FF5722 !important;
   color: rgba(255,255,255,0.87) !important;
   border-radius: 0.25em;
   text-decoration: none;
   display: inline-block;
+}
+
+.navbar-collapse .nav>li>a.login-button {
+  margin-left: 1em;
 }
