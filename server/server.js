@@ -7,7 +7,7 @@ var body_parser = require('body-parser');
 var index = require('./index');
 var editor_demo = require('./editor_demo');
 var editor = require('./editor');
-
+var email = require('./reporting/email');
 
 // Settings
 
@@ -52,6 +52,14 @@ require('./editor')           .add_routes(app);
 require('./websocket_server') .add_routes(app);
 require('./admin')            .add_routes(app);
 
+
+// Errors: print to console & email
+
+app.use(function(err, req, res, next) {
+  console.error(err.stack || err);
+  res.status(500).send(err.message || err.toString());
+  email.send_to_admins(email.message.error(req.url, req.user, err));
+});
 
 // Launch
 
