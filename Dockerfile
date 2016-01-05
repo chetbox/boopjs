@@ -3,7 +3,7 @@ MAINTAINER chetbox
 
 # Install Node
 RUN wget -qO- https://deb.nodesource.com/setup_4.x | bash -
-RUN apt-get install -y nodejs && \
+RUN apt-get install -y git nodejs && \
     apt-get autoremove -y && \
     apt-get clean all
 
