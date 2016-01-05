@@ -40,13 +40,11 @@ exports.message = {
     };
   },
   error: function(url, user, err) {
-    var err_json = JSON.stringify(err, ['message', 'arguments', 'type', 'name', 'stack', 'fileName', 'lineNumber'], 2);
     return {
       subject: util.format('Error: %s', err.message || err.toString()),
       body: util.format('User %s (%s) encountered an uncaught error on page:\n%s\n', user.displayName, user.username, url) +
             (user ? util.format('%s: %s\n', user.provider, user.profileUrl) : '') +
             util.format('\n%s\n', err.stack || err.message || err.toString()) +
-            util.format('\n\nOriginal error:\n%s\n', err_json) +
             admin_footer
     };
   }
