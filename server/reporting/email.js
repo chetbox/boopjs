@@ -42,7 +42,8 @@ exports.message = {
   error: function(url, user, err) {
     return {
       subject: util.format('Error: %s', err.message || err.toString()),
-      body: util.format('User %s (%s) encountered an uncaught error on page:\n%s\n', user.displayName, user.username, url) +
+      body: util.format('User %s (%s) encountered an uncaught error on page:\n', user.displayName, user.username) +
+            util.format('%s://%s%s\n', config.host.protocol, config.host.address, url) +
             (user ? util.format('%s: %s\n', user.provider, user.profileUrl) : '') +
             util.format('\n%s\n', err.stack || err.message || err.toString()) +
             admin_footer
