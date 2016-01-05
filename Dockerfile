@@ -1,4 +1,4 @@
-FROM chetbox/android-sdk:23.0.2
+FROM chetbox/android-sdk:23.0.1
 MAINTAINER chetbox
 
 # Install Node
