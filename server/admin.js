@@ -2,13 +2,12 @@ exports.add_routes = function(app) {
 
   var auth = require('./auth');
   var db = require('./db');
-  var util = require('./util');
   var github_api = require('./github_api');
 
   app.get('/admin',
     auth.login_required,
     auth.ensure_user_is_admin,
-    function(req, res) {
+    function(req, res, next) {
       db.users().scan()
       .then(function(user_ids) {
         return db.users().batchFind(user_ids.map(function(u) { return u.id; }));
@@ -19,7 +18,7 @@ exports.add_routes = function(app) {
           all_users: users
         });
       })
-      .catch(util.fail_on_error(res));
+      .catch(next);
     }
   );
 
@@ -27,14 +26,14 @@ exports.add_routes = function(app) {
   app.post('/admin/user/:username',
     auth.login_required,
     auth.ensure_user_is_admin,
-    function(req, res) {
+    function(req, res, next) {
       github_api.user(req.params.username)
       .then(function(gh_user) {
         return [gh_user, db.users().find(gh_user.id)];
       })
       .spread(function(gh_user, user) {
         if (user) {
-          throw 'User "' + req.params.username + '" already exists';
+          throw new Error('User "' + req.params.username + '" already exists');
         }
         return db.users().insert({
           id: gh_user.id.toString(),
@@ -47,9 +46,7 @@ exports.add_routes = function(app) {
       .then(function() {
         res.sendStatus(200);
       })
-      .catch(function(e) {
-        res.status(400).send(e);
-      });
+      .catch(next);
     }
   );
 

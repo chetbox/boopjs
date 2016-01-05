@@ -38,7 +38,7 @@ exports.add_routes = function(app) {
       }
       next();
     })
-    .catch(fail_on_error(res));
+    .catch(next);
   }
 
   function ensure_user_can_access_app(req, res, next) {
@@ -89,7 +89,7 @@ exports.add_routes = function(app) {
 
   app.get('/sign_s3',
     auth.login_required,
-    function(req, res) {
+    function(req, res, next) {
       s3.client_upload_request(
         'chetbot-apps',
         shortid.generate() + '/app.apk',
@@ -98,13 +98,13 @@ exports.add_routes = function(app) {
       .then(function(upload_req) {
         res.json(upload_req);
       })
-      .catch(fail_on_error(res));
+      .catch(next);
     }
   );
 
   app.get('/apps',
     auth.login_required,
-    function(req, res) {
+    function(req, res, next) {
       new Promise(function(resolve) {
         return resolve(req.user.apps
           ? db.apps().batchFind(req.user.apps)
@@ -117,14 +117,14 @@ exports.add_routes = function(app) {
           apps: apps
         });
       })
-      .catch(fail_on_error(res));
+      .catch(next);
     }
   );
 
   app.post('/apps',
     auth.login_required,
     // TODO: check that user is allowed to create another app
-    function(req, res) {
+    function(req, res, next) {
       var user_apk_url = req.body.app_url;
       var new_app_id = shortid.generate();
       var new_code_id = shortid.generate();
@@ -140,7 +140,7 @@ exports.add_routes = function(app) {
         var as_user = null;
         db.users().find(req.body.as_user)
         .then(function(u) {
-          if (!u) throw 'User not found: ' + req.body.as_user;
+          if (!u) throw new Error('User not found: ' + req.body.as_user);
           as_user = u;
         })
         .then(function() {
@@ -158,7 +158,7 @@ exports.add_routes = function(app) {
         .then(function() {
           res.redirect('/app/' + new_app_id);
         })
-        .catch(fail_on_error(res));
+        .catch(next);
         return;
       }
 
@@ -202,7 +202,7 @@ exports.add_routes = function(app) {
         // Take the user straight to their first test
         res.redirect('/app/' + new_app_id + '/test/' + new_code_id + '/edit');
       })
-      .catch(fail_on_error(res));
+      .catch(next);
     }
   );
 
@@ -210,7 +210,7 @@ exports.add_routes = function(app) {
   app.post('/app/:app_id',
     auth.login_required,
     ensure_user_can_access_app,
-    function(req, res) {
+    function(req, res, next) {
       // TODO: check that app has the same package name
 
       var app_id = req.params.app_id;
@@ -243,14 +243,14 @@ exports.add_routes = function(app) {
         // refresh
         res.redirect(req.get('referer'));
       })
-      .catch(fail_on_error(res));
+      .catch(next);
     }
   );
 
   app.get('/app/:app_id',
     auth.login_required,
     ensure_user_can_access_app,
-    function(req, res) {
+    function(req, res, next) {
       return Promise.all([
         db.apps().find(req.params.app_id),
         db.code().findAll(req.params.app_id)
@@ -278,14 +278,14 @@ exports.add_routes = function(app) {
           })
         });
       })
-      .catch(fail_on_error(res));
+      .catch(next);
     }
   );
 
   app.delete('/app/:app_id',
     auth.login_required,
     ensure_user_can_access_app,
-    function(req, res) {
+    function(req, res, next) {
       db.apps().find(req.params.app_id)
       .then(function(app) {
         return app.admins || [];
@@ -311,14 +311,14 @@ exports.add_routes = function(app) {
       .then(function() {
         res.status(200).send('');
       })
-      .catch(fail_on_error(res));
+      .catch(next);
     }
   );
 
   app.post('/app/:app_id/test',
     auth.login_required,
     ensure_user_can_access_app,
-    function(req, res) {
+    function(req, res, next) {
       var new_code_id = shortid.generate();
       db.code().insert({
         id: new_code_id,
@@ -329,7 +329,7 @@ exports.add_routes = function(app) {
       .then(function() {
         res.redirect('/app/' + req.params.app_id + '/test/' + new_code_id + '/edit');
       })
-      .catch(fail_on_error(res));
+      .catch(next);
     }
   );
 
@@ -337,7 +337,7 @@ exports.add_routes = function(app) {
     auth.login_required,
     ensure_user_can_access_app,
     ensure_code_belongs_to_app,
-    function(req, res) {
+    function(req, res, next) {
       Promise.join(
         db.apps().find(req.params.app_id),
         db.code().find({hash: req.params.app_id, range: req.params.code_id}),
@@ -367,7 +367,7 @@ exports.add_routes = function(app) {
           })
         });
       })
-      .catch(fail_on_error(res));
+      .catch(next);
     }
   );
 
@@ -495,12 +495,12 @@ exports.add_routes = function(app) {
     auth.login_required,
     ensure_user_can_access_app,
     ensure_code_belongs_to_app,
-    function(req, res) {
+    function(req, res, next) {
       db.code().remove({hash: req.params.app_id, range: req.params.code_id})
       .then(function() {
         res.status(200).send('');
       })
-      .catch(fail_on_error(res));
+      .catch(next);
     }
   );
 
@@ -508,7 +508,7 @@ exports.add_routes = function(app) {
     auth.login_required, // TODO: return forbidden if no access
     ensure_user_can_access_app,
     ensure_code_belongs_to_app,
-    function(req, res) {
+    function(req, res, next) {
       db.code()
       .find(req.params.code_id)
       .then(function(code) {
@@ -518,7 +518,7 @@ exports.add_routes = function(app) {
         res.set('Content-Type', 'text/javascript');
         res.status(200).send(code.content);
       })
-      .catch(fail_on_error(res));
+      .catch(next);
     }
   );
 
@@ -527,7 +527,7 @@ exports.add_routes = function(app) {
     ensure_user_can_access_app,
     ensure_code_belongs_to_app,
     check_allowed_code_update('code_key'),
-    function(req, res) {
+    function(req, res, next) {
       db.code().find({
         hash: req.params.app_id,
         range: req.params.code_id
@@ -539,7 +539,7 @@ exports.add_routes = function(app) {
       .then(function() {
         res.sendStatus(200);
       })
-      .catch(fail_on_error(res));
+      .catch(next);
     }
   );
 
