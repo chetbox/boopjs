@@ -6,7 +6,6 @@ var _ = require('underscore');
 var flash = require('connect-flash');
 
 var db = require('./db');
-var fail_on_error = require('./util').fail_on_error;
 var email = require('./reporting/email');
 
 passport.serializeUser(function(user, done) {
@@ -112,7 +111,7 @@ function setup(app, options) {
   app.get('/account/:user_id',
     login_required,
     ensure_logged_in_user('user_id'),
-    function(req, res) {
+    function(req, res, next) {
       db.users().find(req.params.user_id)
       .then(function(user) {
         res.render('account', {
@@ -120,7 +119,7 @@ function setup(app, options) {
           requested_user: user
         });
       })
-      .catch(fail_on_error(res));
+      .catch(next);
     }
   );
 

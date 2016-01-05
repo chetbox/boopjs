@@ -103,7 +103,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler, Provider<
         mJsScope.put("content_view", mJsScope, new Callable() {
             @Override
             public Object call(Context context, Scriptable scope, Scriptable thisObj, Object[] args) {
-                Object contentView = RootViews.getTopmostContentView(Activities.getActivity(mPackageName));
+                Object contentView = RootViews.getTopmostWindowView(Activities.getActivity(mPackageName));
                 return Rhino.wrapJavaObject(contentView, mJsContext, scope);
             }
         });
