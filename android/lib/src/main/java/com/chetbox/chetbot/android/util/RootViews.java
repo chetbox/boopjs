@@ -75,7 +75,7 @@ public class RootViews {
 
     private RootViews() {}
 
-    public static View getTopmostContentView(Activity activity) {
+    public static View getTopmostWindowView(Activity activity) {
         final Container<View> rootView = new Container<>();
         activity.runOnUiThread(new Runnable() {
             @Override
@@ -83,7 +83,7 @@ public class RootViews {
                 rootView.setContent(reduceRoots(applyDefaultRootMatcher(listActiveRoots())).getDecorView());
             }
         });
-        return findContentView(rootView.waitForContent());
+        return rootView.waitForContent();
     }
 
     // Must be run on UI thread
@@ -131,13 +131,6 @@ public class RootViews {
         } catch (InvocationTargetException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private static View findContentView(View rootView) {
-        View contentView = rootView.findViewById(android.R.id.content);
-        return (contentView != null)
-                ? contentView
-                : rootView; // Probably some kind of popup (e.g. dropdown menu)
     }
 
 }
