@@ -239,7 +239,7 @@ describe('model.results', function() {
             {source: 'two()', error: {description: 'Error on line 2', stacktrace: 'Line 2\nError'}},
             {source: 'three()'}
           ],
-          error: {description: 'Error on line 2', stacktrace: 'Line 2\nError'}
+          error: {description: 'Error on line 2', stacktrace: 'Line 2\nError', line: 2, source: 'two()'}
         }]);
       });
     });
@@ -390,7 +390,7 @@ describe('model.results', function() {
               null,
               {source: 'one()', error: {description: 'first', stacktrace: '1111'}}
             ],
-            error: {description: 'first', stacktrace: '1111'}
+            error: {description: 'first', stacktrace: '1111', line: 1, source: 'one()'}
           }])
         })
         .then(done);
