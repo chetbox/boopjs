@@ -23,6 +23,10 @@
         font-weight: 100;
       }
 
+      h3 {
+        margin: 0;
+      }
+
       #report {
         text-align: left;
         list-style: none;
@@ -40,8 +44,8 @@
       }
 
       #report > li .line-no {
-        margin-right: 0.5em;
-        opacity: 0.5;
+        margin-right: 1em;
+        color: #B6B6B6;
         width: 2em;
         display: inline-block;
         text-align: right;
@@ -59,18 +63,43 @@
 
       #report > li > span:not(.line-no) {
         display: block;
-        margin-left: 3.25em;
+        margin-left: 2.67em;
       }
 
-      #report .line .source::before {
+      #report .line .line-no::after {
+        margin: 0 1em;
         content: ' ';
-        margin-right: 0.5em;
       }
-      #report .line.success .source::before {
-        content: '\2713'
+      #report .line.success .line-no::after {
+        content: '\2713';
+        color: #43A047;
       }
-      #report .line.error .source::before {
-        content: '\2717'
+      #report .line.error .line-no::after {
+        content: '\2717';
+        color: #D32F2F;
+      }
+
+      div.execution.error {
+        padding: 2em 4em;
+        background-color: #F44336;
+        color: #FFCDD2;
+      }
+
+      div.execution.error pre {
+        text-align: left;
+      }
+
+      .result {
+        padding-right: 0.5em;
+        font-size: 1.5em;
+      }
+
+      .result .success {
+        color: #4CAF50;
+      }
+
+      .result .failure {
+        color: #F44336;
       }
     </style>
   </head>
@@ -89,31 +118,54 @@
       </div>
       <div class="content">
         <div id="header">
-          <h2 class="code">
+          <h2 class="code {{#result.success}}success{{/result.success}} {{#result.error}}error{{/result.error}}">
+            {{#result}}
+              <span class="result">
+                {{#success}}
+                  <iron-icon icon="check" class="success" title="{{description}}"/>
+                {{/success}}
+                {{#error}}
+                  <iron-icon icon="clear" class="failure" title="Test passed"/>
+                {{/error}}
+              </span>
+            {{/result}}
             <a href="/app/{{result.app.id}}/test/{{result.code_id}}/edit" title="Edit {{code.name}}">{{code.name}}</a>
             <span class="date">{{date_relative result.started_at}}</span>
           </h2>
         </div>
-        <ol id="report" start="0">
-          {{#result.report}}
-            {{#.}}
-              <li class="line {{#success}} success{{/success}} {{#error}} error{{/error}}">
-                <span class="line-no">{{@index}}</span>
-                <pre class="source">{{source}}</pre>
-                {{#success}}
-                  <span class="success"><pre>{{{stringify result}}}</pre></span>
-                {{/success}}
-                {{#error}}
-                  <span class="error"><pre>{{description}}</pre></span>
-                  <span class="stacktrace"><pre>{{stacktrace}}</pre></span>
-                {{/error}}
-                {{#unless success}}{{#unless error}}
-                  <span>{{result}}</span>
-                {{/unless}}{{/unless}}
-              </li>
-            {{/.}}
-          {{/result.report}}
-        </ol>
+        {{#result}}
+          {{#error}}
+            <div class="execution error">
+              <h3>
+                {{description}}
+                {{^description}}Unknown error{{/description}}
+              </h3>
+              {{#stacktrace}}
+                <pre>{{.}}</pre>
+              {{/stacktrace}}
+            </div>
+          {{/error}}
+          <ol id="report" start="0">
+            {{#report}}
+              {{#.}}
+                <li class="line {{#success}} success{{/success}} {{#error}} error{{/error}}">
+                  <span class="line-no">{{@index}}</span>
+                  <pre class="source">{{source}}</pre>
+                  {{#success}}
+                    <span class="success"><pre>{{{stringify result}}}</pre></span>
+                  {{/success}}
+                  {{#error}}
+                    <span class="error"><pre>{{description}}</pre></span>
+                    <span class="stacktrace"><pre>{{stacktrace}}</pre></span>
+                  {{/error}}
+                  {{#unless success}}{{#unless error}}
+                    <span>{{result}}</span>
+                  {{/unless}}{{/unless}}
+                </li>
+              {{/.}}
+            {{/report}}
+          </ol>
+        {{/result}}
       </div>
     </paper-header-panel>
   </body>
