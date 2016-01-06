@@ -2,7 +2,6 @@ var url = require('url');
 var shortid = require('shortid');
 
 var db = require('../db');
-var fail_on_error = require('../util').fail_on_error;
 
 exports.create = function(endpoint) {
   var token = shortid.generate();
@@ -35,7 +34,7 @@ exports.middleware = {
           res.sendStatus(403);
         }
       })
-      .catch(fail_on_error(res));
+      .catch(next);
     };
   }
 };
