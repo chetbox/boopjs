@@ -11,7 +11,7 @@ var model = {
 
 var CLOSE_WHEN_FINISHED = function() {
   $(document).on('test-progress', function(e, name) {
-    if (name === 'onFinish') close();
+    if (name === 'onFinish') resolve();
   });
 };
 
