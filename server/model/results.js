@@ -97,10 +97,11 @@ exports.update = function(key, response) {
               description: response.error,
               stacktrace: response.stacktrace
             }
-          }
+          },
+          ReturnValues: 'ALL_OLD'
         })
       : Promise.resolve())
-    .then(function() {
+    .then(function(line_updated) {
       return db.v2.results.update({
         Key: key,
         UpdateExpression: 'SET #error = :error',
@@ -109,10 +110,12 @@ exports.update = function(key, response) {
           '#error': 'error'
         },
         ExpressionAttributeValues: {
-          ':error': {
-            description: response.error,
-            stacktrace: response.stacktrace
-          }
+          ':error': _.extend(
+            {description: response.error, stacktrace: response.stacktrace},
+            line_updated
+              ? {line: response.line, source: line_updated.Attributes.report[response.line].source}
+              : {}
+          )
         }
       });
     });
