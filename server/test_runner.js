@@ -21,7 +21,7 @@ module.exports = function(app_id, code_id) {
   debug('Running', endpoint);
   return db.v2.apps.get({Key: {id: app_id}})
   .then(function(app) {
-    if (!app) throw 'App ' + app_id + ' does not exist';
+    if (!app) throw new Error('App ' + app_id + ' does not exist');
 
     // Create somewhere to store the test results
     return model.results.create(code_id, now, app)
@@ -42,7 +42,7 @@ module.exports = function(app_id, code_id) {
   })
   .spread(function(resp, body) {
     if (resp.statusCode !== 200) {
-      throw 'HTTP error ' + resp.statusCode + ': ' + body;
+      throw new Error('HTTP error ' + resp.statusCode + ': ' + body);
     }
     return body;
   });

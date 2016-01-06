@@ -425,7 +425,7 @@ exports.add_routes = function(app) {
     auth.login_required,
     ensure_user_can_access_app,
     ensure_code_belongs_to_app,
-    function(req, res) {
+    function(req, res, next) {
       run_test(req.params.app_id, req.params.code_id)
       .then(function() {
         res.sendStatus(200);
@@ -457,7 +457,7 @@ exports.add_routes = function(app) {
   app.get('/app/:app_id/test/:code_id/autorun/:started_at',
     model.run_tokens.middleware.consume('access_token'),
     ensure_code_belongs_to_app,
-    function(req, res) {
+    function(req, res, next) {
       Promise.join(
         db.apps().find(req.params.app_id),
         db.code().find({hash: req.params.app_id, range: req.params.code_id}),
