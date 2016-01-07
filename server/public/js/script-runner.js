@@ -43,7 +43,7 @@ function run_script(server, device_id, app_id, code_id, started_at, statements, 
       callback('onResult', message);
     } else if ('log' in message) {
       callback('onLogMessage', message);
-    } else if ('success' in message) {
+    } else if ('success' in message && message.success) {
       callback('onSuccess', message);
       callback('onFinish', true);
     }

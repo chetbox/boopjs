@@ -19,8 +19,7 @@ exports.add_routes = function(app) {
 
   var model = {
     results: require('./model/results'),
-    devices: require('./model/devices'),
-    run_tokens: require('./model/run_tokens')
+    devices: require('./model/devices')
   }
 
   var welcome_code = fs.readFileSync(__dirname + '/demos/welcome.js', 'utf8');
@@ -422,11 +421,10 @@ exports.add_routes = function(app) {
   );
 
   app.get('/app/:app_id/test/:code_id/report/:started_at/callback',
-    // TODO: auth? (make run_tokens consume a "run" and "callback" access token)
     ensure_code_belongs_to_app,
+    model.results.middleware.set_test_runner_status('opened', 'finished', 'params.code_id', 'params.started_at', 'query.access_token'),
     function(req, res, next) {
       var result = JSON.parse(req.query.response);
-      console.log(result);
       test_runner.handle_result(req.params.code_id, parseInt(req.params.started_at), result)
       .then(function() {
         res.sendStatus(200);
@@ -469,8 +467,8 @@ exports.add_routes = function(app) {
 
   // Page opened by the test runner
   app.get('/app/:app_id/test/:code_id/autorun/:started_at',
-    model.run_tokens.middleware.consume('access_token'),
     ensure_code_belongs_to_app,
+    model.results.middleware.set_test_runner_status('queued', 'opened', 'params.code_id', 'params.started_at', 'query.access_token'),
     function(req, res, next) {
       Promise.join(
         db.apps().find(req.params.app_id),
