@@ -10,7 +10,7 @@ exports.add_routes = function(app) {
   var db = require('./db');
   var auth = require('./auth');
   var s3 = require('./s3');
-  var run_test = require('./test_runner');
+  var test_runner = require('./test_runner');
   var appetizeio = require('./apps/appetizeio');
   var inject_chetbot = require('./apps/android/inject-chetbot');
   var android_app_info = require('./apps/android/info');
@@ -420,12 +420,26 @@ exports.add_routes = function(app) {
     }
   );
 
+  app.get('/app/:app_id/test/:code_id/report/:started_at/callback',
+    // TODO: auth? (make run_tokens consume a "run" and "callback" access token)
+    ensure_code_belongs_to_app,
+    function(req, res, next) {
+      var result = JSON.parse(req.query.response);
+      console.log(result);
+      test_runner.handle_result(req.params.code_id, parseInt(req.params.started_at), result)
+      .then(function() {
+        res.sendStatus(200);
+      })
+      .catch(next);
+    }
+  );
+
   app.post('/app/:app_id/test/:code_id/run',
     auth.login_required,
     ensure_user_can_access_app,
     ensure_code_belongs_to_app,
     function(req, res, next) {
-      run_test(req.params.app_id, req.params.code_id)
+      test_runner.run(req.params.app_id, req.params.code_id)
       .then(function() {
         res.sendStatus(200);
       })
@@ -441,7 +455,7 @@ exports.add_routes = function(app) {
       .then(function(code) {
         return Promise.all(
           code.map(function(c) {
-            return run_test(req.params.app_id, c.id);
+            return test_runner.run(req.params.app_id, c.id);
           })
         );
       })

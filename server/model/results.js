@@ -142,6 +142,16 @@ exports.update = function(key, response) {
   return Promise.reject('Don\'t know what to do with: ' + JSON.stringify(response));
 }
 
+exports.update_with_callback = function(code, started_at, result) {
+  return result.success
+    ? Promise.resolve() // Nothing to do for a successful test run
+    : exports.update(
+        {code_id: code, started_at: started_at},
+        {error: result.error.message, stacktrace: result.error.info}
+      );
+}
+
+
 exports.latest = function(code_id) {
   debug('get_latest', code_id);
   return db.v2.results.query({
