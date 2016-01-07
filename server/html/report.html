@@ -27,6 +27,12 @@
         margin: 0;
       }
 
+      h3 a {
+        color: inherit;
+        margin-left: 1em;
+        opacity: 0.67;
+      }
+
       #report {
         text-align: left;
         list-style: none;
@@ -82,13 +88,13 @@
         color: #D32F2F;
       }
 
-      div.execution.error {
+      div#error {
         padding: 2em 4em;
         background-color: #F44336;
         color: #FFCDD2;
       }
 
-      div.execution.error pre {
+      div#error pre {
         text-align: left;
       }
 
@@ -138,10 +144,13 @@
         </div>
         {{#result}}
           {{#error}}
-            <div class="execution error">
+            <div id="error" class="execution">
               <h3>
                 {{description}}
                 {{^description}}Unknown error{{/description}}
+                {{#line}}
+                  <a href="#line-{{.}}" class="line-no">Line {{.}}</a>
+                {{/line}}
               </h3>
               {{#stacktrace}}
                 <pre>{{.}}</pre>
@@ -151,7 +160,7 @@
           <ol id="report" start="0">
             {{#report}}
               {{#.}}
-                <li class="line {{#success}} success{{/success}} {{#error}} error{{/error}}">
+                <li id="line-{{@index}}" class="line {{#success}} success{{/success}} {{#error}} error{{/error}}">
                   <span class="line-no">{{@index}}</span>
                   <pre class="source">{{source}}</pre>
                   {{#success}}

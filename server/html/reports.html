@@ -109,7 +109,7 @@
             {{#results}}
             <tr>
               <td class="result">
-                <a href="/app/{{../app.id}}/test/{{code_id}}/report/{{started_at}}" title="Version {{app.version}}, {{date_relative started_at}}">
+                <a href="/app/{{app.id}}/test/{{code_id}}/report/{{started_at}}" title="Version {{app.version}}, {{date_relative started_at}}">
                   {{#success}}<iron-icon icon="check" class="success" title="Test passed" />{{/success}}
                   {{#error}}<iron-icon icon="clear" class="failure" title="{{description}}" />{{/error}}
                   {{#unless success}}{{#unless error}}
@@ -119,11 +119,11 @@
               </td>
               <td class="info">
                 <h3>
-                  <a href="/app/{{../app.id}}/test/{{code_id}}/report/{{started_at}}" title="Version {{app.version}}, {{date_relative started_at}}">
+                  <a href="/app/{{app.id}}/test/{{code_id}}/report/{{started_at}}" title="Version {{app.version}}, {{date_relative started_at}}">
                     <span class="date">{{date_relative started_at}}</span> <span class="version">{{app.version}}</span>
                   </a>
                 </h3>
-                <a class="status" href="/app/{{../app.id}}/test/{{code_id}}/report/{{started_at}}" title="Version {{app.version}}, {{date_relative started_at}}">
+                <a class="status" href="/app/{{app.id}}/test/{{code_id}}/report/{{started_at}}" title="Version {{app.version}}, {{date_relative started_at}}">
                   {{#success}}<span class="success">Passed</span>{{/success}}
                   {{#error}}<span class="error">{{description}}</span>{{/error}}
                   {{#unless success}}{{#unless error}}
