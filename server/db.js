@@ -21,10 +21,6 @@ var TABLES = {
     key_schema: {hash: ['id', 'string']},
     throughput: {read: 1, write: 1}
   },
-  'run_tokens': {
-    key_schema: {hash: ['endpoint', 'string'], range: ['token', 'string']},
-    throughput: {read: 1, write: 1}
-  },
   'results': {
     key_schema: {hash: ['code_id', 'string'], range: ['started_at', 'number']},
     throughput: {write: 1, read: 1}

@@ -5,13 +5,12 @@ var debug = require('debug')('chetbot/' + require('path').relative(process.cwd()
 
 var db = require('./db');
 var model = {
-  run_tokens: require('./model/run_tokens'),
   results: require('./model/results')
 };
 
 var CLOSE_WHEN_FINISHED = function() {
-  $(document).on('test-progress', function(e, name) {
-    if (name === 'onFinish') resolve();
+  $(document).on('test-progress', function(e, name, val) {
+    if (name === 'onFinish') resolve(name + ': ' + val);
   });
 };
 
@@ -27,20 +26,16 @@ exports.run = function(app_id, code_id) {
     if (!app) throw new Error('App ' + app_id + ' does not exist');
 
     // Create somewhere to store the test results
-    return model.results.create(code_id, now, app)
+    return model.results.create_automated(code_id, now, app)
   })
-  .then(function() {
-    // Create a run token for the test runner
-    return model.run_tokens.create(endpoints.run);
-  })
-  .then(function(access_token) {
+  .then(function(result) {
     return request.postAsync({
       url: config.test_runner.protocol + '://' + config.test_runner.host + '/open',
       json: true,
       body: {
-        url: config.host.protocol + '://' + config.host.address + endpoints.run + '?access_token=' + access_token,
+        url: config.host.protocol + '://' + config.host.address + endpoints.run + '?access_token=' + result.access_token,
         script: '(' + CLOSE_WHEN_FINISHED.toString() + ')()',
-        callback: config.host.protocol + '://' + config.host.address + endpoints.callback
+        callback: config.host.protocol + '://' + config.host.address + endpoints.callback + '?access_token=' + result.access_token
       }
     });
   })

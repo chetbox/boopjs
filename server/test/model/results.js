@@ -108,10 +108,10 @@ describe('model.results', function() {
 
   describe('create, get', function() {
 
-    it('"create" (returns key) then "get"', function() {
+    it('"create" then "get"', function() {
       return results.create('code_one', 456789, APP)
-      .then(function(key) {
-        assert.deepEqual(key, { code_id: 'code_one', started_at: 456789 });
+      .then(function(result) {
+        assert.deepEqual(results.key(result), { code_id: 'code_one', started_at: 456789 });
       })
       .then(function() {
         return assert_items([{ code_id: 'code_one', started_at: 456789, app: APP }]);
@@ -131,8 +131,8 @@ describe('model.results', function() {
     it('successful empty test', function() {
       var key;
       return results.create('code_empty_test', 123456, APP)
-      .then(function(_key) {
-        key = _key;
+      .then(function(result) {
+        key = results.key(result);
         return results.set_report(key, [null])
       })
       .then(function() {
@@ -152,8 +152,8 @@ describe('model.results', function() {
     it('unhandled exception', function() {
       var key;
       return results.create('code_unhandled_exception', 123456, APP)
-      .then(function(_key) {
-        key = _key;
+      .then(function(result) {
+        key = results.key(result);
         return results.set_report(key, [null])
       })
       .then(function() {
@@ -173,8 +173,8 @@ describe('model.results', function() {
     it('successful test run', function() {
       var key;
       return results.create('code_successful', 123456, APP)
-      .then(function(_key) {
-        key = _key;
+      .then(function(result) {
+        key = results.key(result);
         return results.set_report(key, [
           null,
           {source: 'one()'},
@@ -210,8 +210,8 @@ describe('model.results', function() {
     it('error executing line', function() {
       var key;
       return results.create('code_line_error', 123456, APP)
-      .then(function(_key) {
-        key = _key;
+      .then(function(result) {
+        key = results.key(result);
         return results.set_report(key, [
           null,
           {source: 'one()'},
@@ -247,8 +247,8 @@ describe('model.results', function() {
     it('update received after a test has succeeded', function() {
       var key;
       return results.create('code_update_successful', 123456, APP)
-      .then(function(_key) {
-        key = _key;
+      .then(function(result) {
+        key = results.key(result);
         return results.set_report(key, [
           null,
           {source: 'one()'}
@@ -273,8 +273,8 @@ describe('model.results', function() {
     it('update received after a test has already failed', function() {
       var key;
       return results.create('code_update_failed', 123456, APP)
-      .then(function(_key) {
-        key = _key;
+      .then(function(result) {
+        key = results.key(result);
         return results.set_report(key, [
           null,
           {source: 'one()'}
@@ -302,8 +302,8 @@ describe('model.results', function() {
       it('finishing an already successful test', function(done) {
         var key;
         results.create('code_finish_twice_success', 123456, APP)
-        .then(function(_key) {
-          key = _key;
+        .then(function(result) {
+          key = results.key(result);
           return results.set_report(key, [null]);
         })
         .then(function() { return results.update(key, {success: true}); })
@@ -321,8 +321,8 @@ describe('model.results', function() {
       it('finishing an already failed test', function(done) {
         var key;
         results.create('code_finish_twice_error', 123456, APP)
-        .then(function(_key) {
-          key = _key;
+        .then(function(result) {
+          key = results.key(result);
           return results.set_report(key, [null]);
         })
         .then(function() { return results.update(key, {error: 'Things went wrong', stacktrace: 'This wasn\'t planned'}); })
@@ -340,8 +340,8 @@ describe('model.results', function() {
       it('the same line is successful twice', function(done) {
         var key;
         results.create('code_update_line_twice_success', 123456, APP)
-        .then(function(_key) {
-          key = _key;
+        .then(function(result) {
+          key = results.key(result);
           return results.set_report(key, [
             null,
             {source: 'one()'}
@@ -369,8 +369,8 @@ describe('model.results', function() {
       it('updating the same line twice', function(done) {
         var key;
         results.create('code_update_line_twice', 123456, APP)
-        .then(function(_key) {
-          key = _key;
+        .then(function(result) {
+          key = results.key(result);
           return results.set_report(key, [
             null,
             {source: 'one()'}
@@ -397,5 +397,50 @@ describe('model.results', function() {
       });
 
     });
+  });
+
+  describe('automated builds', function() {
+
+    it('updates the status of a build', function(done) {
+      var access_token;
+      results.create_automated('code_automated_opened', 123456, APP)
+      .then(function(result) {
+        assert(result.access_token);
+        assert.equal(result.test_runner_status, 'queued');
+        access_token = result.access_token;
+      })
+      .then(function() {
+        return results.set_test_runner_status('queued', 'opened', 'code_automated_opened', '123456', access_token);
+      })
+      .then(function() {
+        return results.set_test_runner_status('opened', 'finished', 'code_automated_opened', '123456', access_token);
+      })
+      .then(function() {
+        return results.get('code_automated_opened', 123456);
+      })
+      .then(function(result) {
+        assert.equal(result.test_runner_status, 'finished');
+      })
+      .then(done);
+    });
+
+    it('update failed with invalid access_token', function(done) {
+      results.create_automated('code_invalid_token', 123456, APP)
+      .then(function() {
+        return results.set_test_runner_status('queued', 'opened', 'code_invalid_token', '123456', '**invalid**token**');
+      })
+      .then(function() { done('Expected an access token error'); })
+      .catch(function(e) { done(); });
+    });
+
+    it('fails to update the status of a build', function(done) {
+      results.create_automated('code_automated_update_error', 123456, APP)
+      .then(function(result) {
+        return results.set_test_runner_status('finished', 'opened', 'code_automated_update_error', '123456', result.access_token);
+      })
+      .catch(function(e) { assert(e instanceof Error); })
+      .then(done);
+    });
+
   });
 });

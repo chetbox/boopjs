@@ -2,6 +2,7 @@ var _ = require('underscore');
 var Promise = require('bluebird');
 var db = require('../db');
 var debug = require('debug')('chetbot/' + require('path').relative(process.cwd(), __filename).replace(/\.js$/, ''));
+var shortid = require('shortid');
 
 Promise.longStackTraces();
 
@@ -22,15 +23,31 @@ exports.key = function(result) {
   };
 }
 
+function create(code_id, started_at, app, extra_attrs) {
+  var item = _.extend(
+    {
+      code_id: code_id,
+      started_at: started_at,
+      app: app
+    },
+    extra_attrs
+  );
+  return db.v2.results.put({Item: item})
+  .then(function() {
+    return item;
+  });
+}
+
 exports.create = function(code_id, started_at, app) {
   debug('create', code_id, started_at, app.identifier);
-  return db.v2.results.put({ Item: {
-    code_id: code_id,
-    started_at: started_at,
-    app: app
-  }})
-  .then(function() {
-    return { code_id: code_id, started_at: started_at };
+  return create(code_id, started_at, app, {});
+}
+
+exports.create_automated = function(code_id, started_at, app) {
+  debug('create_automated', code_id, started_at, app.identifier);
+  return create(code_id, started_at, app, {
+    test_runner_status: 'queued',
+    access_token: shortid.generate()
   });
 }
 
@@ -143,6 +160,7 @@ exports.update = function(key, response) {
 }
 
 exports.update_with_callback = function(code, started_at, result) {
+  debug('update_with_callback', code, started_at);
   return result.success
     ? Promise.resolve() // Nothing to do for a successful test run
     : exports.update(
@@ -151,6 +169,44 @@ exports.update_with_callback = function(code, started_at, result) {
       );
 }
 
+exports.set_test_runner_status = function(expected_status, new_status, code_id, started_at, access_token) {
+  debug('set_test_runner_status', code_id, started_at, new_status, access_token);
+  return db.v2.results.update({
+    Key: {code_id: code_id, started_at: (typeof(started_at) === 'string') ? parseInt(started_at) : started_at},
+    UpdateExpression: 'SET test_runner_status = :new_status',
+    ConditionExpression: 'access_token = :access_token AND test_runner_status = :expected_status',
+    ExpressionAttributeValues: {
+      ':expected_status': expected_status,
+      ':new_status': new_status,
+      ':access_token': access_token
+    }
+  });
+}
+
+function get_in(obj, selector) {
+  return selector.split('.').reduce(
+    function(obj, key) {
+      return obj[key];
+    },
+    obj
+  );
+};
+
+exports.middleware = {
+  set_test_runner_status: function(expected_status, new_status, code_id_key, started_at_key, access_token_key) {
+    return function(req, res, next) {
+      exports.set_test_runner_status(
+        expected_status,
+        new_status,
+        get_in(req, code_id_key),
+        get_in(req, started_at_key),
+        get_in(req, access_token_key)
+      )
+      .then(function() { next(); })
+      .catch(next);
+    };
+  }
+};
 
 exports.latest = function(code_id) {
   debug('get_latest', code_id);
