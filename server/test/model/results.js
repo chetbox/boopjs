@@ -399,9 +399,9 @@ describe('model.results', function() {
     });
   });
 
-  describe('automated builds', function() {
+  describe('automated build test runner status', function() {
 
-    it('updates the status of a build', function(done) {
+    it('open and finish', function(done) {
       var access_token;
       results.create_automated('code_automated_opened', 123456, APP)
       .then(function(result) {
@@ -424,7 +424,7 @@ describe('model.results', function() {
       .then(done);
     });
 
-    it('update failed with invalid access_token', function(done) {
+    it('open fails with invalid access_token', function(done) {
       results.create_automated('code_invalid_token', 123456, APP)
       .then(function() {
         return results.set_test_runner_status('queued', 'opened', 'code_invalid_token', '123456', '**invalid**token**');
@@ -433,7 +433,7 @@ describe('model.results', function() {
       .catch(function(e) { done(); });
     });
 
-    it('fails to update the status of a build', function(done) {
+    it('fails to update', function(done) {
       results.create_automated('code_automated_update_error', 123456, APP)
       .then(function(result) {
         return results.set_test_runner_status('finished', 'opened', 'code_automated_update_error', '123456', result.access_token);
