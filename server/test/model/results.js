@@ -64,6 +64,7 @@ describe('model.results', function() {
   });
 
   beforeEach(function() {
+    this.timeout(10000);
     db = require('../../db');
     return db.setup()
     .then(function() {
