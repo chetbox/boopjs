@@ -156,6 +156,24 @@ exports.update = function(key, response) {
       return Promise.resolve();
     }
   }
+  if ('log' in response) {
+    if (typeof(response.line) !== 'number') {
+      return Promise.reject('"line" must be an integer');
+    }
+    return db.v2.results.update({
+      Key: key,
+      UpdateExpression: 'SET report[' + response.line + '].#logs = list_append(if_not_exists(report[' + response.line + '].#logs, :empty_list), :new_logs)',
+      ConditionExpression: 'attribute_exists(report[' + response.line + '].#source)',
+      ExpressionAttributeNames: {
+        '#source': 'source',
+        '#logs': 'logs'
+      },
+      ExpressionAttributeValues: {
+        ':empty_list': [],
+        ':new_logs': [{level: response.level, message: response.log}]
+      }
+    });
+  }
   return Promise.reject('Don\'t know what to do with: ' + JSON.stringify(response));
 }
 
