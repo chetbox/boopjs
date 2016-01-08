@@ -534,7 +534,7 @@ exports.add_routes = function(app) {
     }
   );
 
-  app.put('/app/:app_id/test/:code_id/:code_key',
+  app.put('/app/:app_id/test/:code_id/edit/:code_key',
     auth.login_required, // TODO: return forbidden if no access
     ensure_user_can_access_app,
     ensure_code_belongs_to_app,
