@@ -222,7 +222,7 @@ describe('model.results', function() {
         return results.update(key, {line: 2, level: 'debug', log: ['First', 'messsage']});
       })
       .then(function() {
-        return results.update(key, {line: 2, level: 'warn', log: ['Second message']});
+        return results.update(key, {line: 2, level: 'warn', log: ['Second message', {empty: ''}]});
       })
       .then(function() {
         return results.update(key, {line: 2, result: null});
@@ -233,7 +233,7 @@ describe('model.results', function() {
           null,
           {source: 'a_fn_which_logs()', success: {result: null}, logs: [
             {level: 'debug', message: ['First', 'messsage']},
-            {level: 'warn', message: ['Second message']}
+            {level: 'warn', message: ['Second message', {empty: null}]} // null not "" because DyanmoDB is a dick
           ]},
         ]);
       });

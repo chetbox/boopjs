@@ -73,6 +73,21 @@ exports.set_report = function(key, report) {
   });
 }
 
+/* Recursively replace all 'from' values in a nested structure with 'to' */
+function replace_values_in(obj, from, to) {
+  if (obj === from) { return to; }
+  var recur = function(val, key) {
+    return replace_values_in(val, from, to);
+  };
+  if (Array.isArray(obj)) {
+    return _.map(obj, recur);
+  } else if (typeof(obj) === 'object') {
+    return _.mapObject(obj, recur);
+  } else {
+    return obj;
+  }
+};
+
 exports.update = function(key, response) {
   debug('update', key, 'with', Object.keys(response));
 
@@ -170,7 +185,7 @@ exports.update = function(key, response) {
       },
       ExpressionAttributeValues: {
         ':empty_list': [],
-        ':new_logs': [{level: response.level, message: response.log}]
+        ':new_logs': [{level: response.level, message: replace_values_in(response.log, '', null)}]
       }
     });
   }
