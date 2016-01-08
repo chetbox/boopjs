@@ -43,7 +43,7 @@ exports.message = {
   error: function(url, user, err) {
     return {
       subject: util.format('Error: %s', err.message || err.toString()),
-      body: (user ? util.format('User %s (%s)', user.displayName, user.username) : '') +
+      body: (user ? util.format('User %s (%s) ', user.displayName, user.username) : '') +
             'encountered an uncaught error on page:\n' +
             util.format('%s://%s%s\n', config.host.protocol, config.host.address, url) +
             (user ? util.format('%s: %s\n', user.provider, user.profileUrl) : '') +
