@@ -13,14 +13,14 @@ function assert_items(expected) {
   return db.results.scan({})
   .then(function(results) {
     r = results;
-    assert.deepEqual(results.Items, expected)
+    assert.deepEqual(expected, results.Items)
   });
 }
 
 function assert_report(key, expected) {
   return db.results.get({Key: key})
   .then(function(result) {
-    assert.deepEqual(result.report, expected)
+    assert.deepEqual(expected, result.report)
   });
 }
 
@@ -204,6 +204,38 @@ describe('model.results', function() {
           ],
           success: true
         }]);
+      });
+    });
+
+    it('stores log messages', function() {
+      var key;
+      return results.create('code_logging', 123456, APP)
+      .then(function(result) {
+        key = results.key(result);
+        return results.set_report(key, [
+          null,
+          null,
+          {source: 'a_fn_which_logs()'},
+        ]);
+      })
+      .then(function() {
+        return results.update(key, {line: 2, level: 'debug', log: ['First', 'messsage']});
+      })
+      .then(function() {
+        return results.update(key, {line: 2, level: 'warn', log: ['Second message']});
+      })
+      .then(function() {
+        return results.update(key, {line: 2, result: null});
+      })
+      .then(function() {
+        return assert_report(key, [
+          null,
+          null,
+          {source: 'a_fn_which_logs()', success: {result: null}, logs: [
+            {level: 'debug', message: ['First', 'messsage']},
+            {level: 'warn', message: ['Second message']}
+          ]},
+        ]);
       });
     });
 
