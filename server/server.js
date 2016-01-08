@@ -37,8 +37,8 @@ var hbs = express_handlebars.create({
         }
         return moment(d).fromNow();
       },
-      stringify: function(r) {
-        return new Handlebars.SafeString(Handlebars.Utils.escapeExpression(JSON.stringify(r, null, 2)));
+      stringify: function(r, indent) {
+        return new Handlebars.SafeString(Handlebars.Utils.escapeExpression(JSON.stringify(r, null, indent)));
       }
     },
 });

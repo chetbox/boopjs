@@ -113,6 +113,27 @@
       .result .failure {
         color: #F44336;
       }
+
+      ol.logs {
+        margin: 0 0 0 0.2em;
+        list-style: none;
+      }
+      li.log { color: #777; }
+      li.log:first-child { margin-top: 0.25em; }
+      li.log.debug { color: #aaa; }
+      li.log.info  { color: #777; }
+      li.log.warn  { color: #c90; }
+      li.log.error { color: #D32F2F; }
+
+      li.log::before {
+        margin-right: 1em;
+        font-family: monospace;
+        opacity: 0.5;
+      }
+      li.log.debug::before { content: 'D'; }
+      li.log.info::before  { content: 'I'; }
+      li.log.warn::before  { content: 'W'; }
+      li.log.error::before { content: 'E'; }
     </style>
   </head>
   <body class="fullbleed">
@@ -166,8 +187,13 @@
                 <li id="line-{{@index}}" class="line {{#success}} success{{/success}} {{#error}} error{{/error}}">
                   <span class="line-no">{{@index}}</span>
                   <pre class="source">{{source}}</pre>
+                  <ol class="logs">
+                    {{#logs}}
+                      <li class="log {{level}}"><pre>{{stringify message}}</pre></li>
+                    {{/logs}}
+                  </ol>
                   {{#success}}
-                    <span class="success"><pre>{{{stringify result}}}</pre></span>
+                    <span class="success"><pre>{{{stringify result 2}}}</pre></span>
                   {{/success}}
                   {{#error}}
                     <span class="error"><pre>{{description}}</pre></span>
