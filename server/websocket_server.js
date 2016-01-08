@@ -64,11 +64,11 @@ exports.add_routes = function(app) {
       return [code, app];
     })
     .spread(function(code, app) {
-      return code
-        ? (req.query.started_at
+      if (code) {
+        return req.query.started_at
           ? model.results.get(code.id, req.query.started_at) // Run on server (already "started" in DB)
-          : model.results.create(code.id, now, app))         // Run by user
-        : Promise.resolve();
+          : model.results.create(code.id, now, app);         // Run by user
+      }
     })
     .then(function(result) {
       // Allow /api/device endpoint to find the key when saving results
@@ -139,7 +139,7 @@ exports.add_routes = function(app) {
         debug('device: response', messageStr.substring(0, 200));
         var client = clients_connected[ws.device_registered];
 
-        ws.result_key = (client && client.result_key) || ws.result_key;
+        ws.result_key = client ? client.result_key : ws.result_key;
         if (ws.result_key) {
           debug('device: saving response');
           model.results.update(ws.result_key, message)
