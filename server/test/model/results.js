@@ -1,4 +1,5 @@
 var assert = require('assert');
+var net = require('net');
 
 var spawn = require('child_process').spawn;
 var DYNAMODB_LOCAL = process.env.DYNAMODB_LOCAL
@@ -24,6 +25,19 @@ function assert_report(key, expected) {
 
 var APP = { id: 'app7890', name: 'Antelope' };
 
+var port_taken = function(port, fn) {
+  var tester = net.createServer()
+  .once('error', function (err) {
+    if (err.code != 'EADDRINUSE') return fn(err)
+    fn(null, true)
+  })
+  .once('listening', function() {
+    tester.once('close', function() { fn(null, false) })
+    .close()
+  })
+  .listen(port);
+};
+
 describe('model.results', function() {
 
   before(function(done) {
@@ -32,7 +46,14 @@ describe('model.results', function() {
     db_process = spawn(dynamo_db_local, dynamo_db_local_args.concat(['-inMemory', '-port', '8765']), {
       detached: true
     });
-    setTimeout(done, 750);
+    var check_started = setInterval(function() {
+      port_taken(8765, function(err) {
+        if (!err) {
+          clearInterval(check_started);
+          done();
+        }
+      });
+    }, 100);
   });
 
   after(function() {
