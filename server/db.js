@@ -23,7 +23,7 @@ var TABLES = {
   },
   'results': {
     key_schema: {hash: ['code_id', 'string'], range: ['started_at', 'number']},
-    throughput: {write: 1, read: 1}
+    throughput: {write: 4, read: 1}
   }
 };
 
