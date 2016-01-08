@@ -160,6 +160,10 @@ window.addEventListener('message', function(event) {
   var language_tools = ace.require('ace/ext/language_tools');
 
   var editor = ace.edit('editor');
+  editor.getSession().on('changeMode', function() {
+    // Automatically fold code
+    editor.getSession().foldAll();
+  });
   editor.setTheme('ace/theme/tomorrow_night');
   editor.getSession().setMode('ace/mode/javascript');
   editor.setOptions({
