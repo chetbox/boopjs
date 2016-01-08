@@ -9,10 +9,8 @@ var db;
 var results;
 
 function assert_items(expected) {
-  var r;
   return db.results.scan({})
   .then(function(results) {
-    r = results;
     assert.deepEqual(expected, results.Items)
   });
 }
@@ -34,7 +32,7 @@ describe('model.results', function() {
     db_process = spawn(dynamo_db_local, dynamo_db_local_args.concat(['-inMemory', '-port', '8765']), {
       detached: true
     });
-    setTimeout(done, 500);
+    setTimeout(done, 750);
   });
 
   after(function() {
@@ -58,7 +56,7 @@ describe('model.results', function() {
     .then(function(rs) {
       return rs.Items.map(function(r) {
         return db.results.delete({Key: results.key(r)});
-      })
+      });
     })
     .then(function() {
       db = undefined;
@@ -67,7 +65,6 @@ describe('model.results', function() {
   });
 
   describe('report_from_statements', function() {
-    console.log('report_from_statements');
 
     it('converts no statements to an empty list', function() {
       assert.deepEqual(
