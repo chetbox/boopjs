@@ -19,7 +19,7 @@ function assert_report(key, expected) {
 
 var APP = { id: 'app7890', name: 'Antelope' };
 
-describe('model.results', function() {
+describe('model/results', function() {
 
   in_memory_db.setup_mocha();
 

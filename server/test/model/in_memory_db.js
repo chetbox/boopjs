@@ -41,7 +41,6 @@ exports.setup_mocha = function() {
   });
 
   after('stop dynamodb-local', function() {
-    results = undefined;
     // See http://azimi.me/2014/12/31/kill-child_process-node-js.html
     process.kill(-db_process.pid);
     db_process = undefined;
@@ -53,11 +52,9 @@ exports.setup_mocha = function() {
   });
 
   afterEach('delete all items', function() {
-    return db.v2.results.scan({})
-    .then(function(rs) {
-      return rs.Items.map(function(r) {
-        return db.v2.results.delete({Key: results.key(r)});
-      });
+    return db.v2.results.scan({AttributesToGet: ['code_id', 'started_at']})
+    .then(function(r) {
+      return db.v2.results.batch_delete(r.Items);
     });
   });
 
