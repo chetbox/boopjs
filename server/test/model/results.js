@@ -1,13 +1,7 @@
 var assert = require('assert');
-var net = require('net');
+var in_memory_db = require('./in_memory_db');
 
-var spawn = require('child_process').spawn;
-var DYNAMODB_LOCAL = process.env.DYNAMODB_LOCAL
-  || 'dynamodb-local';
-
-var db_process;
-var db;
-var results;
+var db = require('../../db').v2;
 
 function assert_items(expected) {
   return db.results.scan({})
@@ -25,66 +19,11 @@ function assert_report(key, expected) {
 
 var APP = { id: 'app7890', name: 'Antelope' };
 
-var port_taken = function(port, fn) {
-  var tester = net.createServer()
-  .once('error', function (err) {
-    if (err.code != 'EADDRINUSE') return fn(err)
-    fn(null, true)
-  })
-  .once('listening', function() {
-    tester.once('close', function() { fn(null, false) })
-    .close()
-  })
-  .listen(port);
-};
-
 describe('model.results', function() {
 
-  before(function(done) {
-    var dynamo_db_local = DYNAMODB_LOCAL.split(' ')[0],
-        dynamo_db_local_args = DYNAMODB_LOCAL.split(' ').slice(1);
-    db_process = spawn(dynamo_db_local, dynamo_db_local_args.concat(['-inMemory', '-port', '8765']), {
-      detached: true
-    });
-    var check_started = setInterval(function() {
-      port_taken(8765, function(err) {
-        if (!err) {
-          clearInterval(check_started);
-          done();
-        }
-      });
-    }, 100);
-  });
+  in_memory_db.setup_mocha();
 
-  after(function() {
-    results = undefined;
-    // See http://azimi.me/2014/12/31/kill-child_process-node-js.html
-    process.kill(-db_process.pid);
-    db_process = undefined;
-  });
-
-  beforeEach(function() {
-    this.timeout(10000);
-    db = require('../../db');
-    return db.setup()
-    .then(function() {
-      results = require('../../model/results');
-      db = db.v2;
-    });
-  });
-
-  afterEach(function() {
-    return db.results.scan({})
-    .then(function(rs) {
-      return rs.Items.map(function(r) {
-        return db.results.delete({Key: results.key(r)});
-      });
-    })
-    .then(function() {
-      db = undefined;
-      results = undefined;
-    });
-  });
+  var results = require('../../model/results');
 
   describe('report_from_statements', function() {
 
