@@ -1,6 +1,6 @@
 var _ = require('underscore');
 var Promise = require('bluebird');
-var db = require('../db');
+var db = require('../db').v2.results;
 var debug = require('debug')('chetbot/' + require('path').relative(process.cwd(), __filename).replace(/\.js$/, ''));
 var shortid = require('shortid');
 
@@ -32,7 +32,7 @@ function create(code_id, started_at, app, extra_attrs) {
     },
     extra_attrs
   );
-  return db.v2.results.put({Item: item})
+  return db.put({Item: item})
   .then(function() {
     return item;
   });
@@ -53,7 +53,7 @@ exports.create_automated = function(code_id, started_at, app) {
 
 exports.get = function(code_id, started_at) {
   debug('get', code_id, started_at);
-  return db.v2.results.get({ Key: {
+  return db.get({ Key: {
     code_id: code_id,
     started_at: typeof(started_at) === 'string' ? parseInt(started_at) : started_at
   }})
@@ -65,7 +65,7 @@ exports.get = function(code_id, started_at) {
 
 exports.set_report = function(key, report) {
   debug('set_report', key);
-  return db.v2.results.update({
+  return db.update({
     Key: key,
     UpdateExpression: 'SET report = :report',
     ExpressionAttributeValues: { ':report': report },
@@ -96,7 +96,7 @@ exports.update = function(key, response) {
   }
 
   if ('result' in response) { // Statement successful
-    return db.v2.results.update({
+    return db.update({
       Key: key,
       UpdateExpression: 'SET report[' + response.line + '].success = :result',
       ConditionExpression:
@@ -113,7 +113,7 @@ exports.update = function(key, response) {
   }
   if ('error' in response) {
     return (('line' in response)
-      ? db.v2.results.update({
+      ? db.update({
           Key: key,
           UpdateExpression: 'SET report[' + response.line + '].#error = :error',
           ConditionExpression:
@@ -134,7 +134,7 @@ exports.update = function(key, response) {
         })
       : Promise.resolve())
     .then(function(line_updated) {
-      return db.v2.results.update({
+      return db.update({
         Key: key,
         UpdateExpression: 'SET #error = :error',
         ConditionExpression: 'attribute_not_exists(success) AND attribute_not_exists(#error)',
@@ -155,7 +155,7 @@ exports.update = function(key, response) {
   if ('success' in response) {
     if (response.success) {
       // Completed successfully
-      return db.v2.results.update({
+      return db.update({
         Key: key,
         UpdateExpression: 'SET success = :success',
         ConditionExpression: 'attribute_not_exists(success) AND attribute_not_exists(#error)',
@@ -175,7 +175,7 @@ exports.update = function(key, response) {
     if (typeof(response.line) !== 'number') {
       return Promise.reject('"line" must be an integer');
     }
-    return db.v2.results.update({
+    return db.update({
       Key: key,
       UpdateExpression: 'SET report[' + response.line + '].#logs = list_append(if_not_exists(report[' + response.line + '].#logs, :empty_list), :new_logs)',
       ConditionExpression: 'attribute_exists(report[' + response.line + '].#source)',
@@ -204,7 +204,7 @@ exports.update_with_callback = function(code, started_at, result) {
 
 exports.set_test_runner_status = function(expected_status, new_status, code_id, started_at, access_token) {
   debug('set_test_runner_status', code_id, started_at, new_status, access_token);
-  return db.v2.results.update({
+  return db.update({
     Key: {code_id: code_id, started_at: (typeof(started_at) === 'string') ? parseInt(started_at) : started_at},
     UpdateExpression: 'SET test_runner_status = :new_status',
     ConditionExpression: 'access_token = :access_token AND test_runner_status = :expected_status',
@@ -243,7 +243,7 @@ exports.middleware = {
 
 exports.latest = function(code_id) {
   debug('get_latest', code_id);
-  return db.v2.results.query({
+  return db.query({
     KeyConditions: {
       code_id: {
         ComparisonOperator: 'EQ',
@@ -267,7 +267,7 @@ exports.latest = function(code_id) {
 exports.all = function(code_id) {
   // TODO: paging
   debug('all', code_id);
-  return db.v2.results.query({
+  return db.query({
     KeyConditions: {
       code_id: {
         ComparisonOperator: 'EQ',
