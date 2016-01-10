@@ -78,5 +78,21 @@ exports.v2 = Object.keys(TABLES).reduce(function(fns, table_short_name) {
     };
     return fns;
   }, {});
+  fns[table_short_name].batch_delete = function(keys) {
+    if (keys.length === 0) return Promise.resolve();
+    var request = {};
+    request[TABLE_PREFIX + table_short_name] = keys.map(function(key) {
+      return {DeleteRequest: {Key: key}};
+    });
+    return dynamodb.batchWriteAsync({RequestItems: request});
+  };
+  fns[table_short_name].batch_put = function(items) {
+    if (keys.length === 0) return Promise.resolve();
+    var request = {};
+    request[TABLE_PREFIX + table_short_name] = items.map(function(item) {
+      return {PutRequest: {Item: item}};
+    });
+    return dynamodb.batchWriteAsync({RequestItems: request});
+  };
   return fns;
 }, {});
