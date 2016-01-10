@@ -26,7 +26,7 @@ exports.run = function(app_id, code_id) {
     if (!app) throw new Error('App ' + app_id + ' does not exist');
 
     // Create somewhere to store the test results
-    return model.results.create_automated(code_id, now, app)
+    return model.results.create_automated(code_id, now, app);
   })
   .then(function(result) {
     return request.postAsync({
