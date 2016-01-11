@@ -94,5 +94,6 @@ exports.v2 = Object.keys(TABLES).reduce(function(fns, table_short_name) {
     });
     return dynamodb.batchWriteAsync({RequestItems: request});
   };
+  fns[table_short_name].create_set = dynamodb.createSet;
   return fns;
 }, {});

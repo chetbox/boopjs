@@ -8,6 +8,8 @@ var Handlebars = require('handlebars');
 var moment = require('moment');
 var body_parser = require('body-parser');
 
+require('coffee-script/register');
+
 var db = require('./db');
 var index = require('./index');
 var editor_demo = require('./editor_demo');

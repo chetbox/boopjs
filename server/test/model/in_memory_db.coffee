@@ -48,8 +48,10 @@ exports.setup_mocha = ->
   afterEach 'delete all items', ->
     Promise.join \
       db.v2.results.scan(AttributesToGet: [ 'code_id', 'started_at' ]),
-      db.v2.code.scan(AttributesToGet: [ 'app_id', 'id' ])
-    .spread (r, c) -> [
-      db.v2.results.batch_delete(r.Items)
-      db.v2.code.batch_delete(c.Items)
+      db.v2.code.scan(AttributesToGet: [ 'app_id', 'id' ]),
+      db.v2.apps.scan(AttributesToGet: [ 'id' ])
+    .spread (results, code, apps) -> [
+      db.v2.results.batch_delete(results.Items)
+      db.v2.code.batch_delete(code.Items)
+      db.v2.apps.batch_delete(apps.Items)
     ]
