@@ -23,8 +23,6 @@ exports.add_routes = function(app) {
     code: require('./model/code')
   }
 
-  var welcome_code = fs.readFileSync(__dirname + '/demos/welcome.js', 'utf8');
-
   var DEFAULT_DEVICE = {
     model: 'nexus5',
     orientation: 'portrait',
