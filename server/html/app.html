@@ -8,6 +8,10 @@
     {{> material-design}}
 
     <style type="text/css">
+      paper-toolbar .title paper-icon-button {
+        opacity: 0.5;
+      }
+
       .content {
         text-align: center;
       }
@@ -134,6 +138,7 @@
         <div class="title">
           <a href="/apps" alt="Apps">
             boop.js
+            {{> delete-button}}
           </a>
         </div>
 
