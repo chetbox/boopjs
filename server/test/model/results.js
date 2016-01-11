@@ -104,23 +104,23 @@ describe('model/results', function() {
         return results.update(key, {success: true});
       })
       .then(function() {
-        return assert_results([{
-          code_id: 'code_empty_test',
-          started_at: 123456,
-          app: APP,
-          report: [null],
-          success: true
-        }]);
-      })
-      .then(function() {
-        return assert_code([{
-          id: 'code_empty_test',
-          app_id: 'app7890',
-          latest_result: {
+        return [
+          assert_results([{
+            code_id: 'code_empty_test',
             started_at: 123456,
+            app: APP,
+            report: [null],
             success: true
-          }
-        }]);
+          }]),
+          assert_code([{
+            id: 'code_empty_test',
+            app_id: APP.id,
+            latest_result: {
+              started_at: 123456,
+              success: true
+            }
+          }])
+        ];
       });
     });
 
@@ -135,13 +135,23 @@ describe('model/results', function() {
         return results.update(key, {device: null, error: 'forced crash', stacktrace: 'java.lang.RuntimeException', type: 'unhandled'});
       })
       .then(function() {
-        return assert_results([{
-          code_id: 'code_unhandled_exception',
-          started_at: 123456,
-          app: APP,
-          report: [null],
-          error: {description: 'forced crash', stacktrace: 'java.lang.RuntimeException'}
-        }]);
+        return [
+          assert_results([{
+            code_id: 'code_unhandled_exception',
+            started_at: 123456,
+            app: APP,
+            report: [null],
+            error: {description: 'forced crash', stacktrace: 'java.lang.RuntimeException'}
+          }]),
+          assert_code([{
+            app_id: APP.id,
+            id: 'code_unhandled_exception',
+            latest_result: {
+              started_at: 123456,
+              error: {description: 'forced crash', stacktrace: 'java.lang.RuntimeException'}
+            }
+          }])
+        ];
       });
     });
 
@@ -236,18 +246,28 @@ describe('model/results', function() {
         return results.update(key, {success: false});
       })
       .then(function() {
-        return assert_results([{
-          code_id: 'code_line_error',
-          started_at: 123456,
-          app: APP,
-          report: [
-            null,
-            {source: 'one()', success: {result: 'First.'}},
-            {source: 'two()', error: {description: 'Error on line 2', stacktrace: 'Line 2\nError'}},
-            {source: 'three()'}
-          ],
-          error: {description: 'Error on line 2', stacktrace: 'Line 2\nError', line: 2, source: 'two()'}
-        }]);
+        return [
+          assert_results([{
+            code_id: 'code_line_error',
+            started_at: 123456,
+            app: APP,
+            report: [
+              null,
+              {source: 'one()', success: {result: 'First.'}},
+              {source: 'two()', error: {description: 'Error on line 2', stacktrace: 'Line 2\nError'}},
+              {source: 'three()'}
+            ],
+            error: {description: 'Error on line 2', stacktrace: 'Line 2\nError', line: 2, source: 'two()'}
+          }]),
+          assert_code([{
+            id: 'code_line_error',
+            app_id: APP.id,
+            latest_result: {
+              started_at: 123456,
+              error: {description: 'Error on line 2', stacktrace: 'Line 2\nError', line: 2, source: 'two()'}
+            }
+          }])
+        ];
       });
     });
 

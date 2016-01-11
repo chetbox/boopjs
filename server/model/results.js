@@ -155,8 +155,12 @@ exports.update = function(key, response) {
               ? {line: response.line, source: line_updated.Attributes.report[response.line].source}
               : {}
           )
-        }
+        },
+        ReturnValues: 'ALL_NEW'
       });
+    })
+    .then(function(r) {
+      return code.set_latest_result(r.Attributes);
     });
   }
   if ('success' in response) {
