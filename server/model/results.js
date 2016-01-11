@@ -1,8 +1,11 @@
 var _ = require('underscore');
 var Promise = require('bluebird');
-var db = require('../db').v2.results;
-var debug = require('debug')('chetbot/' + require('path').relative(process.cwd(), __filename).replace(/\.js$/, ''));
 var shortid = require('shortid');
+
+var db = require('../db').v2.results;
+var code = require('./code');
+
+var debug = require('debug')('chetbot/' + require('path').relative(process.cwd(), __filename).replace(/\.js$/, ''));
 
 Promise.longStackTraces();
 
@@ -34,12 +37,16 @@ function create(code_id, started_at, app, extra_attrs) {
   );
   return db.put({Item: item})
   .then(function() {
+    return code.set_latest_result(item);
+  })
+  .then(function() {
     return item;
   });
 }
 
 exports.create = function(code_id, started_at, app) {
   debug('create', code_id, started_at, app.identifier);
+  var result;
   return create(code_id, started_at, app, {});
 }
 
@@ -164,7 +171,11 @@ exports.update = function(key, response) {
         },
         ExpressionAttributeValues: {
           ':success': response.success
-        }
+        },
+        ReturnValues: 'ALL_NEW'
+      })
+      .then(function(r) {
+        return code.set_latest_result(r.Attributes);
       });
     } else {
       // Not successful. The error has already been logged.
