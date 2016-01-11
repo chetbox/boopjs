@@ -3,10 +3,17 @@ var in_memory_db = require('./in_memory_db');
 
 var db = require('../../db').v2;
 
-function assert_items(expected) {
+function assert_results(expected) {
   return db.results.scan({})
   .then(function(results) {
     assert.deepEqual(expected, results.Items)
+  });
+}
+
+function assert_code(expected) {
+  return db.code.scan({})
+  .then(function(code) {
+    assert.deepEqual(expected, code.Items)
   });
 }
 
@@ -72,7 +79,7 @@ describe('model/results', function() {
         assert.deepEqual(results.key(result), { code_id: 'code_one', started_at: 456789 });
       })
       .then(function() {
-        return assert_items([{ code_id: 'code_one', started_at: 456789, app: APP }]);
+        return assert_results([{ code_id: 'code_one', started_at: 456789, app: APP }]);
       })
       .then(function() {
         return results.get('code_one', 456789);
@@ -97,12 +104,22 @@ describe('model/results', function() {
         return results.update(key, {success: true});
       })
       .then(function() {
-        return assert_items([{
+        return assert_results([{
           code_id: 'code_empty_test',
           started_at: 123456,
           app: APP,
           report: [null],
           success: true
+        }]);
+      })
+      .then(function() {
+        return assert_code([{
+          id: 'code_empty_test',
+          app_id: 'app7890',
+          latest_result: {
+            started_at: 123456,
+            success: true
+          }
         }]);
       });
     });
@@ -118,7 +135,7 @@ describe('model/results', function() {
         return results.update(key, {device: null, error: 'forced crash', stacktrace: 'java.lang.RuntimeException', type: 'unhandled'});
       })
       .then(function() {
-        return assert_items([{
+        return assert_results([{
           code_id: 'code_unhandled_exception',
           started_at: 123456,
           app: APP,
@@ -150,7 +167,7 @@ describe('model/results', function() {
         return results.update(key, {success: true});
       })
       .then(function() {
-        return assert_items([{
+        return assert_results([{
           code_id: 'code_successful',
           started_at: 123456,
           app: APP,
@@ -219,7 +236,7 @@ describe('model/results', function() {
         return results.update(key, {success: false});
       })
       .then(function() {
-        return assert_items([{
+        return assert_results([{
           code_id: 'code_line_error',
           started_at: 123456,
           app: APP,
@@ -247,7 +264,7 @@ describe('model/results', function() {
       .then(function() { return results.update(key, {success: true}); })
       .then(function() { return results.update(key, {line: 1, result: null, type: 'NULL'}); })
       .then(function() {
-        return assert_items([{
+        return assert_results([{
           code_id: 'code_update_successful',
           started_at: 123456,
           app: APP,
@@ -273,7 +290,7 @@ describe('model/results', function() {
       .then(function() { return results.update(key, {error: 'Things went down', stacktrace: 'Bad things'}); })
       .then(function() { return results.update(key, {line: 1, result: null, type: 'NULL'}); })
       .then(function() {
-        return assert_items([{
+        return assert_results([{
           code_id: 'code_update_failed',
           started_at: 123456,
           app: APP,
@@ -343,7 +360,7 @@ describe('model/results', function() {
         .then(function() { done('Expecting an update error'); })
         .catch(function(e) { assert(e instanceof Error); })
         .then(function() {
-          return assert_items([{
+          return assert_results([{
             code_id: 'code_update_line_twice_success',
             started_at: 123456,
             app: APP,
@@ -372,7 +389,7 @@ describe('model/results', function() {
         .then(function() { done('Expecting an update error'); })
         .catch(function(e) { assert(e instanceof Error); })
         .then(function() {
-          return assert_items([{
+          return assert_results([{
             code_id: 'code_update_line_twice',
             started_at: 123456,
             app: APP,

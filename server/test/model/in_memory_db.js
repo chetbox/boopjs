@@ -55,6 +55,12 @@ exports.setup_mocha = function() {
     return db.v2.results.scan({AttributesToGet: ['code_id', 'started_at']})
     .then(function(r) {
       return db.v2.results.batch_delete(r.Items);
+    })
+    .then(function() {
+      return db.v2.code.scan({AttributesToGet: ['app_id', 'id']});
+    })
+    .then(function(c) {
+      return db.v2.code.batch_delete(c.Items);
     });
   });
 
