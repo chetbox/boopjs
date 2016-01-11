@@ -255,24 +255,14 @@ exports.add_routes = function(app) {
         db.code().findAll(req.params.app_id)
       ])
       .spread(function(app, code) {
-        return [
-          app,
-          code,
-          model.results.all_latest(
-            code.map(function(c) { return c.id; })
-          )
-        ];
-      })
-      .spread(function(app, code, results) {
         if (!app) {
           return res.sendStatus(404);
         }
         res.render('app', {
           user: req.user,
           app: app,
-          code: code.map(function(c, i) {
+          code: code.map(function(c) {
             c.name = c.name || 'Untitled test';
-            c.result = results[i];
             return c;
           })
         });
