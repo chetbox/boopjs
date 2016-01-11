@@ -26,6 +26,10 @@ exports.setup_mocha = function() {
   var db_process;
 
   before('start in-memory dynamodb-local', function(done) {
+    if (process.env.NODE_ENV !== 'test') {
+      throw new Error('Wrong NODE_ENV (' + process.env.NODE_ENV + ') ' +
+                      'You should be running with NODE_ENV=test');
+    }
     var dynamo_db_local = DYNAMODB_LOCAL.split(' ')[0],
         dynamo_db_local_args = DYNAMODB_LOCAL.split(' ').slice(1);
     db_process = spawn(dynamo_db_local, dynamo_db_local_args.concat(['-inMemory', '-port', '8765']), {
