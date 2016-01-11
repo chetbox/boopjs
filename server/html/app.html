@@ -158,16 +158,15 @@
             {{#code}}
             <tr>
               <td class="result">
-                  {{#result}}
-                    <a href="/app/{{../../app.id}}/test/{{code_id}}/report/{{started_at}}" title="{{date_relative started_at}}">
-                      {{#success}}<iron-icon icon="check" class="success" title="Test passed" />{{/success}}
-                      {{#error}}<iron-icon icon="clear" class="failure" title="{{description}}" />{{/error}}
-                      {{#unless success}}{{#unless error}}
-                        <iron-icon icon="autorenew" class="running" />
-                      {{/unless}}{{/unless}}
-                    </a>
-                  {{/result}}
-                </a>
+                {{#latest_result}}
+                  <a href="/app/{{../app_id}}/test/{{../id}}/report/{{started_at}}" title="{{date_relative started_at}}">
+                    {{#success}}<iron-icon icon="check" class="success" title="Test passed" />{{/success}}
+                    {{#error}}<iron-icon icon="clear" class="failure" title="{{description}}" />{{/error}}
+                    {{#unless success}}{{#unless error}}
+                      <iron-icon icon="autorenew" class="running" />
+                    {{/unless}}{{/unless}}
+                  </a>
+                {{/latest_result}}
               </td>
               <td>
                 <a href="/app/{{app_id}}/test/{{id}}/edit" title="Test editor">{{name}}</a>
