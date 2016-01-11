@@ -18,7 +18,8 @@ exports.add_routes = function(app) {
 
   var model = {
     results: require('./model/results'),
-    devices: require('./model/devices')
+    devices: require('./model/devices'),
+    code: require('./model/code')
   }
 
   var welcome_code = fs.readFileSync(__dirname + '/demos/welcome.js', 'utf8');
@@ -125,7 +126,6 @@ exports.add_routes = function(app) {
     function(req, res, next) {
       var user_apk_url = req.body.app_url;
       var new_app_id = shortid.generate();
-      var new_code_id = shortid.generate();
 
       // Allow admins to create a new app
       if (req.body.as_user) {
@@ -176,29 +176,22 @@ exports.add_routes = function(app) {
           publicKey: appetize_resp.publicKey,
           privateKey: appetize_resp.privateKey
         }, apk_info);
-        var code = {
-          id: new_code_id,
-          name: 'Untitled test',
-          app_id: new_app_id,
-          content: welcome_code
-        };
         return [
           db.users().find(req.user.id),
           app,
           db.apps().insert(app),
-          db.code().insert(code)
+          model.code.create(new_app_id)
         ];
       })
-      .spread(function(user, app) {
+      .spread(function(user, app, app_inserted, code) {
         user.apps = _.union(user.apps, [new_app_id]); // Keep existing info (dynasty's .update is broken)
-        return [user, app, db.users().insert(user)];
+        return [user, app, code, db.users().insert(user)];
       })
-      .spread(function(user, app) {
+      .spread(function(user, app, code) {
         email.send_to_admins(email.message.new_app(user, app));
-      })
-      .then(function() {
+
         // Take the user straight to their first test
-        res.redirect('/app/' + new_app_id + '/test/' + new_code_id + '/edit');
+        res.redirect('/app/' + new_app_id + '/test/' + code.id + '/edit');
       })
       .catch(next);
     }
@@ -308,14 +301,9 @@ exports.add_routes = function(app) {
     ensure_user_can_access_app,
     function(req, res, next) {
       var new_code_id = shortid.generate();
-      db.code().insert({
-        id: new_code_id,
-        name: 'Untitled test',
-        app_id: req.params.app_id,
-        content: welcome_code
-      })
-      .then(function() {
-        res.redirect('/app/' + req.params.app_id + '/test/' + new_code_id + '/edit');
+      model.code.create(req.params.app_id)
+      .then(function(code) {
+        res.redirect('/app/' + req.params.app_id + '/test/' + code.id + '/edit');
       })
       .catch(next);
     }
