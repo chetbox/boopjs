@@ -6,15 +6,18 @@ APP =
   name: 'Antelope'
 
 assert_results = (expected) ->
-  db.results.scan({}).then (results) ->
+  db.results.scan {}
+  .then (results) ->
     assert.deepEqual expected, results.Items
 
 assert_code = (expected) ->
-  db.code.scan({}).then (code) ->
+  db.code.scan {}
+  .then (code) ->
     assert.deepEqual expected, code.Items
 
 assert_report = (key, expected) ->
-  db.results.get(Key: key).then (result) ->
+  db.results.get(Key: key)
+  .then (result) ->
     assert.deepEqual expected, result.report
 
 describe 'model/results', ->
