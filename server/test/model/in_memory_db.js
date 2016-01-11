@@ -1,5 +1,6 @@
 var net = require('net');
 var spawn = require('child_process').spawn;
+var Promise = require('bluebird');
 
 var db = require('../../db');
 var results = require('../../model/results');
@@ -52,15 +53,15 @@ exports.setup_mocha = function() {
   });
 
   afterEach('delete all items', function() {
-    return db.v2.results.scan({AttributesToGet: ['code_id', 'started_at']})
-    .then(function(r) {
-      return db.v2.results.batch_delete(r.Items);
-    })
-    .then(function() {
-      return db.v2.code.scan({AttributesToGet: ['app_id', 'id']});
-    })
-    .then(function(c) {
-      return db.v2.code.batch_delete(c.Items);
+    return Promise.join(
+      db.v2.results.scan({AttributesToGet: ['code_id', 'started_at']}),
+      db.v2.code.scan({AttributesToGet: ['app_id', 'id']})
+    )
+    .spread(function(r, c) {
+      return [
+        db.v2.results.batch_delete(r.Items),
+        db.v2.code.batch_delete(c.Items)
+      ];
     });
   });
 
