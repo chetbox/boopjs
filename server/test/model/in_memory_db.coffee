@@ -20,14 +20,10 @@ exports.setup_mocha = ->
   db_process = undefined
   before 'start in-memory dynamodb-local', (done) ->
     if process.env.NODE_ENV != 'test'
-      throw new Error('Wrong NODE_ENV (' + process.env.NODE_ENV + ') ' + 'You should be running with NODE_ENV=test')
+      throw new Error("Wrong NODE_ENV (#{process.env.NODE_ENV}) You should be running with NODE_ENV=test")
     dynamo_db_local = DYNAMODB_LOCAL.split(' ')[0]
     dynamo_db_local_args = DYNAMODB_LOCAL.split(' ').slice(1)
-    db_process = spawn(dynamo_db_local, dynamo_db_local_args.concat([
-      '-inMemory'
-      '-port'
-      '8765'
-    ]), detached: true)
+    db_process = spawn(dynamo_db_local, dynamo_db_local_args.concat([ '-inMemory', '-port', '8765' ]), detached: true)
     check_started = setInterval((->
       port_available 8765, (err) ->
         if !err
@@ -45,14 +41,10 @@ exports.setup_mocha = ->
     db.setup()
 
   afterEach 'delete all items', ->
-    Promise.join(db.v2.results.scan(AttributesToGet: [
-      'code_id'
-      'started_at'
-    ]), db.v2.code.scan(AttributesToGet: [
-      'app_id'
-      'id'
-    ])).spread (r, c) ->
-      [
-        db.v2.results.batch_delete(r.Items)
-        db.v2.code.batch_delete(c.Items)
-      ]
+    Promise.join \
+      db.v2.results.scan(AttributesToGet: [ 'code_id', 'started_at' ]),
+      db.v2.code.scan(AttributesToGet: [ 'app_id', 'id' ])
+    .spread (r, c) -> [
+      db.v2.results.batch_delete(r.Items)
+      db.v2.code.batch_delete(c.Items)
+    ]
