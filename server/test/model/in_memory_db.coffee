@@ -6,30 +6,35 @@ results = require('../../model/results')
 DYNAMODB_LOCAL = process.env.DYNAMODB_LOCAL or 'dynamodb-local'
 
 port_available = (port, fn) ->
-  tester = net.createServer().once('error', (err) ->
+  tester = net.createServer()
+  .once 'error', (err) ->
     if err.code != 'EADDRINUSE'
       return fn(err)
     fn null, true
-  ).once('listening', ->
-    tester.once('close', ->
+  .once 'listening', ->
+    tester.once 'close', ->
       fn null, false
-    ).close()
-  ).listen(port)
+    .close()
+  .listen port
 
 exports.setup_mocha = ->
   db_process = undefined
+
   before 'start in-memory dynamodb-local', (done) ->
     if process.env.NODE_ENV != 'test'
       throw new Error("Wrong NODE_ENV (#{process.env.NODE_ENV}) You should be running with NODE_ENV=test")
     dynamo_db_local = DYNAMODB_LOCAL.split(' ')[0]
     dynamo_db_local_args = DYNAMODB_LOCAL.split(' ').slice(1)
-    db_process = spawn(dynamo_db_local, dynamo_db_local_args.concat([ '-inMemory', '-port', '8765' ]), detached: true)
-    check_started = setInterval((->
+    db_process = spawn \
+      dynamo_db_local,
+      dynamo_db_local_args.concat([ '-inMemory', '-port', '8765' ]),
+      detached: true
+    check_started = setInterval (->
       port_available 8765, (err) ->
         if !err
           clearInterval check_started
           done()
-    ), 100)
+    ), 100
 
   after 'stop dynamodb-local', ->
     # See http://azimi.me/2014/12/31/kill-child_process-node-js.html
