@@ -29,7 +29,7 @@ exports.add_routes = function(app) {
   };
 
   function ensure_code_belongs_to_app(req, res, next) {
-    db.code().find({hash: req.params.app_id, range: req.params.code_id})
+    model.code.get(req.params.app_id, req.params.code_id)
     .then(function(code) {
       if (!code) {
         res.status(404).send('Code ' + req.params.code_id + ' not found');
@@ -311,7 +311,7 @@ exports.add_routes = function(app) {
     function(req, res, next) {
       Promise.join(
         db.apps().find(req.params.app_id),
-        db.code().find({hash: req.params.app_id, range: req.params.code_id}),
+        model.code.get(req.params.app_id, req.params.code_id),
         model.devices.create_device({user: req.user})
       )
       .spread(function(app, code, device_id) {
@@ -349,7 +349,7 @@ exports.add_routes = function(app) {
     function(req, res, next) {
       Promise.join(
         db.apps().find(req.params.app_id),
-        db.code().find({hash: req.params.app_id, range: req.params.code_id}),
+        model.code.get(req.params.app_id, req.params.code_id),
         model.results.all(req.params.code_id)
       )
       .spread(function(app, code, results) {
@@ -376,7 +376,7 @@ exports.add_routes = function(app) {
     ensure_code_belongs_to_app,
     function(req, res, next) {
       Promise.join(
-        db.code().find({hash: req.params.app_id, range: req.params.code_id}),
+        model.code.get(req.params.app_id, req.params.code_id),
         model.results.get(req.params.code_id, req.params.started_at)
       )
       .spread(function(code, result) {
@@ -444,7 +444,7 @@ exports.add_routes = function(app) {
     function(req, res, next) {
       Promise.join(
         db.apps().find(req.params.app_id),
-        db.code().find({hash: req.params.app_id, range: req.params.code_id}),
+        model.code.get(req.params.app_id, req.params.code_id),
         model.results.get(req.params.code_id, req.params.started_at),
         model.devices.create_device({user: null})
       )
@@ -480,7 +480,7 @@ exports.add_routes = function(app) {
     ensure_user_can_access_app,
     ensure_code_belongs_to_app,
     function(req, res, next) {
-      model.code.delete(req.params.app_id, range: req.params.code_id)
+      model.code.delete(req.params.app_id, req.params.code_id)
       .then(function() {
         res.status(200).send('');
       })
@@ -493,8 +493,7 @@ exports.add_routes = function(app) {
     ensure_user_can_access_app,
     ensure_code_belongs_to_app,
     function(req, res, next) {
-      db.code()
-      .find(req.params.code_id)
+      model.code.get(req.params.app_id, req.params.code_id)
       .then(function(code) {
         if (!code) {
           return res.sendStatus(404);
@@ -512,10 +511,7 @@ exports.add_routes = function(app) {
     ensure_code_belongs_to_app,
     check_allowed_code_update('code_key'),
     function(req, res, next) {
-      db.code().find({
-        hash: req.params.app_id,
-        range: req.params.code_id
-      })
+      model.code.get(req.params.app_id, req.params.code_id)
       .then(function(code) {
         code[req.params.code_key] = req.body || ' ';
         return db.code().insert(code);
