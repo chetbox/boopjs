@@ -38,3 +38,8 @@ exports.set_latest_result = function(result) {
     }
   });
 };
+
+exports.delete = function(app_id, code_id) {
+  debug('delete', app_id, code_id);
+  return db.delete({Key: {app_id: app_id, id: code_id}});
+};
