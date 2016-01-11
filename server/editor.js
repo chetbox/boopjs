@@ -278,7 +278,7 @@ exports.add_routes = function(app) {
       })
       .then(function(code) {
         return code.map(function(c) {
-          return db.code().remove({hash: c.app_id, range: c.id});
+          return model.code.delete(c.app_id, c.id);
         });
       })
       .spread(function() {
@@ -480,7 +480,7 @@ exports.add_routes = function(app) {
     ensure_user_can_access_app,
     ensure_code_belongs_to_app,
     function(req, res, next) {
-      db.code().remove({hash: req.params.app_id, range: req.params.code_id})
+      model.code.delete(req.params.app_id, range: req.params.code_id)
       .then(function() {
         res.status(200).send('');
       })
