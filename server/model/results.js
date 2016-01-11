@@ -256,29 +256,6 @@ exports.middleware = {
   }
 };
 
-exports.latest = function(code_id) {
-  debug('get_latest', code_id);
-  return db.query({
-    KeyConditions: {
-      code_id: {
-        ComparisonOperator: 'EQ',
-        AttributeValueList: [code_id]
-      }
-    },
-    ScanIndexForward: false,
-    Limit: 1,
-    AttributesToGet: [
-      'code_id',
-      'started_at',
-      'success',
-      'error'
-    ]
-  })
-  .then(function(results) {
-    return results.Items && results.Items[0];
-  });
-}
-
 exports.all = function(code_id) {
   // TODO: paging
   debug('all', code_id);
@@ -295,11 +272,4 @@ exports.all = function(code_id) {
   .then(function(results) {
     return results.Items && results.Items;
   });
-}
-
-exports.all_latest = function(code_ids) {
-  // TODO: optimise
-  return Promise.all(
-    code_ids.map(exports.latest)
-  );
 }
