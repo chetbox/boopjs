@@ -19,7 +19,8 @@ exports.add_routes = function(app) {
   var model = {
     results: require('./model/results'),
     devices: require('./model/devices'),
-    code: require('./model/code')
+    code: require('./model/code'),
+    apps: require('./model/apps')
   }
 
   var DEFAULT_DEVICE = {
@@ -140,11 +141,7 @@ exports.add_routes = function(app) {
           as_user = u;
         })
         .then(function() {
-          return db.apps().insert({
-            id: new_app_id,
-            admins: [as_user.id],
-            platform: 'android'
-          });
+          return model.apps.create(as_user.id);
         })
         .then(function() {
           // Keep existing info (dynasty's .update is broken)
