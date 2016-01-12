@@ -1,0 +1,13 @@
+<script src="/components/ifvisible.js/src/ifvisible.min.js"></script>
+<script>
+  var refresh_period_s = 15;
+  var loaded_at = Date.now();
+  ifvisible.onEvery(refresh_period_s, function() {
+    location.reload();
+  });
+  ifvisible.on('wakeup', function() {
+    if (Date.now() - loaded_at >= refresh_period_s * 1000) {
+      location.reload();
+    }
+  });
+</script>
