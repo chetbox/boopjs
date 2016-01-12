@@ -226,7 +226,7 @@ exports.add_routes = function(app) {
         return db.apps().insert(existing_app);
       })
       .then(function() {
-        return model.code.remove_latest_result(req.params.app_id, req.params.code_id);
+        // TODO: remove_latest_result for every code associated with app
       })
       .then(function() {
         // refresh
