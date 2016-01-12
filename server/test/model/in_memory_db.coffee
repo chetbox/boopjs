@@ -46,6 +46,7 @@ exports.setup_mocha = ->
     db.setup()
 
   afterEach 'delete all items', ->
+    @timeout 10000
     Promise.join \
       db.v2.results.scan(AttributesToGet: [ 'code_id', 'started_at' ]),
       db.v2.code.scan(AttributesToGet: [ 'app_id', 'id' ]),
