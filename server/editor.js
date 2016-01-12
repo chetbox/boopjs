@@ -229,7 +229,7 @@ exports.add_routes = function(app) {
       })
       .then(function(all_app_code) {
         return Promise.map(all_app_code, function(code) {
-          return model.code.delete(code.app_id, code.id);
+          return model.code.remove_latest_result(code.app_id, code.id);
         });
       })
       .then(function() {
