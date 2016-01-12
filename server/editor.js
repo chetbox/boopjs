@@ -103,12 +103,10 @@ exports.add_routes = function(app) {
   app.get('/apps',
     auth.login_required,
     function(req, res, next) {
-      new Promise(function(resolve) {
-        return resolve(req.user.apps
-          ? db.apps().batchFind(req.user.apps)
-          : []
-        );
-      })
+      return (req.user.apps
+        ? db.apps().batchFind(req.user.apps)
+        : Promise.resolve([])
+      )
       .then(function(apps) {
         res.render('apps', {
           user: req.user,
@@ -245,10 +243,10 @@ exports.add_routes = function(app) {
     auth.login_required,
     ensure_user_can_access_app,
     function(req, res, next) {
-      return Promise.all([
-        db.apps().find(req.params.app_id),
-        db.code().findAll(req.params.app_id)
-      ])
+      return Promise.join(
+        model.apps.get(req.params.app_id),
+        model.code.get_all(req.params.app_id)
+      )
       .spread(function(app, code) {
         if (!app) {
           return res.sendStatus(404);

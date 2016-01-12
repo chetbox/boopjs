@@ -41,6 +41,9 @@ var hbs = express_handlebars.create({
       },
       stringify: function(r, indent) {
         return new Handlebars.SafeString(Handlebars.Utils.escapeExpression(JSON.stringify(r, null, indent)));
+      },
+      count: function(arr) {
+        return arr ? arr.length : 0;
       }
     },
 });

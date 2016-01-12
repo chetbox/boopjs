@@ -23,20 +23,39 @@
         margin: 0.5em 0;
         display: block;
         min-height: 4em;
+        position: relative;
       }
 
       ul#apps .details {
         display: inline-block;
+        position: absolute;
+        left: 4.5em;
       }
 
       ul#apps img {
-        float: left;
-        width: 3em;
-        height: 3em;
+        width: 2em;
+        height: 2em;
         border: none;
-        margin: 0 1em 1em 0;
-        -webkit-filter: drop-shadow(0 0 2px rgba(0,0,0,0.2));
-        filter: drop-shadow(0 0 2px rgba(0,0,0,0.2));
+        -webkit-filter: drop-shadow(0 0 1px rgba(0,0,0,0.5));
+        filter: drop-shadow(0 0 1px rgba(0,0,0,0.5));
+        position: absolute;
+        left: 0.75em;
+        top: 0.75em;
+      }
+
+      ul#apps .graph-data {
+        display: none;
+      }
+
+      ul#apps .peity {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 3.5em;
+        height: 3.5em;
+        z-index: -1;
+        -webkit-filter: drop-shadow(0 0 1px rgba(0,0,0,0.2));
+        filter: drop-shadow(0 0 1px rgba(0,0,0,0.2));
       }
 
       ul#apps h4 {
@@ -117,7 +136,8 @@
           {{#apps}}
           <li>
             <a href="/app/{{id}}">
-              <img src="{{icon}}">
+              <span class="graph-data">{{count failed}},{{count not_run}},{{count running}},{{count successful}}</span>
+              <img src="{{icon}}" title="{{count failed.values}} failed, {{count successful.values}} successful, {{count running.values}} running, {{count not_run.values}} not run">
               <span class="details">
                 <h4>{{name}} <span class="version">{{version}}</span></h4>
                 <span class="info">{{identifier}}</span>
@@ -133,6 +153,9 @@
   {{> google-analytics}}
 
   <script src="/components/jquery/dist/jquery.min.js"></script>
+
+  {{> graph-setup}}
+
   <script src="/js/s3_upload.js"></script>
   <script>
     s3_upload($('#app-upload input[type=file]'), $('#app-upload input[name=app_url]'), {
@@ -145,4 +168,5 @@
       google_analytics: ga
     });
   </script>
+
 </html>
