@@ -1,6 +1,7 @@
 var shortid = require('shortid');
 var fs = require('fs');
 var _ = require('underscore');
+var Promise = require('bluebird');
 
 var db = require('../db').v2.code;
 var apps = require('./apps');
@@ -48,16 +49,16 @@ exports.set_latest_result = function(result) {
 
 exports.remove_latest_result = function(app_id, id) {
   debug('remove_latest_result', app_id, id);
-  return db.update({
-    Key: {app_id: app_id, id: id},
-    UpdateExpression: 'SET latest_result = :empty',
-    ExpressionAttributeValues: {
-      ':empty': null
-    }
-  })
-  .then(function() {
-    return apps.mark_as_not_run(app_id, id);
-  });
+  return Promise.join(
+    db.update({
+      Key: {app_id: app_id, id: id},
+      UpdateExpression: 'SET latest_result = :empty',
+      ExpressionAttributeValues: {
+        ':empty': null
+      }
+    }),
+    apps.mark_as_not_run(app_id, id)
+  );
 }
 
 exports.delete = function(app_id, id) {
