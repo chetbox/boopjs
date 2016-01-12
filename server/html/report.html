@@ -12,17 +12,6 @@
         text-align: center;
       }
 
-      #header {
-        text-align: center;
-        padding-top: 1em;
-      }
-
-      h2 .date {
-        opacity: 0.5;
-        margin-left: 0.5em;
-        font-weight: 100;
-      }
-
       h3 {
         margin: 0;
       }
@@ -136,8 +125,8 @@
       li.log.error::before { content: 'E'; }
     </style>
   </head>
-  <body class="fullbleed">
-    <paper-header-panel class="cyan">
+  <body class="fullbleed {{#result.success}}successful{{/result.success}} {{#result.error}}failed{{/result.error}} {{#unless result.success}}{{#unless result.error}}running{{/unless}}{{/unless}}">
+    <paper-header-panel class="cyan" mode="waterfall-tall">
       <div class="paper-header">
         <div class="right">
           {{> feedback-button}}
@@ -147,25 +136,9 @@
         <a href="/app/{{result.app.id}}/test/{{result.code_id}}/reports">
           <paper-icon-button icon="arrow-back"></paper-icon-button>
         </a>
-        {{> app-info result.app}}
+        {{> report-info .}}
       </div>
       <div class="content">
-        <div id="header">
-          <h2 class="code {{#result.success}}success{{/result.success}} {{#result.error}}error{{/result.error}}">
-            {{#result}}
-              <span class="result">
-                {{#success}}
-                  <iron-icon icon="check" class="success" title="{{description}}"/>
-                {{/success}}
-                {{#error}}
-                  <iron-icon icon="clear" class="failure" title="Test passed"/>
-                {{/error}}
-              </span>
-            {{/result}}
-            <a href="/app/{{result.app.id}}/test/{{result.code_id}}/edit" title="Edit {{code.name}}">{{code.name}}</a>
-            <span class="date">{{date_relative result.started_at}}</span>
-          </h2>
-        </div>
         {{#result}}
           {{#error}}
             <div id="error" class="execution">
