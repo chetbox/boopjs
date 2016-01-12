@@ -1,8 +1,19 @@
-assert = require('assert')
-apps = require('../../model/apps')
+assert = require 'assert'
+apps = require '../../model/apps'
+Promise = require 'bluebird'
 
 # SUT
-model = require('../../model/code')
+model = require '../../model/code'
+
+order_by = (key) ->
+  (a, b) ->
+    if a[key] < b[key]
+      return -1
+    else if a[key] > b[key]
+      return 1
+    else
+      return 0
+
 
 assert_latest_result = (app_id, id, expected) ->
   model.get app_id, id
@@ -52,6 +63,22 @@ describe 'model/code', ->
       .then (c) ->
         assert.equal null, c
         assert_app_status app_id, {}
+
+    it 'gets all code associated with app', ->
+      Promise.all [
+        model.create app_id
+        model.create app_id
+        model.create 'some_other_app'
+      ]
+      .spread (expected_1, expected_2, not_expected) -> [
+        [ expected_1, expected_2 ]
+        model.get_all app_id
+      ]
+      .spread (expected, code) ->
+        assert.deepEqual(
+          expected.sort( order_by 'id' ),
+          code.sort( order_by 'id' )
+        )
 
   describe 'set_latest_result', ->
     id = undefined

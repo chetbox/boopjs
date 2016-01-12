@@ -14,6 +14,19 @@ exports.get = function(app_id, id) {
   return db.get({Key: {app_id: app_id, id: id}});
 };
 
+exports.get_all = function(app_id) {
+  debug('get_all', app_id);
+  return db.query({
+    KeyConditionExpression: 'app_id = :app_id',
+    ExpressionAttributeValues: {
+      ':app_id': app_id
+    }
+  })
+  .then(function(c){
+    return c.Items;
+  });
+};
+
 exports.create = function(app_id) {
   debug('create', app_id);
   var item = {
