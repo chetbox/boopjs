@@ -18,6 +18,7 @@
 
       #header {
         text-align: center;
+        margin-top: 1em;
       }
 
       #code {
@@ -222,6 +223,9 @@
   {{> google-analytics}}
 
   <script src="/components/jquery/dist/jquery.min.js"></script>
+
+  {{> graph-setup}}
+
   <script src="/js/s3_upload.js"></script>
   <script>
     s3_upload($('#app-update input[type=file]'), $('#app-update input[name=app_url]'), {

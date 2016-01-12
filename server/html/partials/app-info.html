@@ -1,33 +1,66 @@
-<div class="app">
-  <style scoped>
-    .app-icon {
-      height: 50px;
-      width: 50px;
-      border-radius: 18px;
-      margin: 10px 0 5px 10px;
-      -webkit-filter: drop-shadow(0 0 2px rgba(0,0,0,0.2));
-      filter: drop-shadow(0 0 4px rgba(0,0,0,0.2));
-    }
+<style>
+  #app-info > * {
+    display: inline-block;
+  }
 
-    h2.app-name {
-      display: inline-block;
-      margin-left: 1em;
-      margin-bottom: 1em;
-      text-align: left;
-    }
+  #app-info .icon {
+    position: relative;
+    top: 1em;
+    width: 3.5em;
+    height: 3.5em;
+    font-size: 1.5em;
+  }
 
-    h2.app-name .identifier {
-      font-size: 0.67em;
-      opacity: 0.5;
-    }
+  #app-info .icon .app-icon {
+    position: absolute;
+    left: 0.75em;
+    top: 0.75em;
+    height: 2em;
+    width: 2em;
+    -webkit-filter: drop-shadow(0 0 1px rgba(0,0,0,0.5));
+    filter: drop-shadow(0 0 1px rgba(0,0,0,0.5));
+  }
 
-    h2.app-name .version {
-      opacity: 0.5;
-      margin-left: 0.5em;
-      font-weight: 100;
-    }
-  </style>
+  #app-info .icon .graph-data {
+    display: none;
+  }
 
-  <img class="app-icon" src="{{icon}}" title="{{name}}"/>
-  <h2 class="app-name">{{name}} <span class="version">{{version}}</span><br><span class="identifier">{{identifier}}</span></h2>
+  #app-info .icon .peity {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 3.5em;
+    height: 3.5em;
+    z-index: -1;
+    -webkit-filter: drop-shadow(0 0 1px rgba(0,0,0,0.2));
+    filter: drop-shadow(0 0 1px rgba(0,0,0,0.2));
+  }
+
+  #app-info h2.app-name {
+    display: inline-block;
+    margin-left: 1em;
+    margin-bottom: 1em;
+    text-align: left;
+  }
+
+  #app-info h2.app-name .identifier {
+    font-size: 0.67em;
+    opacity: 0.5;
+  }
+
+  #app-info h2.app-name .version {
+    opacity: 0.5;
+    margin-left: 0.5em;
+    font-weight: 100;
+  }
+</style>
+
+<div id="app-info">
+  <div class="icon" title="{{count failed.values}} failed, {{count successful.values}} successful, {{count running.values}} running, {{count not_run.values}} not run">
+    <img class="app-icon" src="{{icon}}" />
+    <span class="graph-data">{{count failed.values}},{{count not_run.values}},{{count running.values}},{{count successful.values}}</span>
+  </div>
+  <div class="details">
+    <h2 class="app-name">{{name}} <span class="version">{{version}}</span><br><span class="identifier">{{identifier}}</span></h2>
+  </div>
 </div>
