@@ -8,17 +8,17 @@ APP =
 assert_results = (expected) ->
   db.results.scan {}
   .then (results) ->
-    assert.deepEqual expected, results.Items
+    assert.deepEqual results.Items, expected
 
 assert_code = (expected) ->
   db.code.scan {}
   .then (code) ->
-    assert.deepEqual expected, code.Items
+    assert.deepEqual code.Items, expected
 
 assert_report = (key, expected) ->
   db.results.get(Key: key)
   .then (result) ->
-    assert.deepEqual expected, result.report
+    assert.deepEqual result.report, expected
 
 describe 'model/results', ->
   require('./in_memory_db').setup_mocha()

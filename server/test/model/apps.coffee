@@ -15,7 +15,7 @@ assert_status = (id, expected) ->
         status[key] = app[key].values
       status
     , {}
-    assert.deepEqual expected, status
+    assert.deepEqual status, expected
 
 describe 'model/apps', ->
   require('./in_memory_db').setup_mocha()
@@ -29,7 +29,7 @@ describe 'model/apps', ->
         model.get app.id
       .then (app) ->
         assert.deepEqual ['user_id_create_and_get'], app.admins
-        assert.equal 'android', app.platform
+        assert.equal app.platform, 'android'
 
   describe 'update latest results', ->
 

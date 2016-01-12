@@ -18,7 +18,7 @@ order_by = (key) ->
 assert_latest_result = (app_id, id, expected) ->
   model.get app_id, id
   .then (c) ->
-    assert.deepEqual expected, c.latest_result
+    assert.deepEqual c.latest_result, expected
 
 assert_app_status = (app_id, expected) ->
   apps.get app_id
@@ -29,7 +29,7 @@ assert_app_status = (app_id, expected) ->
         status[key] = app[key].values
       status
     , {}
-    assert.deepEqual expected, status
+    assert.deepEqual status, expected
 
 describe 'model/code', ->
   require('./in_memory_db').setup_mocha()
