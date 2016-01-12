@@ -87,6 +87,27 @@ describe 'model/code', ->
       model.create(app_id).then (c) ->
         id = c.id
 
+    it 'restarts an existing test', ->
+      model.set_latest_result
+        code_id: id
+        started_at: 67890
+        app:
+          id: app_id
+          name: 'An App'
+        success: true
+      .then ->
+        model.remove_latest_result app_id, id
+      .then ->
+        model.set_latest_result
+          code_id: id
+          started_at: 67891
+          app:
+            id: app_id
+            name: 'An App'
+      .then ->
+        assert_latest_result app_id, id,
+          started_at: 67891
+
     it 'successful test', ->
       model.set_latest_result
         code_id: id

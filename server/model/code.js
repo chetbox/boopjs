@@ -49,10 +49,11 @@ exports.set_latest_result = function(result) {
   return db.update({
     Key: {app_id: result.app.id, id: result.code_id},
     UpdateExpression: 'SET latest_result = :result',
-    ConditionExpression: 'attribute_not_exists(latest_result) OR latest_result.started_at <= :started_at',
+    ConditionExpression: 'attribute_not_exists(latest_result) OR attribute_type(latest_result, :null_type) OR latest_result.started_at <= :started_at',
     ExpressionAttributeValues: {
       ':result': _.pick(result, ['started_at', 'success', 'error']),
-      ':started_at': result.started_at
+      ':started_at': result.started_at,
+      ':null_type': 'NULL'
     }
   })
   .then(function() {
