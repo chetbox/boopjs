@@ -1,0 +1,93 @@
+<style>
+  #report-info {
+    transition: max-height 200ms, opacity 400ms, ease-out;
+    max-height: 16em;
+  }
+
+  #report-info > * {
+    display: inline-block;
+  }
+
+  #report-info .icon {
+    position: relative;
+    top: 1em;
+    width: 3.5em;
+    height: 3.5em;
+    font-size: 1.5em;
+  }
+
+  #report-info .icon .app-icon {
+    position: absolute;
+    left: 0.75em;
+    top: 0.75em;
+    height: 2em;
+    width: 2em;
+    -webkit-filter: drop-shadow(0 0 1px rgba(0,0,0,0.5));
+    filter: drop-shadow(0 0 1px rgba(0,0,0,0.5));
+  }
+
+  #report-info h2.description {
+    display: inline-block;
+    margin-left: 1em;
+    margin-bottom: 1em;
+    text-align: left;
+  }
+
+  #report-info h2.description .name {
+    margin-right: 0.5em;
+  }
+
+  #report-info h2.description .app-name {
+    font-size: 0.67em;
+  }
+
+  #report-info h2.description .app-version {
+    font-size: 0.67em;
+    opacity: 0.5;
+  }
+
+  #report-info h2.description .date {
+    opacity: 0.5;
+    font-weight: 100;
+    display: inline-block;
+  }
+
+  @-webkit-keyframes pulsate-blue {
+    0% {
+      -webkit-filter: drop-shadow(0 0 6px rgba(50,50,255,1));
+      filter: drop-shadow(0 0 6px rgba(50,50,255,1));
+    }
+    50% {
+      -webkit-filter: drop-shadow(0 0 6px rgba(50,50,255,0.5));
+      filter: drop-shadow(0 0 6px rgba(50,50,255,0.5));
+    }
+    100% {
+      -webkit-filter: drop-shadow(0 0 6px rgba(50,50,255,1));
+      filter: drop-shadow(0 0 6px rgba(50,50,255,1));
+    }
+  }
+
+  body.failed #report-info .icon .app-icon {
+    -webkit-filter: drop-shadow(0 0 6px rgba(255,50,50,1));
+    filter: drop-shadow(0 0 6px rgba(255,50,50,1));
+  }
+
+  body.running #report-info .icon .app-icon {
+    -webkit-animation: pulsate-blue 2s ease-in-out infinite;
+    animation: pulsate-blue 2s ease-in-out infinite;
+  }
+
+  .paper-header:not(.tall) #report-info {
+    max-height: 0;
+    opacity: 0;
+  }
+</style>
+
+<div id="report-info">
+  <div class="icon">
+    <img class="app-icon" src="{{result.app.icon}}" />
+  </div>
+  <div class="details">
+    <h2 class="description"><span class="name">{{code.name}}</span> <span class="date">{{date_relative result.started_at}}</span><br><span class="app-name" title="{{result.app.identifier}}">{{result.app.name}}</span> <span class="app-version">{{result.app.version}}</span></h2>
+  </div>
+</div>
