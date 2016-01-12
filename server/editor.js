@@ -227,6 +227,9 @@ exports.add_routes = function(app) {
         return db.apps().insert(existing_app);
       })
       .then(function() {
+        return model.code.remove_latest_result(req.params.app_id, req.params.code_id);
+      })
+      .then(function() {
         // refresh
         res.redirect(req.get('referer'));
       })
@@ -516,6 +519,11 @@ exports.add_routes = function(app) {
       .then(function(code) {
         code[req.params.code_key] = req.body || ' ';
         return db.code().insert(code);
+      })
+      .then(function() {
+        if (req.params.code_key !== 'name') {
+          return model.code.remove_latest_result(req.params.app_id, req.params.code_id)
+        }
       })
       .then(function() {
         res.sendStatus(200);
