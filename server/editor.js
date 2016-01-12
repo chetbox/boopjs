@@ -227,7 +227,12 @@ exports.add_routes = function(app) {
         return db.apps().insert(existing_app);
       })
       .then(function() {
-        // TODO: remove_latest_result for every code associated with app
+        return model.code.get_all(req.params.app_id);
+      })
+      .then(function(all_app_code) {
+        return Promise.map(all_app_code, function(code) {
+          return model.code.delete(code.app_id, code.id);
+        });
       })
       .then(function() {
         // refresh
