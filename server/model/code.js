@@ -3,13 +3,14 @@ var fs = require('fs');
 var _ = require('underscore');
 
 var db = require('../db').v2.code;
+var apps = require('./apps');
 var debug = require('debug')('chetbot/' + require('path').relative(process.cwd(), __filename).replace(/\.js$/, ''));
 
 var welcome_code = fs.readFileSync(__dirname + '/../demos/welcome.js', 'utf8');
 
-exports.get = function(app_id, code_id) {
-  debug('get', app_id, code_id);
-  return db.get({Key: {app_id: app_id, id: code_id}});
+exports.get = function(app_id, id) {
+  debug('get', app_id, id);
+  return db.get({Key: {app_id: app_id, id: id}});
 };
 
 exports.create = function(app_id) {
@@ -21,6 +22,9 @@ exports.create = function(app_id) {
     content: welcome_code
   };
   return db.put({Item: item})
+  .then(function() {
+    return apps.mark_as_not_run(item.app_id, item.id);
+  })
   .then(function() {
     return item;
   });
@@ -36,10 +40,30 @@ exports.set_latest_result = function(result) {
       ':result': _.pick(result, ['started_at', 'success', 'error']),
       ':started_at': result.started_at
     }
+  })
+  .then(function() {
+    return apps.update_result(result);
   });
 };
 
-exports.delete = function(app_id, code_id) {
-  debug('delete', app_id, code_id);
-  return db.delete({Key: {app_id: app_id, id: code_id}});
+exports.remove_latest_result = function(app_id, id) {
+  debug('remove_latest_result', app_id, id);
+  return db.update({
+    Key: {app_id: app_id, id: id},
+    UpdateExpression: 'SET latest_result = :empty',
+    ExpressionAttributeValues: {
+      ':empty': null
+    }
+  })
+  .then(function() {
+    return apps.mark_as_not_run(app_id, id);
+  });
+}
+
+exports.delete = function(app_id, id) {
+  debug('delete', app_id, id);
+  return db.delete({Key: {app_id: app_id, id: id}})
+  .then(function() {
+    return apps.remove_code(app_id, id);
+  });
 };
