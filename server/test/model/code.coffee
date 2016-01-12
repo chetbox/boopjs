@@ -54,14 +54,15 @@ describe 'model/code', ->
           not_run: [ c.id ]
 
     it 'creates code then deletes it', ->
+      id = undefined
       model.create app_id
       .then (c) ->
-        model.delete app_id, c.id
-        c.id
-      .then (id) ->
+        id = c.id
+        model.delete app_id, id
+      .then ->
         model.get app_id, id
       .then (c) ->
-        assert.equal null, c
+        assert.equal c, null
         assert_app_status app_id, {}
 
     it 'gets all code associated with app', ->
