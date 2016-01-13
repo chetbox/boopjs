@@ -3,9 +3,9 @@ var Promise = require('bluebird');
 var request = Promise.promisifyAll(require('request'));
 var debug = require('debug')('chetbot/' + require('path').relative(process.cwd(), __filename).replace(/\.js$/, ''));
 
-var db = require('./db');
+var db = require.main.require('./db');
 var model = {
-  results: require('./model/results')
+  results: require.main.require('./model/results')
 };
 
 var CLOSE_WHEN_FINISHED = function() {
