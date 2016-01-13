@@ -7,21 +7,23 @@ exports.add_routes = function(app) {
   var fs = require('fs');
   var host_address = require('config').get('host.address');
 
-  var db = require('./db');
-  var auth = require('./auth');
-  var s3 = require('./s3');
-  var test_runner = require('./test_runner');
-  var appetizeio = require('./apps/appetizeio');
-  var inject_chetbot = require('./apps/android/inject-chetbot');
-  var android_app_info = require('./apps/android/info');
-  var email = require('./reporting/email');
+  var db = require.main.require('./db');
+  var s3 = require.main.require('./model/third-party/s3');
+  var appetizeio = require.main.require('./apps/appetizeio');
+  var inject_chetbot = require.main.require('./apps/android/inject-chetbot');
+  var android_app_info = require.main.require('./apps/android/info');
+  var email = require.main.require('./reporting/email');
+
+  var test_runner = require.main.require('./test_runner');
 
   var model = {
-    results: require('./model/results'),
-    devices: require('./model/devices'),
-    code: require('./model/code'),
-    apps: require('./model/apps')
+    results: require.main.require('./model/results'),
+    devices: require.main.require('./model/devices'),
+    code: require.main.require('./model/code'),
+    apps: require.main.require('./model/apps')
   }
+
+  var auth = require('./auth');
 
   var DEFAULT_DEVICE = {
     model: 'nexus5',

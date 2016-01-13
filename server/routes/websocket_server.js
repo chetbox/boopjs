@@ -5,12 +5,13 @@ exports.add_routes = function(app) {
   var _ = require('underscore');
   var Promise = require('bluebird');
 
-  var auth = require('./auth');
-  var db = require('./db');
+  var db = require.main.require('./db');
   var model = {
-    results: require('./model/results'),
-    devices: require('./model/devices')
+    results: require.main.require('./model/results'),
+    devices: require.main.require('./model/devices')
   }
+
+  var auth = require('./auth');
 
   var expressWs = require('express-ws')(app);
 

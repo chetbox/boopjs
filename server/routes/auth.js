@@ -5,8 +5,8 @@ var config = require('config');
 var _ = require('underscore');
 var flash = require('connect-flash');
 
-var db = require('./db');
-var email = require('./reporting/email');
+var db = require.main.require('./db');
+var email = require.main.require('./reporting/email');
 
 var DEBUG_AS_USER = process.env.DEBUG_AS_USER;
 
