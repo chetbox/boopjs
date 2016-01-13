@@ -21,13 +21,9 @@ var TABLES = {
     key_schema: {hash: ['id', 'string']},
     throughput: {read: 1, write: 1}
   },
-  'run_tokens': {
-    key_schema: {hash: ['endpoint', 'string'], range: ['token', 'string']},
-    throughput: {read: 1, write: 1}
-  },
   'results': {
     key_schema: {hash: ['code_id', 'string'], range: ['started_at', 'number']},
-    throughput: {write: 1, read: 1}
+    throughput: {write: 4, read: 1}
   }
 };
 
@@ -78,9 +74,34 @@ exports.v2 = Object.keys(TABLES).reduce(function(fns, table_short_name) {
           return result.Item;
         }
         return result;
+      })
+      .catch(function(e) {
+        debug('ERROR: Failed operation:', table_short_name, fn_name, params);
+        return fns.get({Key: params.Key})
+        .then(function(item) {
+          debug('To item:', table_short_name, item);
+          throw e;
+        });
       });
     };
     return fns;
   }, {});
+  fns[table_short_name].batch_delete = function(keys) {
+    if (keys.length === 0) return Promise.resolve();
+    var request = {};
+    request[TABLE_PREFIX + table_short_name] = keys.map(function(key) {
+      return {DeleteRequest: {Key: key}};
+    });
+    return dynamodb.batchWriteAsync({RequestItems: request});
+  };
+  fns[table_short_name].batch_put = function(items) {
+    if (keys.length === 0) return Promise.resolve();
+    var request = {};
+    request[TABLE_PREFIX + table_short_name] = items.map(function(item) {
+      return {PutRequest: {Item: item}};
+    });
+    return dynamodb.batchWriteAsync({RequestItems: request});
+  };
+  fns[table_short_name].create_set = dynamodb.createSet;
   return fns;
 }, {});

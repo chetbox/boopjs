@@ -40,13 +40,15 @@
 
   <!-- Run test immediately -->
   <script charset="utf-8">
-    window.addEventListener('message', function(event) {
-      if (event.data == 'firstFrameReceived') {
-        console.log('Starting');
-        setTimeout(function() {
-          run_test($('#code').text(), '{{server}}', '{{device.id}}', '{{app.id}}', '{{code.id}}', '{{started_at}}');
-        }, 1000);
-      }
+    $(function() {
+      window.addEventListener('message', function(event) {
+        if (event.data === 'firstFrameReceived') {
+          console.log('Starting');
+          setTimeout(function() {
+            run_test($('#code').text(), '{{server}}', '{{device.id}}', '{{app.id}}', '{{code.id}}', '{{started_at}}');
+          }, 1000);
+        }
+      });
     });
   </script>
 

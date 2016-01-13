@@ -4,8 +4,11 @@ require('shortid').seed(56873);
 var express = require('express');
 var app = express();
 var express_handlebars = require('express-handlebars');
+var Handlebars = require('handlebars');
 var moment = require('moment');
 var body_parser = require('body-parser');
+
+require('coffee-script/register');
 
 var db = require('./db');
 var index = require('./index');
@@ -35,6 +38,12 @@ var hbs = express_handlebars.create({
           return '?';
         }
         return moment(d).fromNow();
+      },
+      stringify: function(r, indent) {
+        return new Handlebars.SafeString(Handlebars.Utils.escapeExpression(JSON.stringify(r, null, indent)));
+      },
+      count: function(arr) {
+        return arr ? arr.length : 0;
       }
     },
 });

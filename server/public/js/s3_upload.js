@@ -4,6 +4,14 @@ function s3_upload(file_input, target_input, opts) {
     if (opts.google_analytics) { return opts.google_analytics(a,b,c,d,e); }
   }
 
+  function click() {
+    if (opts.click) { opts.click(); }
+  }
+
+  function change(file) {
+    if (opts.change) { opts.change(file); }
+  }
+
   function progress(msg) {
     if (opts.progress) { opts.progress(msg); }
   }
@@ -12,7 +20,9 @@ function s3_upload(file_input, target_input, opts) {
     if (opts.error) { opts.error(msg); }
   }
 
-  $(file_input).on('change', function(e) {
+  $(file_input)
+  .on('click', click)
+  .on('change', function(e) {
     ga('send', 'event', 'app-upload', 'start');
 
     $(e.target).hide();
@@ -20,6 +30,9 @@ function s3_upload(file_input, target_input, opts) {
     progress('Requesting upload...');
 
     var file = e.target.files[0];
+
+    change(file);
+
     if (!file) {
       $(target_input).val('');
       ga('send', 'event', 'app-upload', 'no-file');

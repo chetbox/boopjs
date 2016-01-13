@@ -8,6 +8,8 @@ var flash = require('connect-flash');
 var db = require('./db');
 var email = require('./reporting/email');
 
+var DEBUG_AS_USER = process.env.DEBUG_AS_USER;
+
 passport.serializeUser(function(user, done) {
   done(null, user.id);
 });
@@ -64,6 +66,21 @@ passport.use(new GitHubStrategy(
 ));
 
 function login_required(req, res, next) {
+  if (DEBUG_AS_USER) {
+    console.warn('WARNING: Skipping authentication in debugging mode:', DEBUG_AS_USER);
+    db.users().find(DEBUG_AS_USER)
+    .then(function(user) {
+      if (!user) throw new Error('User not found: ' + DEBUG_AS_USER);
+      req.user = user;
+      req.isAuthenticated = function() {
+        return true;
+      }
+      next();
+    })
+    .catch(next);
+    return;
+  }
+
   if (req.isAuthenticated()) {
     return next();
   }

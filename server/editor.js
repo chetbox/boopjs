@@ -10,7 +10,7 @@ exports.add_routes = function(app) {
   var db = require('./db');
   var auth = require('./auth');
   var s3 = require('./s3');
-  var run_test = require('./test_runner');
+  var test_runner = require('./test_runner');
   var appetizeio = require('./apps/appetizeio');
   var inject_chetbot = require('./apps/android/inject-chetbot');
   var android_app_info = require('./apps/android/info');
@@ -19,10 +19,9 @@ exports.add_routes = function(app) {
   var model = {
     results: require('./model/results'),
     devices: require('./model/devices'),
-    run_tokens: require('./model/run_tokens')
+    code: require('./model/code'),
+    apps: require('./model/apps')
   }
-
-  var welcome_code = fs.readFileSync(__dirname + '/demos/welcome.js', 'utf8');
 
   var DEFAULT_DEVICE = {
     model: 'nexus5',
@@ -30,7 +29,7 @@ exports.add_routes = function(app) {
   };
 
   function ensure_code_belongs_to_app(req, res, next) {
-    db.code().find({hash: req.params.app_id, range: req.params.code_id})
+    model.code.get(req.params.app_id, req.params.code_id)
     .then(function(code) {
       if (!code) {
         res.status(404).send('Code ' + req.params.code_id + ' not found');
@@ -104,12 +103,10 @@ exports.add_routes = function(app) {
   app.get('/apps',
     auth.login_required,
     function(req, res, next) {
-      new Promise(function(resolve) {
-        return resolve(req.user.apps
-          ? db.apps().batchFind(req.user.apps)
-          : []
-        );
-      })
+      return (req.user.apps
+        ? db.apps().batchFind(req.user.apps)
+        : Promise.resolve([])
+      )
       .then(function(apps) {
         res.render('apps', {
           user: req.user,
@@ -126,7 +123,6 @@ exports.add_routes = function(app) {
     function(req, res, next) {
       var user_apk_url = req.body.app_url;
       var new_app_id = shortid.generate();
-      var new_code_id = shortid.generate();
 
       // Allow admins to create a new app
       if (req.body.as_user) {
@@ -143,11 +139,7 @@ exports.add_routes = function(app) {
           as_user = u;
         })
         .then(function() {
-          return db.apps().insert({
-            id: new_app_id,
-            admins: [as_user.id],
-            platform: 'android'
-          });
+          return model.apps.create(as_user.id);
         })
         .then(function() {
           // Keep existing info (dynasty's .update is broken)
@@ -177,29 +169,22 @@ exports.add_routes = function(app) {
           publicKey: appetize_resp.publicKey,
           privateKey: appetize_resp.privateKey
         }, apk_info);
-        var code = {
-          id: new_code_id,
-          name: 'Untitled test',
-          app_id: new_app_id,
-          content: welcome_code
-        };
         return [
           db.users().find(req.user.id),
           app,
           db.apps().insert(app),
-          db.code().insert(code)
+          model.code.create(new_app_id)
         ];
       })
-      .spread(function(user, app) {
+      .spread(function(user, app, app_inserted, code) {
         user.apps = _.union(user.apps, [new_app_id]); // Keep existing info (dynasty's .update is broken)
-        return [user, app, db.users().insert(user)];
+        return [user, app, code, db.users().insert(user)];
       })
-      .spread(function(user, app) {
+      .spread(function(user, app, code) {
         email.send_to_admins(email.message.new_app(user, app));
-      })
-      .then(function() {
+
         // Take the user straight to their first test
-        res.redirect('/app/' + new_app_id + '/edit/' + new_code_id);
+        res.redirect('/app/' + new_app_id + '/test/' + code.id + '/edit');
       })
       .catch(next);
     }
@@ -239,6 +224,14 @@ exports.add_routes = function(app) {
         return db.apps().insert(existing_app);
       })
       .then(function() {
+        return model.code.get_all(req.params.app_id);
+      })
+      .then(function(all_app_code) {
+        return Promise.map(all_app_code, function(code) {
+          return model.code.remove_latest_result(code.app_id, code.id);
+        });
+      })
+      .then(function() {
         // refresh
         res.redirect(req.get('referer'));
       })
@@ -250,29 +243,19 @@ exports.add_routes = function(app) {
     auth.login_required,
     ensure_user_can_access_app,
     function(req, res, next) {
-      return Promise.all([
-        db.apps().find(req.params.app_id),
-        db.code().findAll(req.params.app_id)
-      ])
+      return Promise.join(
+        model.apps.get(req.params.app_id),
+        model.code.get_all(req.params.app_id)
+      )
       .spread(function(app, code) {
-        return [
-          app,
-          code,
-          model.results.all_latest(
-            code.map(function(c) { return c.id; })
-          )
-        ];
-      })
-      .spread(function(app, code, results) {
         if (!app) {
           return res.sendStatus(404);
         }
         res.render('app', {
           user: req.user,
           app: app,
-          code: code.map(function(c, i) {
+          code: code.map(function(c) {
             c.name = c.name || 'Untitled test';
-            c.result = results[i];
             return c;
           })
         });
@@ -301,7 +284,7 @@ exports.add_routes = function(app) {
       })
       .then(function(code) {
         return code.map(function(c) {
-          return db.code().remove({hash: c.app_id, range: c.id});
+          return model.code.delete(c.app_id, c.id);
         });
       })
       .spread(function() {
@@ -314,32 +297,27 @@ exports.add_routes = function(app) {
     }
   );
 
-  app.post('/app/:app_id/edit/',
+  app.post('/app/:app_id/test',
     auth.login_required,
     ensure_user_can_access_app,
     function(req, res, next) {
       var new_code_id = shortid.generate();
-      db.code().insert({
-        id: new_code_id,
-        name: 'Untitled test',
-        app_id: req.params.app_id,
-        content: welcome_code
-      })
-      .then(function() {
-        res.redirect('/app/' + req.params.app_id + '/edit/' + new_code_id);
+      model.code.create(req.params.app_id)
+      .then(function(code) {
+        res.redirect('/app/' + req.params.app_id + '/test/' + code.id + '/edit');
       })
       .catch(next);
     }
   );
 
-  app.get('/app/:app_id/edit/:code_id',
+  app.get('/app/:app_id/test/:code_id/edit',
     auth.login_required,
     ensure_user_can_access_app,
     ensure_code_belongs_to_app,
     function(req, res, next) {
       Promise.join(
         db.apps().find(req.params.app_id),
-        db.code().find({hash: req.params.app_id, range: req.params.code_id}),
+        model.code.get(req.params.app_id, req.params.code_id),
         model.devices.create_device({user: req.user})
       )
       .spread(function(app, code, device_id) {
@@ -370,12 +348,94 @@ exports.add_routes = function(app) {
     }
   );
 
+  app.get('/app/:app_id/test/:code_id/reports',
+    auth.login_required,
+    ensure_user_can_access_app,
+    ensure_code_belongs_to_app,
+    function(req, res, next) {
+      Promise.join(
+        db.apps().find(req.params.app_id),
+        model.code.get(req.params.app_id, req.params.code_id),
+        model.results.all(req.params.code_id)
+      )
+      .spread(function(app, code, results) {
+        if (!app || !code) {
+          return res.sendStatus(404);
+        }
+        res.render('reports', {
+          user: req.user,
+          app: app,
+          code: _.extend(code, {
+            name: code.name || 'Untitled test',
+            location: code.location && JSON.parse(code.location)
+          }),
+          results: results
+        });
+      })
+      .catch(next);
+    }
+  );
+
+  app.get('/app/:app_id/test/:code_id/report/:started_at',
+    auth.login_required,
+    ensure_user_can_access_app,
+    ensure_code_belongs_to_app,
+    function(req, res, next) {
+      Promise.join(
+        model.code.get(req.params.app_id, req.params.code_id),
+        model.results.get(req.params.code_id, req.params.started_at)
+      )
+      .spread(function(code, result) {
+        res.render('report', {
+          user: req.user,
+          result: result,
+          code: _.extend(code, {
+            name: code.name || 'Untitled test'
+          })
+        });
+      })
+      .catch(next);
+    }
+  );
+
+  app.get('/app/:app_id/test/:code_id/report/:started_at/callback',
+    ensure_code_belongs_to_app,
+    model.results.middleware.set_test_runner_status('opened', 'finished', 'params.code_id', 'params.started_at', 'query.access_token'),
+    function(req, res, next) {
+      var result = JSON.parse(req.query.response);
+      test_runner.handle_result(req.params.code_id, parseInt(req.params.started_at), result)
+      .then(function() {
+        res.sendStatus(200);
+      })
+      .catch(next);
+    }
+  );
+
   app.post('/app/:app_id/test/:code_id/run',
     auth.login_required,
     ensure_user_can_access_app,
     ensure_code_belongs_to_app,
-    function(req, res) {
-      run_test(req.params.app_id, req.params.code_id)
+    function(req, res, next) {
+      test_runner.run(req.params.app_id, req.params.code_id)
+      .then(function() {
+        res.sendStatus(200);
+      })
+      .catch(next);
+    }
+  );
+
+  app.post('/app/:app_id/run',
+    auth.login_required,
+    ensure_user_can_access_app,
+    function(req, res, next) {
+      return db.code().findAll(req.params.app_id)
+      .then(function(code) {
+        return Promise.all(
+          code.map(function(c) {
+            return test_runner.run(req.params.app_id, c.id);
+          })
+        );
+      })
       .then(function() {
         res.sendStatus(200);
       })
@@ -385,12 +445,12 @@ exports.add_routes = function(app) {
 
   // Page opened by the test runner
   app.get('/app/:app_id/test/:code_id/autorun/:started_at',
-    model.run_tokens.middleware.consume('access_token'),
     ensure_code_belongs_to_app,
-    function(req, res) {
+    model.results.middleware.set_test_runner_status('queued', 'opened', 'params.code_id', 'params.started_at', 'query.access_token'),
+    function(req, res, next) {
       Promise.join(
         db.apps().find(req.params.app_id),
-        db.code().find({hash: req.params.app_id, range: req.params.code_id}),
+        model.code.get(req.params.app_id, req.params.code_id),
         model.results.get(req.params.code_id, req.params.started_at),
         model.devices.create_device({user: null})
       )
@@ -421,12 +481,12 @@ exports.add_routes = function(app) {
     }
   );
 
-  app.delete('/app/:app_id/edit/:code_id',
+  app.delete('/app/:app_id/test/:code_id',
     auth.login_required,
     ensure_user_can_access_app,
     ensure_code_belongs_to_app,
     function(req, res, next) {
-      db.code().remove({hash: req.params.app_id, range: req.params.code_id})
+      model.code.delete(req.params.app_id, req.params.code_id)
       .then(function() {
         res.status(200).send('');
       })
@@ -434,13 +494,12 @@ exports.add_routes = function(app) {
     }
   );
 
-  app.get('/app/:app_id/edit/:code_id/code',
+  app.get('/app/:app_id/test/:code_id/code',
     auth.login_required, // TODO: return forbidden if no access
     ensure_user_can_access_app,
     ensure_code_belongs_to_app,
     function(req, res, next) {
-      db.code()
-      .find(req.params.code_id)
+      model.code.get(req.params.app_id, req.params.code_id)
       .then(function(code) {
         if (!code) {
           return res.sendStatus(404);
@@ -452,19 +511,21 @@ exports.add_routes = function(app) {
     }
   );
 
-  app.put('/app/:app_id/edit/:code_id/:code_key',
+  app.put('/app/:app_id/test/:code_id/edit/:code_key',
     auth.login_required, // TODO: return forbidden if no access
     ensure_user_can_access_app,
     ensure_code_belongs_to_app,
     check_allowed_code_update('code_key'),
     function(req, res, next) {
-      db.code().find({
-        hash: req.params.app_id,
-        range: req.params.code_id
-      })
+      model.code.get(req.params.app_id, req.params.code_id)
       .then(function(code) {
         code[req.params.code_key] = req.body || ' ';
         return db.code().insert(code);
+      })
+      .then(function() {
+        if (req.params.code_key !== 'name') {
+          return model.code.remove_latest_result(req.params.app_id, req.params.code_id)
+        }
       })
       .then(function() {
         res.sendStatus(200);
