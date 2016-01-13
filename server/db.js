@@ -74,6 +74,14 @@ exports.v2 = Object.keys(TABLES).reduce(function(fns, table_short_name) {
           return result.Item;
         }
         return result;
+      })
+      .catch(function(e) {
+        debug('ERROR: Failed operation:', table_short_name, fn_name, params);
+        return fns.get({Key: params.Key})
+        .then(function(item) {
+          debug('To item:', table_short_name, item);
+          throw e;
+        });
       });
     };
     return fns;
