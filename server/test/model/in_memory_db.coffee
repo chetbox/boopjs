@@ -20,7 +20,8 @@ port_available = (port, fn) ->
 exports.setup_mocha = ->
   db_process = undefined
 
-  before 'start in-memory dynamodb-local', (done) ->
+  before 'start in-memory dynamodb-local & create tables', (done) ->
+    @timeout 12000
     if process.env.NODE_ENV != 'test'
       throw new Error("Wrong NODE_ENV (#{process.env.NODE_ENV}) You should be running with NODE_ENV=test")
     dynamo_db_local = DYNAMODB_LOCAL.split(' ')[0]
@@ -33,17 +34,14 @@ exports.setup_mocha = ->
       port_available 8765, (err) ->
         if !err
           clearInterval check_started
-          done()
+          db.setup()
+          .then -> done()
     ), 100
 
   after 'stop dynamodb-local', ->
     # See http://azimi.me/2014/12/31/kill-child_process-node-js.html
     process.kill -db_process.pid
     db_process = undefined
-
-  beforeEach 'setup database', ->
-    @timeout 10000
-    db.setup()
 
   afterEach 'delete all items', ->
     @timeout 10000
