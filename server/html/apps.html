@@ -81,6 +81,11 @@
         text-align: center;
       }
 
+      #app-update .status.error {
+        color: #D32F2F;
+        font-weight: 300;
+      }
+
       input[type=file] {
         display: block;
         margin-left: auto;
@@ -129,7 +134,7 @@
           <li id="app-upload">
             <p class="status"></p>
             <input type="file" accept=".apk"/>
-            <form action="/apps" method="POST">
+            <form action="/api/v1/app" method="POST">
               <input type="hidden" name="app_url" />
             </form>
           </li>
@@ -164,6 +169,9 @@
       },
       error: function(error) {
         $('#app-upload .status').addClass('error').text(error).show();
+      },
+      success: function(response) {
+        location.href = '/app/' + response.app.id + '/test/' + response.test.id + '/edit';
       },
       google_analytics: ga
     });

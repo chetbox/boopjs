@@ -65,6 +65,7 @@ require('./routes/editor_demo')      .add_routes(app);
 require('./routes/editor')           .add_routes(app);
 require('./routes/websocket_server') .add_routes(app);
 require('./routes/admin')            .add_routes(app);
+require('./routes/api')              .add_routes(app);
 
 
 // Errors: print to console & email
