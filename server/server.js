@@ -14,7 +14,7 @@ require('bluebird').config({
 
 require('coffee-script/register');
 
-var db = require('./db');
+var db = require('./db').v2;
 var email = require('./reporting/email');
 
 // Settings

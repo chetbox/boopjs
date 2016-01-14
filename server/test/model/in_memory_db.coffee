@@ -1,7 +1,7 @@
 net = require('net')
 spawn = require('child_process').spawn
 Promise = require('bluebird')
-db = require('../../db')
+db = require('../../db').v2
 results = require('../../model/results')
 DYNAMODB_LOCAL = process.env.DYNAMODB_LOCAL or 'dynamodb-local'
 
@@ -46,11 +46,13 @@ exports.setup_mocha = ->
   afterEach 'delete all items', ->
     @timeout 10000
     Promise.join \
-      db.v2.results.scan(AttributesToGet: [ 'code_id', 'started_at' ]),
-      db.v2.code.scan(AttributesToGet: [ 'app_id', 'id' ]),
-      db.v2.apps.scan(AttributesToGet: [ 'id' ])
-    .spread (results, code, apps) -> [
-      db.v2.results.batch_delete(results.Items)
-      db.v2.code.batch_delete(code.Items)
-      db.v2.apps.batch_delete(apps.Items)
+      db.results.scan(AttributesToGet: [ 'code_id', 'started_at' ]),
+      db.code.scan(AttributesToGet: [ 'app_id', 'id' ]),
+      db.apps.scan(AttributesToGet: [ 'id' ]),
+      db.access_tokens.scan(AttributesToGet: [ 'token' ])
+    .spread (results, code, apps, access_tokens) -> [
+      db.results.batch_delete(results.Items)
+      db.code.batch_delete(code.Items)
+      db.apps.batch_delete(apps.Items)
+      db.access_tokens.batch_delete(access_tokens.Items)
     ]

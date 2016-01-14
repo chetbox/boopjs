@@ -73,42 +73,35 @@ var TABLES = {
       ReadCapacityUnits: 1,
       WriteCapacityUnits: 4
     }
+  },
+  'access_tokens': {
+    TableName: 'chetbot.access_tokens',
+    KeySchema: [
+      { AttributeName: 'token', KeyType: 'HASH' }
+    ],
+    AttributeDefinitions: [
+      { AttributeName: 'token', AttributeType: 'S' },
+      { AttributeName: 'user_id', AttributeType: 'S' }
+    ],
+    ProvisionedThroughput: {
+      ReadCapacityUnits: 1,
+      WriteCapacityUnits: 1
+    },
+    GlobalSecondaryIndexes: [{
+      IndexName: 'user_id_index',
+      KeySchema: [
+        { AttributeName: 'user_id', KeyType: 'HASH' }
+      ],
+      Projection: { ProjectionType: 'KEYS_ONLY' },
+      ProvisionedThroughput: {
+        ReadCapacityUnits: 1,
+        WriteCapacityUnits: 1
+      }
+    }]
   }
 };
 
 // In progress: Migration away from Dyanasty
-
-var AWS = require('aws-sdk');
-var dynamodb = Promise.promisifyAll( new AWS.DynamoDB(config.get('aws.dynamodb')) );
-var doc_client = Promise.promisifyAll( new AWS.DynamoDB.DocumentClient(config.get('aws.dynamodb')) );
-
-exports.setup = function() {
-  return Promise.map(Object.keys(TABLES), function(short_name) {
-    return dynamodb.describeTableAsync({TableName: TABLES[short_name].TableName})
-    .catch(function(e) {
-      if (e.code !== 'ResourceNotFoundException') {
-        throw e;
-      }
-      return null;
-    })
-    .then(function(description) {
-      return {
-        description: description,
-        schema: TABLES[short_name]
-      }
-    });
-  })
-  .map(function(table) {
-    if (!table.description) {
-      debug('Creating table ' + table.schema.TableName);
-      return dynamodb.createTableAsync(table.schema);
-    }
-  })
-  .catch(function(e) {
-    console.error(e.stack);
-    process.exit(1);
-  });
-}
 
 _.each(TABLES, function(info, name) {
   exports[name] = function() {
@@ -116,6 +109,11 @@ _.each(TABLES, function(info, name) {
     return dynasty.table(info.TableName);
   };
 });
+
+
+var AWS = require('aws-sdk');
+var dynamodb = Promise.promisifyAll( new AWS.DynamoDB(config.get('aws.dynamodb')) );
+var doc_client = Promise.promisifyAll( new AWS.DynamoDB.DocumentClient(config.get('aws.dynamodb')) );
 
 // Provide a neat, promisified API with TableName already set
 // e.g. new_api.devices.put({...})
@@ -149,6 +147,7 @@ exports.v2 = Object.keys(TABLES).reduce(function(fns, table_short_name) {
     return fns;
   }, {});
   fns[table_short_name].batch_delete = function(keys) {
+    debug(TABLES[table_short_name].TableName, 'batch_delete');
     if (keys.length === 0) return Promise.resolve();
     var request = {};
     request[TABLES[table_short_name].TableName] = keys.map(function(key) {
@@ -157,6 +156,7 @@ exports.v2 = Object.keys(TABLES).reduce(function(fns, table_short_name) {
     return doc_client.batchWriteAsync({RequestItems: request});
   };
   fns[table_short_name].batch_put = function(items) {
+    debug(TABLES[table_short_name].TableName, 'batch_put');
     if (keys.length === 0) return Promise.resolve();
     var request = {};
     request[TABLES[table_short_name].TableName] = items.map(function(item) {
@@ -165,5 +165,35 @@ exports.v2 = Object.keys(TABLES).reduce(function(fns, table_short_name) {
     return doc_client.batchWriteAsync({RequestItems: request});
   };
   fns[table_short_name].create_set = doc_client.createSet;
+  fns[table_short_name].condition = doc_client.Condition;
   return fns;
 }, {});
+
+exports.v2.setup = function() {
+  return Promise.map(Object.keys(TABLES), function(short_name) {
+    return dynamodb.describeTableAsync({TableName: TABLES[short_name].TableName})
+    .catch(function(e) {
+      if (e.code !== 'ResourceNotFoundException') {
+        throw e;
+      }
+      return null;
+    })
+    .then(function(description) {
+      return {
+        description: description,
+        schema: TABLES[short_name]
+      }
+    });
+  })
+  .map(function(table) {
+    if (!table.description) {
+      debug('Creating table ' + table.schema.TableName);
+      // Also creates GlobalSecondaryIndexes
+      return dynamodb.createTableAsync(table.schema);
+    }
+  })
+  .catch(function(e) {
+    console.error(e.stack);
+    process.exit(1);
+  });
+};
