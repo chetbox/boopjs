@@ -28,3 +28,14 @@ exports.get_all_for_user = (user_id) ->
       ':user_id': user_id
   .then (user_tokens) ->
     user_tokens.Items
+
+exports.get_or_create_for_user = (user_id) ->
+  debug 'get_or_create_for_user', user_id
+  exports.get_all_for_user user_id
+  .then (tokens) ->
+    if (tokens && tokens.length)
+      tokens
+    else
+      exports.create user_id
+      .then (new_token) ->
+        [ new_token ]
