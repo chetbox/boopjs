@@ -79,6 +79,11 @@
         color: #999;
       }
 
+      #app-update .status.error {
+        color: #D32F2F;
+        font-weight: 300;
+      }
+
       #actions {
         margin-bottom: 1.5em;
       }
@@ -207,7 +212,7 @@
         <div id="app-update">
           <p class="status"></p>
           <input type="file" accept=".apk"/>
-          <form method="POST">
+          <form method="PUT" action="/api/v1/app/{{app.id}}"><!-- jQuery does the PUT -->
             <input type="hidden" name="app_url" />
           </form>
         </div>
@@ -237,6 +242,10 @@
       },
       error: function(error) {
         $('#app-update .status').addClass('error').text(error).show();
+      },
+      success: function() {
+        alert('woo');
+        location.reload();
       },
       google_analytics: ga
     });

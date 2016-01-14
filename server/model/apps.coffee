@@ -1,10 +1,10 @@
-shortid = require('shortid')
+shortid = require 'shortid'
 
 db = require('../db').v2.apps
 debug = require('debug')('chetbot/' + require('path').relative(process.cwd(), __filename).replace(/\.(js|coffee)$/, ''))
 
-exports.create = (user_id) ->
-  debug 'create', user_id
+exports.create_empty = (user_id) ->
+  debug 'create_empty', user_id
   new_app_id = shortid.generate()
   item =
     id: new_app_id,

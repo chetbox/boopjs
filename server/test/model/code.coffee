@@ -36,7 +36,7 @@ describe 'model/code', ->
   app_id = undefined
 
   beforeEach 'create app', ->
-    apps.create 'user_id_0'
+    apps.create_empty 'user_id_0'
     .then (app) ->
       app_id = app.id
 

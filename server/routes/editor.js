@@ -3,25 +3,17 @@ exports.add_routes = function(app) {
   var shortid = require('shortid');
   var _ = require('underscore');
   var Promise = require('bluebird');
-  var url = require('url');
-  var fs = require('fs');
   var host_address = require('config').get('host.address');
 
   var fail_on_error = require.main.require('./util').fail_on_error;
   var db = require.main.require('./db');
-  var s3 = require.main.require('./model/third-party/s3');
-  var appetizeio = require.main.require('./apps/appetizeio');
-  var inject_chetbot = require.main.require('./apps/android/inject-chetbot');
-  var android_app_info = require.main.require('./apps/android/info');
-  var email = require.main.require('./reporting/email');
-
   var test_runner = require.main.require('./test_runner');
-
   var model = {
     results: require.main.require('./model/results'),
     devices: require.main.require('./model/devices'),
     code: require.main.require('./model/code'),
-    apps: require.main.require('./model/apps')
+    apps: require.main.require('./model/apps'),
+    users: require.main.require('./model/users')
   }
 
   var auth = require('./auth');
@@ -42,42 +34,6 @@ exports.add_routes = function(app) {
     .catch(next);
   }
 
-  function ensure_user_can_access_app(req, res, next) {
-    // Admins always have access
-    if (req.user.admin) {
-      next();
-      return;
-    }
-
-    if (!req.user.apps || req.user.apps.indexOf(req.params.app_id) === -1) {
-      res.status(403).send('You don\'t have access to this app');
-    } else {
-      next();
-    }
-  }
-
-  function create_and_upload_chetbot_apk(user_apk_url) {
-    // TODO: cleanup downloaded files
-    // TODO: return immediately and show user a progress page
-
-    console.log('Downloading app', user_apk_url);
-    return s3.download(user_apk_url)
-    .then(function(apk) {
-      console.log('Getting info from APK');
-      var apk_info = android_app_info(apk);
-      console.log('  ' + apk_info.name)
-      return [apk, apk_info];
-    })
-    .spread(function(apk, apk_info) {
-      console.log('Adding Chetbot to APK', apk);
-      return [apk_info, inject_chetbot.add_chetbot_to_apk(apk)];
-    })
-    .spread(function(apk_info, modified_apk_file) {
-      console.log('Uploading ' + modified_apk_file + ' to S3');
-      return [apk_info, s3.upload(modified_apk_file, 'chetbot-apps-v1', url.parse(user_apk_url).pathname + '.chetbot.apk')];
-    });
-  }
-
   function check_allowed_code_update(key) {
     return function(req, res, next) {
       if (_.contains(['name', 'content', 'location'], req.params[key])) {
@@ -87,21 +43,6 @@ exports.add_routes = function(app) {
       };
     }
   }
-
-  app.get('/sign_s3',
-    auth.login_required,
-    function(req, res, next) {
-      s3.client_upload_request(
-        'chetbot-apps',
-        shortid.generate() + '/app.apk',
-        req.query.file_type
-      )
-      .then(function(upload_req) {
-        res.json(upload_req);
-      })
-      .catch(next);
-    }
-  );
 
   app.get('/apps',
     auth.login_required,
@@ -120,131 +61,9 @@ exports.add_routes = function(app) {
     }
   );
 
-  app.post('/apps',
-    auth.login_required,
-    // TODO: check that user is allowed to create another app
-    function(req, res, next) {
-      var user_apk_url = req.body.app_url;
-      var new_app_id = shortid.generate();
-
-      // Allow admins to create a new app
-      if (req.body.as_user) {
-        if (!req.user.admin) {
-          res.sendStatus(403);
-          return;
-        }
-
-        console.log('Creating app ' + new_app_id + 'for user ' + req.body.as_user + ' (admin)');
-        var as_user = null;
-        db.users().find(req.body.as_user)
-        .then(function(u) {
-          if (!u) throw new Error('User not found: ' + req.body.as_user);
-          as_user = u;
-        })
-        .then(function() {
-          return model.apps.create(as_user.id);
-        })
-        .then(function() {
-          // Keep existing info (dynasty's .update is broken)
-          as_user.apps = _.union(as_user.apps, [new_app_id]);
-          return db.users().insert(as_user);
-        })
-        .then(function() {
-          res.redirect('/app/' + new_app_id);
-        })
-        .catch(next);
-        return;
-      }
-
-      create_and_upload_chetbot_apk(user_apk_url)
-      .spread(function(apk_info, modified_apk_url) {
-        console.log('Creating appetize.io app', modified_apk_url);
-        return [apk_info, modified_apk_url, appetizeio.create_app(modified_apk_url, 'android')];
-      })
-      .spread(function(apk_info, modified_apk_url, appetize_resp) {
-        console.log('Creating app', new_app_id);
-        var app = _.extend({
-          id: new_app_id,
-          admins: [req.user.id],
-          platform: 'android',
-          user_app_url: user_apk_url,
-          app_url: modified_apk_url,
-          publicKey: appetize_resp.publicKey,
-          privateKey: appetize_resp.privateKey
-        }, apk_info);
-        return [
-          db.users().find(req.user.id),
-          app,
-          db.apps().insert(app),
-          model.code.create(new_app_id)
-        ];
-      })
-      .spread(function(user, app, app_inserted, code) {
-        user.apps = _.union(user.apps, [new_app_id]); // Keep existing info (dynasty's .update is broken)
-        return [user, app, code, db.users().insert(user)];
-      })
-      .spread(function(user, app, code) {
-        email.send_to_admins(email.message.new_app(user, app));
-
-        // Take the user straight to their first test
-        res.redirect('/app/' + new_app_id + '/test/' + code.id + '/edit');
-      })
-      .catch(next);
-    }
-  );
-
-  // browsers aren't happy doing a PUT from <form>s so we use POST
-  app.post('/app/:app_id',
-    auth.login_required,
-    ensure_user_can_access_app,
-    function(req, res, next) {
-      // TODO: check that app has the same package name
-
-      var app_id = req.params.app_id;
-      var user_apk_url = req.body.app_url;
-
-      create_and_upload_chetbot_apk(user_apk_url)
-      .spread(function(apk_info, modified_apk_url) {
-        return [apk_info, modified_apk_url, db.apps().find(app_id)];
-      })
-      .spread(function(apk_info, modified_apk_url, existing_app) {
-        console.log('Updating appetize.io app', modified_apk_url);
-        return [apk_info, modified_apk_url, existing_app, appetizeio.update_app(existing_app.privateKey, modified_apk_url, 'android')];
-      })
-      .spread(function(apk_info, modified_apk_url, existing_app, appetize_resp) {
-        console.log('Updating app', app_id);
-        if (existing_app.privateKey && existing_app.privateKey !== appetize_resp.privateKey) {
-          throw new Error('New private key does not match existing');
-        }
-        if (existing_app.publicKey && existing_app.publicKey !== appetize_resp.publicKey) {
-          throw new Error('New public key does not match existing');
-        }
-        existing_app.user_app_url = user_apk_url;
-        existing_app.app_url = modified_apk_url;
-        existing_app.privateKey = appetize_resp.privateKey; // ensure this is set
-        existing_app.publicKey = appetize_resp.publicKey; // ensure this is set
-        existing_app = _.extend(existing_app, apk_info);
-        return db.apps().insert(existing_app);
-      })
-      .then(function() {
-        return model.code.get_all(req.params.app_id);
-      })
-      .then(function(all_app_code) {
-        return Promise.map(all_app_code, function(code) {
-          return model.code.remove_latest_result(code.app_id, code.id);
-        });
-      })
-      .then(function() {
-        // refresh
-        res.redirect(req.get('referer'));
-      })
-      .catch(next);
-    }
-  );
-
   app.get('/app/:app_id',
     auth.login_required,
-    ensure_user_can_access_app,
+    model.users.middleware.check_app_access,
     function(req, res, next) {
       return Promise.join(
         model.apps.get(req.params.app_id),
@@ -269,7 +88,7 @@ exports.add_routes = function(app) {
 
   app.delete('/app/:app_id',
     auth.login_required,
-    ensure_user_can_access_app,
+    model.users.middleware.check_app_access,
     function(req, res, next) {
       db.apps().find(req.params.app_id)
       .then(function(app) {
@@ -302,7 +121,7 @@ exports.add_routes = function(app) {
 
   app.post('/app/:app_id/test',
     auth.login_required,
-    ensure_user_can_access_app,
+    model.users.middleware.check_app_access,
     function(req, res, next) {
       var new_code_id = shortid.generate();
       model.code.create(req.params.app_id)
@@ -315,7 +134,7 @@ exports.add_routes = function(app) {
 
   app.get('/app/:app_id/test/:code_id/edit',
     auth.login_required,
-    ensure_user_can_access_app,
+    model.users.middleware.check_app_access,
     ensure_code_belongs_to_app,
     function(req, res, next) {
       Promise.join(
@@ -353,7 +172,7 @@ exports.add_routes = function(app) {
 
   app.get('/app/:app_id/test/:code_id/reports',
     auth.login_required,
-    ensure_user_can_access_app,
+    model.users.middleware.check_app_access,
     ensure_code_belongs_to_app,
     function(req, res, next) {
       Promise.join(
@@ -381,7 +200,7 @@ exports.add_routes = function(app) {
 
   app.get('/app/:app_id/test/:code_id/report/:started_at',
     auth.login_required,
-    ensure_user_can_access_app,
+    model.users.middleware.check_app_access,
     ensure_code_belongs_to_app,
     function(req, res, next) {
       Promise.join(
@@ -416,7 +235,7 @@ exports.add_routes = function(app) {
 
   app.post('/app/:app_id/test/:code_id/run',
     auth.login_required,
-    ensure_user_can_access_app,
+    model.users.middleware.check_app_access,
     ensure_code_belongs_to_app,
     function(req, res, next) {
       test_runner.run(req.params.app_id, req.params.code_id)
@@ -429,7 +248,7 @@ exports.add_routes = function(app) {
 
   app.post('/app/:app_id/run',
     auth.login_required,
-    ensure_user_can_access_app,
+    model.users.middleware.check_app_access,
     function(req, res, next) {
       return db.code().findAll(req.params.app_id)
       .then(function(code) {
@@ -486,7 +305,7 @@ exports.add_routes = function(app) {
 
   app.delete('/app/:app_id/test/:code_id',
     auth.login_required,
-    ensure_user_can_access_app,
+    model.users.middleware.check_app_access,
     ensure_code_belongs_to_app,
     function(req, res, next) {
       model.code.delete(req.params.app_id, req.params.code_id)
@@ -499,7 +318,7 @@ exports.add_routes = function(app) {
 
   app.get('/app/:app_id/test/:code_id/code',
     auth.login_required, // TODO: return forbidden if no access
-    ensure_user_can_access_app,
+    model.users.middleware.check_app_access,
     ensure_code_belongs_to_app,
     function(req, res, next) {
       model.code.get(req.params.app_id, req.params.code_id)
@@ -516,7 +335,7 @@ exports.add_routes = function(app) {
 
   app.put('/app/:app_id/test/:code_id/edit/:code_key',
     auth.login_required, // TODO: return forbidden if no access
-    ensure_user_can_access_app,
+    model.users.middleware.check_app_access,
     ensure_code_belongs_to_app,
     check_allowed_code_update('code_key'),
     function(req, res, next) {

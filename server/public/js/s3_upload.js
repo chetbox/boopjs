@@ -20,6 +20,10 @@ function s3_upload(file_input, target_input, opts) {
     if (opts.error) { opts.error(msg); }
   }
 
+  function success(response) {
+    if (opts.success) { opts.success(response); }
+  }
+
   $(file_input)
   .on('click', click)
   .on('change', function(e) {
@@ -40,9 +44,13 @@ function s3_upload(file_input, target_input, opts) {
     }
 
     $.ajax({
-      url: '/sign_s3?file_type=' + file.type,
-      method: 'GET',
-      dataType: 'json'
+      url: '/api/v1/s3/sign_upload?file_type=' + file.type,
+      method: 'POST',
+      dataType: 'json',
+      error: function(xhr) {
+        console.error(xhr);
+        error('Error ' + xhr.status + ': ' + xhr.responseText);
+      }
     }).done(function(req) {
       ga('send', 'event', 'app-upload', 'request-granted');
       progress('Uploading...');
@@ -57,7 +65,21 @@ function s3_upload(file_input, target_input, opts) {
 
           progress('Processing...');
           $(target_input).val(req.url);
-          $(target_input).closest('form').submit();
+
+          var $form = $(target_input).closest('form');
+          $.ajax({
+            url: $form.attr('action') || location.pathname,
+            method: $form.attr('method'),
+            data: { app_url: req.url },
+            success: function(data) {
+              progress('Done.');
+              success(data);
+            },
+            error: function(xhr) {
+              console.error(xhr);
+              error('Error ' + xhr.status + ': ' + xhr.responseText);
+            }
+          });
         } else {
           ga('send', 'event', 'app-upload', 'upload-error', xhr.responseText);
           error('Error ' + xhr.status + ': ' + xhr.responseText);
