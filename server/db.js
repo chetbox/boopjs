@@ -136,7 +136,10 @@ exports.v2 = Object.keys(TABLES).reduce(function(fns, table_short_name) {
       })
       .catch(function(e) {
         debug('ERROR: Failed operation:', table_short_name, fn_name, params);
-        return fns.get({Key: params.Key})
+        return doc_client.getAsync({
+          TableName: TABLES[table_short_name].TableName,
+          Key: params.Key
+        })
         .then(function(item) {
           debug('To item:', table_short_name, item);
           throw e;
