@@ -10,8 +10,8 @@ email = require.main.require './reporting/email'
 model =
   apps: require.main.require './model/apps'
   code: require.main.require './model/code'
-  users: require.main.require './model/users'
 
+middleware = require './middleware'
 auth = require './auth'
 
 exports.add_routes = (app) ->
@@ -100,7 +100,7 @@ exports.add_routes = (app) ->
 
   app.put '/api/v1/app/:app_id',
     auth.login_required,
-    model.users.middleware.check_app_access,
+    middleware.middleware.check_user_can_access_app 'app_id',
     (req, res, next) ->
       app_id = req.params.app_id
       user_apk_url = req.body.app_url

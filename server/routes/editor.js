@@ -12,10 +12,10 @@ exports.add_routes = function(app) {
     devices: require.main.require('./model/devices'),
     code: require.main.require('./model/code'),
     apps: require.main.require('./model/apps'),
-    users: require.main.require('./model/users')
   }
 
   var auth = require('./auth');
+  var middleware = require('./middleware');
 
   var DEFAULT_DEVICE = {
     model: 'nexus5',
@@ -62,7 +62,7 @@ exports.add_routes = function(app) {
 
   app.get('/app/:app_id',
     auth.login_required,
-    model.users.middleware.check_app_access,
+    middleware.middleware.check_user_can_access_app('app_id'),
     function(req, res, next) {
       return Promise.join(
         model.apps.get(req.params.app_id),
@@ -87,7 +87,7 @@ exports.add_routes = function(app) {
 
   app.delete('/app/:app_id',
     auth.login_required,
-    model.users.middleware.check_app_access,
+    middleware.middleware.check_user_can_access_app('app_id'),
     function(req, res, next) {
       db.apps().find(req.params.app_id)
       .then(function(app) {
@@ -120,7 +120,7 @@ exports.add_routes = function(app) {
 
   app.post('/app/:app_id/test',
     auth.login_required,
-    model.users.middleware.check_app_access,
+    middleware.middleware.check_user_can_access_app('app_id'),
     function(req, res, next) {
       var new_code_id = shortid.generate();
       model.code.create(req.params.app_id)
@@ -133,7 +133,7 @@ exports.add_routes = function(app) {
 
   app.get('/app/:app_id/test/:code_id/edit',
     auth.login_required,
-    model.users.middleware.check_app_access,
+    middleware.middleware.check_user_can_access_app('app_id'),
     ensure_code_belongs_to_app,
     function(req, res, next) {
       Promise.join(
@@ -171,7 +171,7 @@ exports.add_routes = function(app) {
 
   app.get('/app/:app_id/test/:code_id/reports',
     auth.login_required,
-    model.users.middleware.check_app_access,
+    middleware.middleware.check_user_can_access_app('app_id'),
     ensure_code_belongs_to_app,
     function(req, res, next) {
       Promise.join(
@@ -199,7 +199,7 @@ exports.add_routes = function(app) {
 
   app.get('/app/:app_id/test/:code_id/report/:started_at',
     auth.login_required,
-    model.users.middleware.check_app_access,
+    middleware.middleware.check_user_can_access_app('app_id'),
     ensure_code_belongs_to_app,
     function(req, res, next) {
       Promise.join(
@@ -234,7 +234,7 @@ exports.add_routes = function(app) {
 
   app.post('/app/:app_id/test/:code_id/run',
     auth.login_required,
-    model.users.middleware.check_app_access,
+    middleware.middleware.check_user_can_access_app('app_id'),
     ensure_code_belongs_to_app,
     function(req, res, next) {
       test_runner.run(req.params.app_id, req.params.code_id)
@@ -247,7 +247,7 @@ exports.add_routes = function(app) {
 
   app.post('/app/:app_id/run',
     auth.login_required,
-    model.users.middleware.check_app_access,
+    middleware.middleware.check_user_can_access_app('app_id'),
     function(req, res, next) {
       return db.code().findAll(req.params.app_id)
       .then(function(code) {
@@ -304,7 +304,7 @@ exports.add_routes = function(app) {
 
   app.delete('/app/:app_id/test/:code_id',
     auth.login_required,
-    model.users.middleware.check_app_access,
+    middleware.middleware.check_user_can_access_app('app_id'),
     ensure_code_belongs_to_app,
     function(req, res, next) {
       model.code.delete(req.params.app_id, req.params.code_id)
@@ -317,7 +317,7 @@ exports.add_routes = function(app) {
 
   app.get('/app/:app_id/test/:code_id/code',
     auth.login_required, // TODO: return forbidden if no access
-    model.users.middleware.check_app_access,
+    middleware.middleware.check_user_can_access_app('app_id'),
     ensure_code_belongs_to_app,
     function(req, res, next) {
       model.code.get(req.params.app_id, req.params.code_id)
@@ -334,7 +334,7 @@ exports.add_routes = function(app) {
 
   app.put('/app/:app_id/test/:code_id/edit/:code_key',
     auth.login_required, // TODO: return forbidden if no access
-    model.users.middleware.check_app_access,
+    middleware.middleware.check_user_can_access_app('app_id'),
     ensure_code_belongs_to_app,
     check_allowed_code_update('code_key'),
     function(req, res, next) {
