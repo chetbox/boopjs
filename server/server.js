@@ -8,6 +8,10 @@ var Handlebars = require('handlebars');
 var moment = require('moment');
 var body_parser = require('body-parser');
 
+require('bluebird').config({
+  longStackTraces: true
+});
+
 require('coffee-script/register');
 
 var db = require('./db');
