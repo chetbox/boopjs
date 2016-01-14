@@ -11,9 +11,6 @@ var body_parser = require('body-parser');
 require('coffee-script/register');
 
 var db = require('./db');
-var index = require('./index');
-var editor_demo = require('./editor_demo');
-var editor = require('./editor');
 var email = require('./reporting/email');
 
 // Settings
@@ -62,12 +59,13 @@ app.use(body_parser.urlencoded());
 // Application setup
 
 app.use(express.static(__dirname + '/public'));
-require('./auth')             .setup(app, {logged_in_homepage: '/apps'});
-require('./index')            .add_routes(app);
-require('./editor_demo')      .add_routes(app);
-require('./editor')           .add_routes(app);
-require('./websocket_server') .add_routes(app);
-require('./admin')            .add_routes(app);
+require('./routes/auth')             .setup(app, {logged_in_homepage: '/apps'});
+require('./routes/landing_page')     .add_routes(app);
+require('./routes/editor_demo')      .add_routes(app);
+require('./routes/editor')           .add_routes(app);
+require('./routes/websocket_server') .add_routes(app);
+require('./routes/admin')            .add_routes(app);
+require('./routes/api')              .add_routes(app);
 
 
 // Errors: print to console & email

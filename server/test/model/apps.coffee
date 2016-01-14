@@ -24,7 +24,7 @@ describe 'model/apps', ->
   describe 'create and get', ->
 
     it 'creates an app and gets it', ->
-      model.create('user_id_create_and_get')
+      model.create_empty('user_id_create_and_get')
       .then (app) ->
         model.get app.id
       .then (app) ->
@@ -36,7 +36,7 @@ describe 'model/apps', ->
     describe 'no code', ->
 
       beforeEach 'create app', ->
-        model.create 'user_id_create_app'
+        model.create_empty 'user_id_create_app'
         .then (_app) ->
           app = _app
 
@@ -49,7 +49,7 @@ describe 'model/apps', ->
     describe 'code not run', ->
 
       beforeEach 'create app with code (not run)', ->
-        model.create 'user_id_create_app_not_run'
+        model.create_empty 'user_id_create_app_not_run'
         .then (_app) ->
           app = _app
           model.mark_as_not_run app.id, 'code_id_not_run'
@@ -84,7 +84,7 @@ describe 'model/apps', ->
     describe 'code running', ->
 
       beforeEach 'create app with running code', ->
-        model.create('user_id_create_app_running')
+        model.create_empty('user_id_create_app_running')
         .then (_app) ->
           app = _app
           model.update_result
@@ -126,7 +126,7 @@ describe 'model/apps', ->
     describe 'successful code', ->
 
       beforeEach 'create app with successful code', ->
-        model.create 'user_id_create_app_successful_code'
+        model.create_empty 'user_id_create_app_successful_code'
         .then (_app) ->
           app = _app
           model.update_result

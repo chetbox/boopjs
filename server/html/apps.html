@@ -28,8 +28,7 @@
 
       ul#apps .details {
         display: inline-block;
-        position: absolute;
-        left: 4.5em;
+        margin-left: 4.5em;
       }
 
       ul#apps img {
@@ -75,10 +74,19 @@
         margin-bottom: 1em;
       }
 
+      #app-upload {
+        margin-top: 2em;
+      }
+
       #app-upload .status {
         display: none;
         color: #999;
         text-align: center;
+      }
+
+      #app-update .status.error {
+        color: #D32F2F;
+        font-weight: 300;
       }
 
       input[type=file] {
@@ -125,14 +133,14 @@
       </paper-toolbar>
       {{/user}}
       <div class="content">
+        <div id="app-upload">
+          <p class="status"></p>
+          <input type="file" accept=".apk"/>
+          <form action="/api/v1/app" method="POST">
+            <input type="hidden" name="app_url" />
+          </form>
+        </div>
         <ul id="apps">
-          <li id="app-upload">
-            <p class="status"></p>
-            <input type="file" accept=".apk"/>
-            <form action="/apps" method="POST">
-              <input type="hidden" name="app_url" />
-            </form>
-          </li>
           {{#apps}}
           <li>
             <a href="/app/{{id}}">
@@ -164,6 +172,9 @@
       },
       error: function(error) {
         $('#app-upload .status').addClass('error').text(error).show();
+      },
+      success: function(response) {
+        location.href = '/app/' + response.app.id + '/test/' + response.test.id + '/edit';
       },
       google_analytics: ga
     });
