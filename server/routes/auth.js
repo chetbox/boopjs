@@ -4,9 +4,13 @@ var GitHubStrategy = require('passport-github2').Strategy;
 var config = require('config');
 var _ = require('underscore');
 var flash = require('connect-flash');
+var Promise = require('bluebird');
 
 var db = require.main.require('./db');
 var email = require.main.require('./reporting/email');
+var model = {
+  access_tokens: require.main.require('./model/access_tokens')
+};
 
 var DEBUG_AS_USER = process.env.DEBUG_AS_USER;
 
@@ -129,11 +133,15 @@ function setup(app, options) {
     login_required,
     ensure_logged_in_user('user_id'),
     function(req, res, next) {
-      db.users().find(req.params.user_id)
-      .then(function(user) {
+      Promise.join(
+        db.users().find(req.params.user_id),
+        model.access_tokens.get_or_create_for_user(req.params.user_id)
+      )
+      .spread(function(user, access_tokens) {
         res.render('account', {
           user: req.user,
-          requested_user: user
+          requested_user: user,
+          access_tokens: access_tokens
         });
       })
       .catch(next);

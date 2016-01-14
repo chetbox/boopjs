@@ -1,72 +1,129 @@
 var config = require('config');
 var dynasty = require('dynasty')(config.get('aws.dynamodb'));
+var Promise = require('bluebird');
 var _ = require('underscore');
-var debug = require('debug')('chetbot/' + require('path').relative(process.cwd(), __filename).replace(/\.js$/, ''));
+var debug = require('debug')('chetbot/' + require('path').relative(process.cwd(), __filename).replace(/\.(js|coffee)$/, ''));
 
-var TABLE_PREFIX = 'chetbot.';
 var TABLES = {
   'users': {
-    key_schema: {hash: ['id', 'string']},
-    throughput: {write: 1, read: 1}
+    TableName: 'chetbot.users',
+    KeySchema: [
+      { AttributeName: 'id', KeyType: 'HASH' }
+    ],
+    AttributeDefinitions: [
+      { AttributeName: 'id', AttributeType: 'S' }
+    ],
+    ProvisionedThroughput: {
+      ReadCapacityUnits: 1,
+      WriteCapacityUnits: 1
+    }
   },
   'apps': {
-    key_schema: {hash: ['id', 'string']},
-    throughput: {write: 1, read: 1}
+    TableName: 'chetbot.apps',
+    KeySchema: [
+      { AttributeName: 'id', KeyType: 'HASH' }
+    ],
+    AttributeDefinitions: [
+      { AttributeName: 'id', AttributeType: 'S' }
+    ],
+    ProvisionedThroughput: {
+      ReadCapacityUnits: 1,
+      WriteCapacityUnits: 1
+    }
   },
   'code': {
-    key_schema: {hash: ['app_id', 'string'], range: ['id', 'string']},
-    throughput: {write: 1, read: 1}
+    TableName: 'chetbot.code',
+    KeySchema: [
+      { AttributeName: 'app_id', KeyType: 'HASH' },
+      { AttributeName: 'id', KeyType: 'RANGE' }
+    ],
+    AttributeDefinitions: [
+      { AttributeName: 'app_id', AttributeType: 'S' },
+      { AttributeName: 'id', AttributeType: 'S' }
+    ],
+    ProvisionedThroughput: {
+      ReadCapacityUnits: 1,
+      WriteCapacityUnits: 1
+    }
   },
   'devices': {
-    key_schema: {hash: ['id', 'string']},
-    throughput: {read: 1, write: 1}
+    TableName: 'chetbot.devices',
+    KeySchema: [
+      { AttributeName: 'id', KeyType: 'HASH' }
+    ],
+    AttributeDefinitions: [
+      { AttributeName: 'id', AttributeType: 'S' }
+    ],
+    ProvisionedThroughput: {
+      ReadCapacityUnits: 1,
+      WriteCapacityUnits: 1
+    }
   },
   'results': {
-    key_schema: {hash: ['code_id', 'string'], range: ['started_at', 'number']},
-    throughput: {write: 4, read: 1}
+    TableName: 'chetbot.results',
+    KeySchema: [
+      { AttributeName: 'code_id', KeyType: 'HASH' },
+      { AttributeName: 'started_at', KeyType: 'RANGE' }
+    ],
+    AttributeDefinitions: [
+      { AttributeName: 'code_id', AttributeType: 'S' },
+      { AttributeName: 'started_at', AttributeType: 'N' }
+    ],
+    ProvisionedThroughput: {
+      ReadCapacityUnits: 1,
+      WriteCapacityUnits: 4
+    }
+  },
+  'access_tokens': {
+    TableName: 'chetbot.access_tokens',
+    KeySchema: [
+      { AttributeName: 'token', KeyType: 'HASH' }
+    ],
+    AttributeDefinitions: [
+      { AttributeName: 'token', AttributeType: 'S' },
+      { AttributeName: 'user_id', AttributeType: 'S' }
+    ],
+    ProvisionedThroughput: {
+      ReadCapacityUnits: 1,
+      WriteCapacityUnits: 1
+    },
+    GlobalSecondaryIndexes: [{
+      IndexName: 'user_id_index',
+      KeySchema: [
+        { AttributeName: 'user_id', KeyType: 'HASH' }
+      ],
+      Projection: { ProjectionType: 'KEYS_ONLY' },
+      ProvisionedThroughput: {
+        ReadCapacityUnits: 1,
+        WriteCapacityUnits: 1
+      }
+    }]
   }
 };
 
-exports.setup = function() {
-  return dynasty.list()
-  .then(function(data) {
-    return Promise.all(
-      _.map(TABLES, function(options, name) {
-        var full_name = TABLE_PREFIX + name;
-        if (data.TableNames.indexOf(full_name) === -1) {
-          return dynasty.create(full_name, options);
-        }
-      })
-    );
-  })
-  .catch(function(e) {
-    console.error(e.stack);
-    process.exit(1);
-  });
-}
+// In progress: Migration away from Dyanasty
 
-_.each(TABLES, function(_, name) {
+_.each(TABLES, function(info, name) {
   exports[name] = function() {
     debug(name);
-    return dynasty.table(TABLE_PREFIX + name);
+    return dynasty.table(info.TableName);
   };
 });
 
-// In progress: Migration away from Dyanasty
 
 var AWS = require('aws-sdk');
-var dynamodb = new AWS.DynamoDB.DocumentClient(config.get('aws.dynamodb'));
-require('bluebird').promisifyAll(Object.getPrototypeOf(dynamodb));
+var dynamodb = Promise.promisifyAll( new AWS.DynamoDB(config.get('aws.dynamodb')) );
+var doc_client = Promise.promisifyAll( new AWS.DynamoDB.DocumentClient(config.get('aws.dynamodb')) );
 
 // Provide a neat, promisified API with TableName already set
 // e.g. new_api.devices.put({...})
 exports.v2 = Object.keys(TABLES).reduce(function(fns, table_short_name) {
   fns[table_short_name] = ['update', 'put', 'get', 'scan', 'query', 'delete'].reduce(function(fns, fn_name) {
     fns[fn_name] = function(params) {
-      debug(TABLE_PREFIX + table_short_name, fn_name);
-      return dynamodb[fn_name + 'Async'](_.extend(
+      debug(TABLES[table_short_name].TableName, fn_name);
+      return doc_client[fn_name + 'Async'](_.extend(
         params,
-        { TableName: TABLE_PREFIX + table_short_name }
+        { TableName: TABLES[table_short_name].TableName }
       ))
       .then(function(result) {
         // Patch 'get' to the return the "Item"
@@ -77,7 +134,10 @@ exports.v2 = Object.keys(TABLES).reduce(function(fns, table_short_name) {
       })
       .catch(function(e) {
         debug('ERROR: Failed operation:', table_short_name, fn_name, params);
-        return fns.get({Key: params.Key})
+        return doc_client.getAsync({
+          TableName: TABLES[table_short_name].TableName,
+          Key: params.Key
+        })
         .then(function(item) {
           debug('To item:', table_short_name, item);
           throw e;
@@ -87,21 +147,53 @@ exports.v2 = Object.keys(TABLES).reduce(function(fns, table_short_name) {
     return fns;
   }, {});
   fns[table_short_name].batch_delete = function(keys) {
+    debug(TABLES[table_short_name].TableName, 'batch_delete');
     if (keys.length === 0) return Promise.resolve();
     var request = {};
-    request[TABLE_PREFIX + table_short_name] = keys.map(function(key) {
+    request[TABLES[table_short_name].TableName] = keys.map(function(key) {
       return {DeleteRequest: {Key: key}};
     });
-    return dynamodb.batchWriteAsync({RequestItems: request});
+    return doc_client.batchWriteAsync({RequestItems: request});
   };
   fns[table_short_name].batch_put = function(items) {
+    debug(TABLES[table_short_name].TableName, 'batch_put');
     if (keys.length === 0) return Promise.resolve();
     var request = {};
-    request[TABLE_PREFIX + table_short_name] = items.map(function(item) {
+    request[TABLES[table_short_name].TableName] = items.map(function(item) {
       return {PutRequest: {Item: item}};
     });
-    return dynamodb.batchWriteAsync({RequestItems: request});
+    return doc_client.batchWriteAsync({RequestItems: request});
   };
-  fns[table_short_name].create_set = dynamodb.createSet;
+  fns[table_short_name].create_set = doc_client.createSet;
+  fns[table_short_name].condition = doc_client.Condition;
   return fns;
 }, {});
+
+exports.v2.setup = function() {
+  return Promise.map(Object.keys(TABLES), function(short_name) {
+    return dynamodb.describeTableAsync({TableName: TABLES[short_name].TableName})
+    .catch(function(e) {
+      if (e.code !== 'ResourceNotFoundException') {
+        throw e;
+      }
+      return null;
+    })
+    .then(function(description) {
+      return {
+        description: description,
+        schema: TABLES[short_name]
+      }
+    });
+  })
+  .map(function(table) {
+    if (!table.description) {
+      debug('Creating table ' + table.schema.TableName);
+      // Also creates GlobalSecondaryIndexes
+      return dynamodb.createTableAsync(table.schema);
+    }
+  })
+  .catch(function(e) {
+    console.error(e.stack);
+    process.exit(1);
+  });
+};

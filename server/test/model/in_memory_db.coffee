@@ -1,7 +1,7 @@
 net = require('net')
 spawn = require('child_process').spawn
 Promise = require('bluebird')
-db = require('../../db')
+db = require('../../db').v2
 results = require('../../model/results')
 DYNAMODB_LOCAL = process.env.DYNAMODB_LOCAL or 'dynamodb-local'
 
@@ -20,7 +20,8 @@ port_available = (port, fn) ->
 exports.setup_mocha = ->
   db_process = undefined
 
-  before 'start in-memory dynamodb-local', (done) ->
+  before 'start in-memory dynamodb-local & create tables', (done) ->
+    @timeout 12000
     if process.env.NODE_ENV != 'test'
       throw new Error("Wrong NODE_ENV (#{process.env.NODE_ENV}) You should be running with NODE_ENV=test")
     dynamo_db_local = DYNAMODB_LOCAL.split(' ')[0]
@@ -33,7 +34,8 @@ exports.setup_mocha = ->
       port_available 8765, (err) ->
         if !err
           clearInterval check_started
-          done()
+          db.setup()
+          .then -> done()
     ), 100
 
   after 'stop dynamodb-local', ->
@@ -41,18 +43,16 @@ exports.setup_mocha = ->
     process.kill -db_process.pid
     db_process = undefined
 
-  beforeEach 'setup database', ->
-    @timeout 10000
-    db.setup()
-
   afterEach 'delete all items', ->
     @timeout 10000
     Promise.join \
-      db.v2.results.scan(AttributesToGet: [ 'code_id', 'started_at' ]),
-      db.v2.code.scan(AttributesToGet: [ 'app_id', 'id' ]),
-      db.v2.apps.scan(AttributesToGet: [ 'id' ])
-    .spread (results, code, apps) -> [
-      db.v2.results.batch_delete(results.Items)
-      db.v2.code.batch_delete(code.Items)
-      db.v2.apps.batch_delete(apps.Items)
+      db.results.scan(AttributesToGet: [ 'code_id', 'started_at' ]),
+      db.code.scan(AttributesToGet: [ 'app_id', 'id' ]),
+      db.apps.scan(AttributesToGet: [ 'id' ]),
+      db.access_tokens.scan(AttributesToGet: [ 'token' ])
+    .spread (results, code, apps, access_tokens) -> [
+      db.results.batch_delete(results.Items)
+      db.code.batch_delete(code.Items)
+      db.apps.batch_delete(apps.Items)
+      db.access_tokens.batch_delete(access_tokens.Items)
     ]
