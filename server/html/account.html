@@ -22,6 +22,19 @@
         margin: 50px 50px 25px 50px;
       }
 
+      #access-tokens {
+        text-align: center;
+        display: inline-block;
+        background: #F5F5F5;
+        padding: 0 2em;
+        margin-top: 1em;
+      }
+
+      #access-tokens ol {
+        padding: 0;
+        list-style: none;
+      }
+
       h2 {
         margin-top: 0;
       }
@@ -52,6 +65,14 @@
           <h2>{{displayName}}<br><span class="username">(<a target="_blank" href="{{profileUrl}}" title="{{username}} on GitHub">{{username}}</a>)</span></h2>
         </div>
         {{/requested_user}}
+        <div id="access-tokens">
+          <h3>Access Token</h3>
+          <ol>
+            {{#access_tokens}}
+              <li><pre>{{token}}</pre></li>
+            {{/access_tokens}}
+          </ol>
+        </div>
       </div>
     </paper-header-panel>
   </body>
