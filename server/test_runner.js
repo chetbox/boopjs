@@ -39,11 +39,11 @@ exports.run = function(app_id, code_id) {
       }
     });
   })
-  .spread(function(resp, body) {
+  .then(function(resp) {
     if (resp.statusCode !== 200) {
-      throw new Error('HTTP error ' + resp.statusCode + ': ' + body);
+      throw new Error('HTTP error ' + resp.statusCode + ': ' + resp.body);
     }
-    return body;
+    return resp.body;
   });
 }
 
