@@ -1,6 +1,7 @@
 var passport = require('passport');
 var expressSession = require('express-session');
 var GitHubStrategy = require('passport-github2').Strategy;
+var BearerStrategy = require('passport-http-bearer').Strategy;
 var config = require('config');
 var _ = require('underscore');
 var flash = require('connect-flash');
@@ -9,7 +10,8 @@ var Promise = require('bluebird');
 var db = require.main.require('./db');
 var email = require.main.require('./reporting/email');
 var model = {
-  access_tokens: require.main.require('./model/access_tokens')
+  access_tokens: require.main.require('./model/access_tokens'),
+  users: require.main.require('./model/users')
 };
 
 var DEBUG_AS_USER = process.env.DEBUG_AS_USER;
@@ -24,6 +26,21 @@ passport.deserializeUser(function(user_id, done) {
     .catch(done);
 });
 
+// Access Token authentication
+passport.use(new BearerStrategy(
+  function(token, done) {
+    model.access_tokens.get_user_id(token)
+    .then(function(user_id) {
+      return user_id && model.users.get(user_id);
+    })
+    .then(function(user) {
+      done(null, user);
+    })
+    .catch(done);
+  }
+));
+
+// GitHub authentication
 passport.use(new GitHubStrategy(
   _.extend(
     config.get('github-oauth'),
@@ -89,6 +106,19 @@ function login_required(req, res, next) {
     return next();
   }
   res.redirect('/auth/github?redirect=' + encodeURIComponent(req.url));
+}
+
+var access_token_required = function(req, res, next) {
+  console.log('access_token_required')
+  return passport.authenticate('bearer', { session: false })(req, res, next);
+}
+
+function login_or_access_token_required(req, res, next) {
+  if (req.isAuthenticated()) {
+    next();
+  } else {
+    access_token_required(req, res, next);
+  }
 }
 
 function ensure_user_is_admin(req, res, next) {
@@ -180,4 +210,6 @@ function setup(app, options) {
 
 exports.setup = setup;
 exports.login_required = login_required;
+exports.access_token_required = access_token_required;
+exports.login_or_access_token_required = login_or_access_token_required;
 exports.ensure_user_is_admin = ensure_user_is_admin;
