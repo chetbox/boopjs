@@ -3,7 +3,7 @@ exports.add_routes = function(app) {
   var shortid = require('shortid');
   var _ = require('underscore');
   var Promise = require('bluebird');
-  var host_address = require('config').get('host.address');
+  var host = require('config').get('host');
 
   var fail_on_error = require.main.require('./util').fail_on_error;
   var db = require.main.require('./db');
@@ -13,6 +13,7 @@ exports.add_routes = function(app) {
     devices: require.main.require('./model/devices'),
     code: require.main.require('./model/code'),
     apps: require.main.require('./model/apps'),
+    access_tokens: require.main.require('./model/access_tokens'),
   }
 
   var auth = require('./auth');
@@ -67,9 +68,10 @@ exports.add_routes = function(app) {
     function(req, res, next) {
       return Promise.join(
         model.apps.get(req.params.app_id),
-        model.code.get_all(req.params.app_id)
+        model.code.get_all(req.params.app_id),
+        model.access_tokens.get_all_for_user(req.user.id)
       )
-      .spread(function(app, code) {
+      .spread(function(app, code, access_tokens) {
         if (!app) {
           return res.sendStatus(404);
         }
@@ -79,7 +81,9 @@ exports.add_routes = function(app) {
           code: code.map(function(c) {
             c.name = c.name || 'Untitled test';
             return c;
-          })
+          }),
+          host: host,
+          access_tokens: access_tokens
         });
       })
       .catch(next);
@@ -157,7 +161,7 @@ exports.add_routes = function(app) {
                 : null;
             }
           }),
-          server: host_address,
+          server: host.address,
           app: app,
           autosave: true,
           code: _.extend(code, {
@@ -290,7 +294,7 @@ exports.add_routes = function(app) {
                 : null;
             }
           }),
-          server: host_address,
+          server: host.address,
           app: app,
           code: _.extend(code, {
             name: code.name,
