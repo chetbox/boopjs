@@ -10,6 +10,7 @@ email = require.main.require './reporting/email'
 model =
   apps: require.main.require './model/apps'
   code: require.main.require './model/code'
+test_runner = require.main.require './test_runner'
 
 middleware = require './middleware'
 auth = require './auth'
@@ -136,6 +137,8 @@ exports.add_routes = (app) ->
         model.code.get_all req.params.app_id
       .map (code) ->
         model.code.remove_latest_result code.app_id, code.id
+        .then ->
+          test_runner.run req.params.app_id, code.id
       .then ->
         res.sendStatus 200
       .catch next
