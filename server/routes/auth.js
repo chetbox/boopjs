@@ -108,10 +108,7 @@ function login_required(req, res, next) {
   res.redirect('/auth/github?redirect=' + encodeURIComponent(req.url));
 }
 
-var access_token_required = function(req, res, next) {
-  console.log('access_token_required')
-  return passport.authenticate('bearer', { session: false })(req, res, next);
-}
+var access_token_required = passport.authenticate('bearer', { session: false });
 
 function login_or_access_token_required(req, res, next) {
   if (req.isAuthenticated()) {
