@@ -84,6 +84,19 @@
         font-weight: 300;
       }
 
+      #app-update > .info {
+        max-width: 30em;
+        text-align: left;
+        display: inline-block;
+        background: #F5F5F5;
+        padding: 1em 2em;
+        margin: 0 2em;
+      }
+
+      #app-update code {
+        white-space: normal;
+      }
+
       #actions {
         margin-bottom: 1.5em;
       }
@@ -215,6 +228,10 @@
           <form method="PUT" action="/api/v1/app/{{app.id}}"><!-- jQuery does the PUT -->
             <input type="hidden" name="app_url" />
           </form>
+          <h4>or</h4>
+          <div class="info">
+            <code>curl -v -X PUT -H "Authorization: Bearer {{access_tokens.[0]}}" {{host.protocol}}://{{host.address}}/api/v1/app/{{app.id}} -d "app_url=$URL_TO_YOUR_APP"</code>
+          </div>
         </div>
       </div>
       <div id="fab">

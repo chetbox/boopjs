@@ -3,7 +3,7 @@ exports.add_routes = function(app) {
   var shortid = require('shortid');
   var _ = require('underscore');
   var Promise = require('bluebird');
-  var host_address = require('config').get('host.address');
+  var host = require('config').get('host');
 
   var db = require.main.require('./db');
   var test_runner = require.main.require('./test_runner');
@@ -12,6 +12,7 @@ exports.add_routes = function(app) {
     devices: require.main.require('./model/devices'),
     code: require.main.require('./model/code'),
     apps: require.main.require('./model/apps'),
+    access_tokens: require.main.require('./model/access_tokens'),
   }
 
   var auth = require('./auth');
@@ -62,13 +63,14 @@ exports.add_routes = function(app) {
 
   app.get('/app/:app_id',
     auth.login_required,
-    middleware.middleware.check_user_can_access_app('app_id'),
+    middleware.check_user_can_access_app('app_id'),
     function(req, res, next) {
       return Promise.join(
         model.apps.get(req.params.app_id),
-        model.code.get_all(req.params.app_id)
+        model.code.get_all(req.params.app_id),
+        model.access_tokens.get_all_for_user(req.user.id)
       )
-      .spread(function(app, code) {
+      .spread(function(app, code, access_tokens) {
         if (!app) {
           return res.sendStatus(404);
         }
@@ -78,7 +80,9 @@ exports.add_routes = function(app) {
           code: code.map(function(c) {
             c.name = c.name || 'Untitled test';
             return c;
-          })
+          }),
+          host: host,
+          access_tokens: access_tokens
         });
       })
       .catch(next);
@@ -87,7 +91,7 @@ exports.add_routes = function(app) {
 
   app.delete('/app/:app_id',
     auth.login_required,
-    middleware.middleware.check_user_can_access_app('app_id'),
+    middleware.check_user_can_access_app('app_id'),
     function(req, res, next) {
       db.apps().find(req.params.app_id)
       .then(function(app) {
@@ -120,7 +124,7 @@ exports.add_routes = function(app) {
 
   app.post('/app/:app_id/test',
     auth.login_required,
-    middleware.middleware.check_user_can_access_app('app_id'),
+    middleware.check_user_can_access_app('app_id'),
     function(req, res, next) {
       var new_code_id = shortid.generate();
       model.code.create(req.params.app_id)
@@ -133,7 +137,7 @@ exports.add_routes = function(app) {
 
   app.get('/app/:app_id/test/:code_id/edit',
     auth.login_required,
-    middleware.middleware.check_user_can_access_app('app_id'),
+    middleware.check_user_can_access_app('app_id'),
     ensure_code_belongs_to_app,
     function(req, res, next) {
       Promise.join(
@@ -156,7 +160,7 @@ exports.add_routes = function(app) {
                 : null;
             }
           }),
-          server: host_address,
+          server: host.address,
           app: app,
           autosave: true,
           code: _.extend(code, {
@@ -171,7 +175,7 @@ exports.add_routes = function(app) {
 
   app.get('/app/:app_id/test/:code_id/reports',
     auth.login_required,
-    middleware.middleware.check_user_can_access_app('app_id'),
+    middleware.check_user_can_access_app('app_id'),
     ensure_code_belongs_to_app,
     function(req, res, next) {
       Promise.join(
@@ -199,7 +203,7 @@ exports.add_routes = function(app) {
 
   app.get('/app/:app_id/test/:code_id/report/:started_at',
     auth.login_required,
-    middleware.middleware.check_user_can_access_app('app_id'),
+    middleware.check_user_can_access_app('app_id'),
     ensure_code_belongs_to_app,
     function(req, res, next) {
       Promise.join(
@@ -234,7 +238,7 @@ exports.add_routes = function(app) {
 
   app.post('/app/:app_id/test/:code_id/run',
     auth.login_required,
-    middleware.middleware.check_user_can_access_app('app_id'),
+    middleware.check_user_can_access_app('app_id'),
     ensure_code_belongs_to_app,
     function(req, res, next) {
       test_runner.run(req.params.app_id, req.params.code_id)
@@ -247,7 +251,7 @@ exports.add_routes = function(app) {
 
   app.post('/app/:app_id/run',
     auth.login_required,
-    middleware.middleware.check_user_can_access_app('app_id'),
+    middleware.check_user_can_access_app('app_id'),
     function(req, res, next) {
       return db.code().findAll(req.params.app_id)
       .then(function(code) {
@@ -289,7 +293,7 @@ exports.add_routes = function(app) {
                 : null;
             }
           }),
-          server: host_address,
+          server: host.address,
           app: app,
           code: _.extend(code, {
             name: code.name,
@@ -304,7 +308,7 @@ exports.add_routes = function(app) {
 
   app.delete('/app/:app_id/test/:code_id',
     auth.login_required,
-    middleware.middleware.check_user_can_access_app('app_id'),
+    middleware.check_user_can_access_app('app_id'),
     ensure_code_belongs_to_app,
     function(req, res, next) {
       model.code.delete(req.params.app_id, req.params.code_id)
@@ -317,7 +321,7 @@ exports.add_routes = function(app) {
 
   app.get('/app/:app_id/test/:code_id/code',
     auth.login_required, // TODO: return forbidden if no access
-    middleware.middleware.check_user_can_access_app('app_id'),
+    middleware.check_user_can_access_app('app_id'),
     ensure_code_belongs_to_app,
     function(req, res, next) {
       model.code.get(req.params.app_id, req.params.code_id)
@@ -334,7 +338,7 @@ exports.add_routes = function(app) {
 
   app.put('/app/:app_id/test/:code_id/edit/:code_key',
     auth.login_required, // TODO: return forbidden if no access
-    middleware.middleware.check_user_can_access_app('app_id'),
+    middleware.check_user_can_access_app('app_id'),
     ensure_code_belongs_to_app,
     check_allowed_code_update('code_key'),
     function(req, res, next) {
