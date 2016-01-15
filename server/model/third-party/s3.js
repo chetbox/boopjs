@@ -1,7 +1,7 @@
 var config = require('config');
 var AWS = require('aws-sdk');
-var s3 = new AWS.S3(config.get('aws.s3'));
 var Promise = require('bluebird');
+var s3 = Promise.promisifyAll(new AWS.S3(config.get('aws.s3')));
 var request = Promise.promisifyAll(require('request'));
 var fs = Promise.promisifyAll(require('fs'));
 var os = require('os');
@@ -21,7 +21,7 @@ function s3_url(bucket, file_path) {
 }
 
 module.exports.client_upload_request = function(bucket, file_path, content_type) {
-  return Promise.promisify(s3.getSignedUrl, s3)('putObject', {
+  return s3.getSignedUrlAsync('putObject', {
     Bucket: bucket,
     Key: file_path,
     Expires: 60,
