@@ -12,23 +12,25 @@ describe 'model/access_tokens', ->
 
   describe 'create/get', ->
 
-    it 'creates, get', ->
-      second_token = undefined
+    it 'creates & gets user from token', ->
       Promise.all [
-        model.create 'user_id_create'
-        model.create 'user_id_create'
-        model.create 'user_id_create'
+        model.create 'user_id_create_a'
+        model.create 'user_id_create_b'
+        model.create 'user_id_create_c'
       ]
       .spread (first, second, third) ->
-        second_token = second.token
-        model.get second.token
+        model.get_user_id second
       .then (second) ->
-        assert.deepEqual
-          token: second_token
-          user_id: 'user_id_create'
-        , second
+        assert.equal second, 'user_id_create_b'
 
-    it 'get all tokens for a user', ->
+    it 'returns falsey if token not found', ->
+      model.create 'user_id_not_found'
+      .then ->
+        model.get_user_id 'this_is_an_invalid_token'
+      .then (u) ->
+        assert !u
+
+    it 'gets all tokens for a user', ->
       Promise.all [
         model.create 'user_id_all_a'
         model.create 'user_id_all_b'
@@ -38,7 +40,7 @@ describe 'model/access_tokens', ->
         model.get_all_for_user ('user_id_all_a')
       .then (tokens_a) ->
         assert.equal tokens_a.length, 2
-        assert.notEqual tokens_a[0].token, tokens_a[1].token
+        assert.notEqual tokens_a[0], tokens_a[1]
 
     describe 'get or create', ->
       it 'gets existing', ->
@@ -51,7 +53,7 @@ describe 'model/access_tokens', ->
           model.get_or_create_for_user ('user_id_all_a')
         .then (tokens_a) ->
           assert.equal tokens_a.length, 2
-          assert.notEqual tokens_a[0].token, tokens_a[1].token
+          assert.notEqual tokens_a[0], tokens_a[1]
 
       it 'creates a new token if one doesn\'t exist', ->
         Promise.all [
@@ -63,4 +65,4 @@ describe 'model/access_tokens', ->
           model.get_or_create_for_user ('user_id_all_c')
         .then (tokens_c) ->
           assert.equal tokens_c.length, 1
-          assert tokens_c[0].token
+          assert tokens_c[0]
