@@ -1,4 +1,4 @@
-shortid = require 'shortid'
+crypto = require 'crypto'
 debug = require('debug')('chetbot/' + require('path').relative(process.cwd(), __filename).replace(/\.(js|coffee)$/, ''))
 
 db = require('../db').v2.access_tokens
@@ -6,7 +6,7 @@ db = require('../db').v2.access_tokens
 exports.create = (user_id) ->
   debug 'create', user_id
   item =
-    token: shortid.generate()
+    token: crypto.randomBytes(16).toString('hex')
     user_id: user_id
   db.put
     Item: item
