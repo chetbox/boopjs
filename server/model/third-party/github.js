@@ -9,10 +9,10 @@ exports.user = function(username) {
     },
     json: true
   })
-  .spread(function(resp, body) {
+  .spread(function(resp) {
     if (resp.statusCode !== 200) {
-      throw 'HTTP error ' + resp.statusCode + ': ' + body;
+      throw 'HTTP error ' + resp.statusCode + ': ' + resp.body;
     }
-    return body;
+    return resp.body;
   });
 }
