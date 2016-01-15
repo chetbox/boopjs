@@ -11,13 +11,15 @@ exports.create = (user_id) ->
   db.put
     Item: item
   .then ->
-    item
+    item.token
 
-exports.get = (token) ->
-  debug 'get', token
+exports.get_user_id = (token) ->
+  debug 'get_user_id', token
   db.get
     Key:
       token: token
+  .then (t) ->
+    t && t.user_id
 
 exports.get_all_for_user = (user_id) ->
   debug 'get_all_for_user', user_id
@@ -27,7 +29,7 @@ exports.get_all_for_user = (user_id) ->
     ExpressionAttributeValues:
       ':user_id': user_id
   .then (user_tokens) ->
-    user_tokens.Items
+    user_tokens.Items.map (t) -> t.token
 
 exports.get_or_create_for_user = (user_id) ->
   debug 'get_or_create_for_user', user_id
