@@ -1,0 +1,18 @@
+<script src="/components/konami-js/konami.js"></script>
+<link href="//cdn.rawgit.com/noelboss/featherlight/1.3.5/release/featherlight.min.css" type="text/css" rel="stylesheet" />
+<script src="//cdn.rawgit.com/noelboss/featherlight/1.3.5/release/featherlight.min.js" type="text/javascript" charset="utf-8"></script>
+<script>
+  var easter_egg = new Konami();
+  easter_egg.code = function() {
+    $.get('http://api.giphy.com/v1/gifs/search?q=boop&api_key=dc6zaTOxFJmzC')
+    .then(function(data) {
+      var image_urls = data.data.map(function(img) {
+        return img.images.downsized_large.url;
+      });
+      var random_image = image_urls[Math.floor(Math.random() * image_urls.length)];
+      var $img = $('<img>').attr('src', random_image);
+      $.featherlight($img);
+    });
+  };
+  easter_egg.load();
+</script>
