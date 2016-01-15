@@ -100,7 +100,7 @@ exports.add_routes = (app) ->
 
   app.put '/api/v1/app/:app_id',
     auth.login_or_access_token_required,
-    middleware.middleware.check_user_can_access_app 'app_id',
+    middleware.check_user_can_access_app 'app_id'
     (req, res, next) ->
       app_id = req.params.app_id
       user_apk_url = req.body.app_url
