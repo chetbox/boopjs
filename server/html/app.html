@@ -320,6 +320,8 @@
     }
   </script>
 
-  {{> auto-refresh}}
+  {{#app.running.values}}
+    {{> auto-refresh}}
+  {{/app.running.values}}
 
 </html>
