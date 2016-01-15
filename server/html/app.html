@@ -97,6 +97,11 @@
         white-space: normal;
       }
 
+      #app-update code span.info {
+        border-bottom: 2px solid #c7c7c7;
+        cursor: default;
+      }
+
       #actions {
         margin-bottom: 1.5em;
       }
@@ -230,7 +235,7 @@
           </form>
           <h4>or</h4>
           <div class="info">
-            <code>curl -v -X PUT -H "Authorization: Bearer {{access_tokens.[0]}}" {{host.protocol}}://{{host.address}}/api/v1/app/{{app.id}} -d "app_url=$URL_TO_YOUR_APP"</code>
+            <code>curl -v -X PUT -H "Authorization: Bearer <span class="info access-token" title="Your access token">{{access_tokens.[0]}}</span>" {{host.protocol}}://{{host.address}}/api/v1/app/{{app.id}} -d "app_url=<span class="info url-to-app" title="Replace this with a URL to your app">$URL_TO_YOUR_APP</span>"</code>
           </div>
         </div>
       </div>
