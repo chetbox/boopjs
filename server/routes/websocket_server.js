@@ -151,9 +151,12 @@ exports.add_routes = function(app) {
           .then(function(app) {
             if (app && app.pending_report && !app.running) {
               debug('Sending email report');
-              reporting.test_reports.app_results(app.id)
-              .then(function(message) {
-                return reporting.email.send_to_admins(message); // TODO: send to admins *of app*
+              Promise.join(
+                model.users.emails_for_users(app.admins),
+                reporting.test_reports.app_results(app.id)
+              )
+              .spread(function(recipients, message) {
+                return reporting.email.send_to(recipients, message);
               });
               return null; // The websocket should not wait for emails or report email errors
             }

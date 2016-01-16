@@ -106,7 +106,10 @@ describe 'model/results', ->
         results.set_report key, [ null ]
       .then ->
         results.update key, success: true
-      .then ->
+      .then (app_updated) ->
+        assert.equal app_updated.id, APP.id
+        assert.deepEqual app_updated.successful.values, [ 'code_empty_test' ]
+        assert !app_updated.running
         [
           assert_results [{
             code_id: 'code_empty_test'
@@ -136,26 +139,30 @@ describe 'model/results', ->
           error: 'forced crash'
           stacktrace: 'java.lang.RuntimeException'
           type: 'unhandled'
-      .then -> [
-        assert_results [{
-          code_id: 'code_unhandled_exception'
-          started_at: 123456
-          app: APP
-          report: [ null ]
-          error:
-            description: 'forced crash'
-            stacktrace: 'java.lang.RuntimeException'
-        }]
-        assert_code [{
-          app_id: APP.id
-          id: 'code_unhandled_exception'
-          latest_result:
+      .then (app_updated) ->
+        assert.equal app_updated.id, APP.id
+        assert.deepEqual app_updated.failed.values, [ 'code_unhandled_exception' ]
+        assert !app_updated.running
+        [
+          assert_results [{
+            code_id: 'code_unhandled_exception'
             started_at: 123456
+            app: APP
+            report: [ null ]
             error:
               description: 'forced crash'
               stacktrace: 'java.lang.RuntimeException'
-        }]
-      ]
+          }]
+          assert_code [{
+            app_id: APP.id
+            id: 'code_unhandled_exception'
+            latest_result:
+              started_at: 123456
+              error:
+                description: 'forced crash'
+                stacktrace: 'java.lang.RuntimeException'
+          }]
+        ]
 
     it 'successful test run', ->
       key = undefined
@@ -271,37 +278,43 @@ describe 'model/results', ->
           error: 'Error on line 2'
           stacktrace: 'Line 2\nError')
       ]
-      .spread ->
-        results.update key, success: false
-      .then -> [
-        assert_results [{
-          code_id: 'code_line_error'
-          started_at: 123456
-          app: APP
-          report: [
-            null
-            { source: 'one()', success: result: 'First.' }
-            { source: 'two()', error: { description: 'Error on line 2', stacktrace: 'Line 2\nError' } }
-            { source: 'three()' }
-          ]
-          error:
-            description: 'Error on line 2'
-            stacktrace: 'Line 2\nError'
-            line: 2
-            source: 'two()'
-        }]
-        assert_code [{
-          id: 'code_line_error'
-          app_id: APP.id
-          latest_result:
+      .spread (nada, app_updated) -> [
+        app_updated,
+        results.update key, success: false,
+      ]
+      .spread (app_updated, nada) ->
+        assert.equal app_updated.id, APP.id
+        assert.deepEqual app_updated.failed.values, [ 'code_line_error' ]
+        assert !app_updated.running
+        [
+          assert_results [{
+            code_id: 'code_line_error'
             started_at: 123456
+            app: APP
+            report: [
+              null
+              { source: 'one()', success: result: 'First.' }
+              { source: 'two()', error: { description: 'Error on line 2', stacktrace: 'Line 2\nError' } }
+              { source: 'three()' }
+            ]
             error:
               description: 'Error on line 2'
               stacktrace: 'Line 2\nError'
               line: 2
               source: 'two()'
-        }]
-      ]
+          }]
+          assert_code [{
+            id: 'code_line_error'
+            app_id: APP.id
+            latest_result:
+              started_at: 123456
+              error:
+                description: 'Error on line 2'
+                stacktrace: 'Line 2\nError'
+                line: 2
+                source: 'two()'
+          }]
+        ]
 
     it 'update received after a test has succeeded', ->
       key = undefined
