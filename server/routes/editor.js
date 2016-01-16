@@ -249,25 +249,6 @@ exports.add_routes = function(app) {
     }
   );
 
-  app.post('/app/:app_id/run',
-    auth.login_required,
-    middleware.check_user_can_access_app('app_id'),
-    function(req, res, next) {
-      return db.code().findAll(req.params.app_id)
-      .then(function(code) {
-        return Promise.all(
-          code.map(function(c) {
-            return test_runner.run(req.params.app_id, c.id);
-          })
-        );
-      })
-      .then(function() {
-        res.sendStatus(200);
-      })
-      .catch(next);
-    }
-  );
-
   // Page opened by the test runner
   app.get('/app/:app_id/test/:code_id/autorun/:started_at',
     ensure_code_belongs_to_app,

@@ -173,14 +173,9 @@
       {{/user}}
       <div class="content">
         {{#app}}
-        <div id="header">
-          {{> app-info}}
-        </div>
-        <div id="actions">
-          <a href="javascript:run_all('{{id}}')">
-            <paper-button raised><iron-icon icon="av:play-arrow"></iron-icon>Run all</paper-button>
-          </a>
-        </div>
+          <div id="header">
+            {{> app-info}}
+          </div>
         {{/app}}
         <table id="code">
           <tbody>
@@ -304,18 +299,6 @@
       ga('send', 'event', 'button', 'click', 'run');
 
       $.ajax('/app/' + app_id + '/test/' + code_id + '/run', {
-        method: 'POST'
-      }).done(function() {
-        location.reload();
-      }).fail(function(xhr, status, e) {
-        alert(e.toString());
-      });
-    }
-
-    function run_all(app_id) {
-      ga('send', 'event', 'button', 'click', 'run all');
-
-      $.ajax('/app/' + app_id + '/run', {
         method: 'POST'
       }).done(function() {
         location.reload();
