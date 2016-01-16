@@ -12,6 +12,16 @@ function send(message) {
   });
 }
 
+exports.send_to = function(recipients, message) {
+  if (!recipients) {
+    throw new Error('No recipients specified');
+  }
+  return send(_.extend(message, {
+    to: recipients,
+    bcc: config.email.admins
+  }));
+}
+
 exports.send_to_admins = function(message) {
   return send(_.extend(message, {
     to: config.email.admins
