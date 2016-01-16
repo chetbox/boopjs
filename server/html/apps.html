@@ -63,7 +63,8 @@
 
       ul#apps .info {
         font-size: 0.8em;
-        opacity: 0.8;
+        opacity: 0.5;
+        font-weight: 300;
       }
 
       ul#apps .version {
@@ -146,9 +147,9 @@
             <a href="/app/{{id}}">
               <span class="graph-data">{{count failed}},{{count not_run}},{{count running}},{{count successful}}</span>
               <img src="{{icon}}" title="{{count failed}} failed, {{count successful}} successful, {{count running}} running, {{count not_run}} not run">
-              <span class="details">
+              <span class="details" title="{{identifier}}">
                 <h4>{{name}} <span class="version">{{version}}</span></h4>
-                <span class="info">{{identifier}}</span>
+                <span class="info">{{#updated_at}}Updated {{date_relative .}}{{/updated_at}}</span>
               </span>
             </a>
           </li>
