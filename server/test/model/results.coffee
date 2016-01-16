@@ -1,4 +1,5 @@
-assert = require('assert')
+assert = require 'assert'
+_ = require 'underscore'
 db = require('../../db').v2
 
 APP =
@@ -158,7 +159,7 @@ describe 'model/results', ->
 
     it 'successful test run', ->
       key = undefined
-      results.create('code_successful', 123456, APP)
+      results.create 'code_successful', 123456, APP
       .then (result) ->
         key = results.key result
         results.set_report key, [
@@ -177,7 +178,10 @@ describe 'model/results', ->
       ]
       .spread ->
         results.update key, success: true
-      .then ->
+      .then (app_updated) ->
+        assert.equal app_updated.id, APP.id
+        assert.deepEqual app_updated.successful.values, [ 'code_successful' ]
+        assert !app_updated.running
         assert_results [{
           code_id: 'code_successful'
           started_at: 123456

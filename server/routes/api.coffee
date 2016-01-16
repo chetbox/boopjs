@@ -136,11 +136,7 @@ exports.add_routes = (app) ->
         existing_app.updated_at = Date.now()
         db.apps().insert existing_app
       .then ->
-        model.code.get_all req.params.app_id
-      .map (code) ->
-        model.code.remove_latest_result code.app_id, code.id
-        .then ->
-          test_runner.run req.params.app_id, code.id
+        test_runner.run_all app_id
       .then ->
         res.sendStatus 200
       .catch next
