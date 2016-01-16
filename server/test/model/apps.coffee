@@ -154,3 +154,20 @@ describe 'model/apps', ->
         model.remove_code app.id, 'code_id_successful'
         .then ->
           assert_status app.id, {}
+
+  describe 'set pending report', ->
+
+    beforeEach 'create app', ->
+      model.create_empty 'user_id_create_app'
+      .then (_app) ->
+        app = _app
+
+    it 'sets the report as pending', ->
+      model.get_pending_report app.id
+      .then (pending) ->
+        assert !pending
+      model.set_pending_report app.id, true
+      .then ->
+        model.get_pending_report app.id
+      .then (pending) ->
+        assert pending
