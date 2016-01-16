@@ -11,6 +11,7 @@ exports.add_routes = function(app) {
     test_reports: require.main.require('./reporting/test-reports'),
   };
   var model = {
+    users: require.main.require('./model/users'),
     results: require.main.require('./model/results'),
     devices: require.main.require('./model/devices')
   };
@@ -152,7 +153,7 @@ exports.add_routes = function(app) {
             if (app && app.pending_report && !app.running) {
               debug('Sending email report');
               Promise.join(
-                model.users.emails_for_users(app.admins),
+                model.users.emails_for_users(app.admins.values),
                 reporting.test_reports.app_results(app.id)
               )
               .spread(function(recipients, message) {
