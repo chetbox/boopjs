@@ -50,6 +50,9 @@ exports.update_result = (result) ->
       '#other_status_2': other_statuses[2]
     ExpressionAttributeValues:
       ':code_ids': db.create_set [ result.code_id ]
+    ReturnValues: 'ALL_NEW'
+  .then (app) ->
+    app.Attributes
 
 exports.remove_code = (id, code_id) ->
   debug 'remove_code', id, code_id
@@ -60,7 +63,7 @@ exports.remove_code = (id, code_id) ->
       ':code_id': db.create_set [ code_id ]
 
 exports.set_pending_report = (id, pending) ->
-  debug 'set_pending_report', pending
+  debug 'set_pending_report', id, pending
   db.update
     Key: { id: id }
     UpdateExpression: 'SET pending_report = :pending'
@@ -68,6 +71,7 @@ exports.set_pending_report = (id, pending) ->
       ':pending': !!pending
 
 exports.get_pending_report = (id) ->
+  debug 'get_pending_report', id
   db.get
     Key: { id: id }
     AttributesToGet: [ 'pending_report' ]
