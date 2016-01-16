@@ -75,6 +75,7 @@ exports.add_routes = (app) ->
           app_url: modified_apk_url
           publicKey: appetize_resp.publicKey
           privateKey: appetize_resp.privateKey
+          updated_at: Date.now()
         }, apk_info
         [
           db.users().find req.user.id
@@ -132,6 +133,7 @@ exports.add_routes = (app) ->
         existing_app.privateKey = appetize_resp.privateKey # ensure this is set
         existing_app.publicKey = appetize_resp.publicKey # ensure this is set
         existing_app = _.extend existing_app, apk_info
+        existing_app.updated_at = Date.now()
         db.apps().insert existing_app
       .then ->
         model.code.get_all req.params.app_id
