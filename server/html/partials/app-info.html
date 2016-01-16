@@ -1,4 +1,8 @@
 <style>
+  #app-info {
+    margin-bottom: 1em;
+  }
+
   #app-info > * {
     display: inline-block;
   }
@@ -41,16 +45,18 @@
     margin-left: 1em;
     margin-bottom: 1em;
     text-align: left;
+    cursor: default;
   }
 
-  #app-info h2.app-name .identifier {
-    font-size: 0.67em;
+  #app-info h2.app-name .updated {
+    font-size: 0.55em;
     opacity: 0.5;
+    display: inline-block;
   }
 
   #app-info h2.app-name .version {
     opacity: 0.5;
-    margin-left: 0.5em;
+    margin-left: 0.25em;
     font-weight: 100;
   }
 </style>
@@ -61,6 +67,6 @@
     <span class="graph-data">{{count failed.values}},{{count not_run.values}},{{count running.values}},{{count successful.values}}</span>
   </div>
   <div class="details">
-    <h2 class="app-name">{{name}} <span class="version">{{version}}</span><br><span class="identifier">{{identifier}}</span></h2>
+    <h2 class="app-name" title="{{identifier}}">{{name}} <span class="version">{{version}}</span><br><span class="updated">{{#updated_at}}Updated {{date_relative .}}{{/updated_at}}</span></h2>
   </div>
 </div>
