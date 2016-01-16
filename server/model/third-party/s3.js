@@ -25,7 +25,7 @@ module.exports.client_upload_request = function(bucket, file_path, content_type)
     Bucket: bucket,
     Key: file_path,
     Expires: 60,
-    ACL: 'public-read',
+    ACL: 'public-read', // We should be able to make this private as long as the S3 user can read
     ContentType: content_type || undefined
   })
   .then(function(data) {

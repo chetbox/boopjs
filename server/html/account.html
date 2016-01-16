@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>My Account - boop.js</title>
+    <title>{{user.username}} - boop.js</title>
     <link rel="icon" href="/favicon.ico">
 
     {{> material-design}}
@@ -20,6 +20,26 @@
         width: 100px;
         border-radius: 50px;
         margin: 50px 50px 25px 50px;
+      }
+
+      #emails ol {
+        list-style: none;
+        padding: 0;
+        font-weight: 300;
+      }
+
+      #emails li {
+        opacity: 0.5;
+        text-transform: lowercase;
+      }
+
+      #emails li iron-icon {
+        opacity: 0.5;
+        margin-right: 0.25em;
+      }
+
+      #emails .address {
+        vertical-align: middle;
       }
 
       #access-tokens {
@@ -60,10 +80,20 @@
       {{/user}}
       <div class="content">
         {{#requested_user}}
-        <div id="header">
-          <img id="avatar" src="{{avatarUrl}}" title="{{displayName}} ({{username}})"/>
-          <h2>{{displayName}}<br><span class="username">(<a target="_blank" href="{{profileUrl}}" title="{{username}} on GitHub">{{username}}</a>)</span></h2>
-        </div>
+          <div id="header">
+            <img id="avatar" src="{{avatarUrl}}" title="{{displayName}} ({{username}})"/>
+            <h2>{{displayName}}<br><span class="username">(<a target="_blank" href="{{profileUrl}}" title="{{username}} on GitHub">{{username}}</a>)</span></h2>
+          </div>
+          <div id="emails">
+            <ol>
+              {{#emails}}
+                <li>
+                    <iron-icon icon="communication:email"></iron-icon>
+                    <span class="address">{{.}}</span>
+                </li>
+              {{/emails}}
+            </ol>
+          </div>
         {{/requested_user}}
         <div id="access-tokens">
           <h3>Access Token</h3>

@@ -6,10 +6,15 @@ exports.add_routes = function(app) {
   var Promise = require('bluebird');
 
   var db = require.main.require('./db');
+  var reporting = {
+    email: require.main.require('./reporting/email'),
+    test_reports: require.main.require('./reporting/test-reports'),
+  };
   var model = {
+    users: require.main.require('./model/users'),
     results: require.main.require('./model/results'),
     devices: require.main.require('./model/devices')
-  }
+  };
 
   var auth = require('./auth');
 
@@ -144,6 +149,19 @@ exports.add_routes = function(app) {
         if (ws.result_key) {
           debug('device: saving response');
           model.results.update(ws.result_key, message)
+          .then(function(app) {
+            if (app && app.pending_report && !app.running) {
+              debug('Sending email report');
+              Promise.join(
+                model.users.emails_for_users(app.admins.values),
+                reporting.test_reports.app_results(app.id)
+              )
+              .spread(function(recipients, message) {
+                return reporting.email.send_to(recipients, message);
+              });
+              return null; // The websocket should not wait for emails or report email errors
+            }
+          })
           .catch(fail_on_error(client));
         }
 
