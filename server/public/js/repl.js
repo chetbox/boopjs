@@ -1,4 +1,4 @@
-function setup_repl(server, device_id, id, callbacks) {
+function setup_repl(server, device_id, app_id, id, callbacks) {
   $repl = $('#' + id);
 
   var repl = ace.edit(id);
@@ -89,7 +89,7 @@ function setup_repl(server, device_id, id, callbacks) {
     add_to_history(src_to_execute);
 
     // execute code
-    run_script(server, device_id, [{line: 1, source: src_to_execute}], {
+    run_script(server, device_id, app_id, null, null, [{line: 1, source: src_to_execute}], {
       onResult: show_result('result', 'result', '// '),
       onError: show_result('error', 'error', '// Error: '),
       onLogMessage: show_result('log', function(msg) { return msg.level; }, '// ')

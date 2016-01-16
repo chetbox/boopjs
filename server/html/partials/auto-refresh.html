@@ -1,0 +1,23 @@
+<script src="/components/ifvisible.js/src/ifvisible.min.js"></script>
+<script>
+  var auto_refresh_enabled = false;
+  var loaded_at = Date.now();
+  function start_auto_refresh() {
+    auto_refresh_enabled = true;
+    var refresh_period_s = 15;
+    ifvisible.onEvery(refresh_period_s, function() {
+      if (auto_refresh_enabled) {
+        location.reload();
+      }
+    });
+    ifvisible.on('wakeup', function() {
+      if (auto_refresh_enabled && (Date.now() - loaded_at >= refresh_period_s * 1000)) {
+        location.reload();
+      }
+    });
+  }
+  function stop_auto_refresh() {
+    auto_refresh_enabled = false;
+  }
+  start_auto_refresh();
+</script>

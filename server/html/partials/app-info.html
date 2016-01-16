@@ -1,0 +1,72 @@
+<style>
+  #app-info {
+    margin-bottom: 1em;
+  }
+
+  #app-info > * {
+    display: inline-block;
+  }
+
+  #app-info .icon {
+    position: relative;
+    top: 1em;
+    width: 3.5em;
+    height: 3.5em;
+    font-size: 1.5em;
+  }
+
+  #app-info .icon .app-icon {
+    position: absolute;
+    left: 0.75em;
+    top: 0.75em;
+    height: 2em;
+    width: 2em;
+    -webkit-filter: drop-shadow(0 0 1px rgba(0,0,0,0.5));
+    filter: drop-shadow(0 0 1px rgba(0,0,0,0.5));
+  }
+
+  #app-info .icon .graph-data {
+    display: none;
+  }
+
+  #app-info .icon .peity {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 3.5em;
+    height: 3.5em;
+    z-index: -1;
+    -webkit-filter: drop-shadow(0 0 1px rgba(0,0,0,0.2));
+    filter: drop-shadow(0 0 1px rgba(0,0,0,0.2));
+  }
+
+  #app-info h2.app-name {
+    display: inline-block;
+    margin-left: 1em;
+    margin-bottom: 1em;
+    text-align: left;
+    cursor: default;
+  }
+
+  #app-info h2.app-name .updated {
+    font-size: 0.55em;
+    opacity: 0.5;
+    display: inline-block;
+  }
+
+  #app-info h2.app-name .version {
+    opacity: 0.5;
+    margin-left: 0.25em;
+    font-weight: 100;
+  }
+</style>
+
+<div id="app-info">
+  <div class="icon" title="{{count failed.values}} failed, {{count successful.values}} successful, {{count running.values}} running, {{count not_run.values}} not run">
+    <img class="app-icon" src="{{icon}}" />
+    <span class="graph-data">{{count failed.values}},{{count not_run.values}},{{count running.values}},{{count successful.values}}</span>
+  </div>
+  <div class="details">
+    <h2 class="app-name" title="{{identifier}}">{{name}} <span class="version">{{version}}</span><br><span class="updated">{{#updated_at}}Updated {{date_relative .}}{{/updated_at}}</span></h2>
+  </div>
+</div>

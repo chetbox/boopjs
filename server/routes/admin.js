@@ -1,8 +1,9 @@
 exports.add_routes = function(app) {
 
+  var db = require.main.require('./db');
+  var github_api = require.main.require('./model/third-party/github');
+
   var auth = require('./auth');
-  var db = require('./db');
-  var github_api = require('./github_api');
 
   app.get('/admin',
     auth.login_required,

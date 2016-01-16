@@ -1,0 +1,9 @@
+{
+  "aws": {
+    "dynamodb": {
+      "accessKeyId": "TESTS",
+      "secretAccessKey": "TESTS",
+      "endpoint": "http://localhost:8765"
+    }
+  }
+}

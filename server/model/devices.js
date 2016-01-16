@@ -1,7 +1,9 @@
 var Promise = require('bluebird');
 var shortid = require('shortid');
 
-var db = require('./db');
+var db = require('../db');
+
+// TODO: delete devices when inactive
 
 exports.create_device = function(options) {
   var device_id = shortid.generate();
@@ -16,6 +18,9 @@ exports.create_device = function(options) {
 };
 
 exports.check_device_exists = function(device_id) {
+  if (!device_id) {
+    return Promise.reject('Device not specified');
+  }
   return db.devices().find(device_id)
   .then(function(device) {
     if (!device) {
@@ -29,7 +34,7 @@ exports.check_device_access = function(device_id, user) {
   return exports.check_device_exists(device_id)
   .then(function(device) {
     if (device.skip_auth) {
-      return;
+      return device;
     }
 
     if (!user) {
@@ -37,7 +42,7 @@ exports.check_device_access = function(device_id, user) {
     }
 
     if (device.users && device.users.indexOf(user.id) >= 0) {
-      return;
+      return device;
     }
 
     throw new Error('User cannot access this device');

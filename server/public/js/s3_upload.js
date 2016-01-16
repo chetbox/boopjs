@@ -4,6 +4,14 @@ function s3_upload(file_input, target_input, opts) {
     if (opts.google_analytics) { return opts.google_analytics(a,b,c,d,e); }
   }
 
+  function click() {
+    if (opts.click) { opts.click(); }
+  }
+
+  function change(file) {
+    if (opts.change) { opts.change(file); }
+  }
+
   function progress(msg) {
     if (opts.progress) { opts.progress(msg); }
   }
@@ -12,7 +20,13 @@ function s3_upload(file_input, target_input, opts) {
     if (opts.error) { opts.error(msg); }
   }
 
-  $(file_input).on('change', function(e) {
+  function success(response) {
+    if (opts.success) { opts.success(response); }
+  }
+
+  $(file_input)
+  .on('click', click)
+  .on('change', function(e) {
     ga('send', 'event', 'app-upload', 'start');
 
     $(e.target).hide();
@@ -20,6 +34,9 @@ function s3_upload(file_input, target_input, opts) {
     progress('Requesting upload...');
 
     var file = e.target.files[0];
+
+    change(file);
+
     if (!file) {
       $(target_input).val('');
       ga('send', 'event', 'app-upload', 'no-file');
@@ -27,9 +44,13 @@ function s3_upload(file_input, target_input, opts) {
     }
 
     $.ajax({
-      url: '/sign_s3?file_type=' + file.type,
-      method: 'GET',
-      dataType: 'json'
+      url: '/api/v1/s3/sign_upload?file_type=' + file.type,
+      method: 'POST',
+      dataType: 'json',
+      error: function(xhr) {
+        console.error(xhr);
+        error('Error ' + xhr.status + ': ' + xhr.responseText);
+      }
     }).done(function(req) {
       ga('send', 'event', 'app-upload', 'request-granted');
       progress('Uploading...');
@@ -44,7 +65,21 @@ function s3_upload(file_input, target_input, opts) {
 
           progress('Processing...');
           $(target_input).val(req.url);
-          $(target_input).closest('form').submit();
+
+          var $form = $(target_input).closest('form');
+          $.ajax({
+            url: $form.attr('action') || location.pathname,
+            method: $form.attr('method'),
+            data: { app_url: req.url },
+            success: function(data) {
+              progress('Done.');
+              success(data);
+            },
+            error: function(xhr) {
+              console.error(xhr);
+              error('Error ' + xhr.status + ': ' + xhr.responseText);
+            }
+          });
         } else {
           ga('send', 'event', 'app-upload', 'upload-error', xhr.responseText);
           error('Error ' + xhr.status + ': ' + xhr.responseText);

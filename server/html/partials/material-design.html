@@ -16,23 +16,45 @@
 <link href="/components/paper-button/paper-button.html" rel="import">
 
 <style is="custom-style">
-  paper-toolbar {
-    --paper-toolbar-background: #00BCD4;
+  paper-header-panel > div.paper-header {
+    padding-bottom: 8px;
   }
 
-  paper-toolbar .account img {
+  paper-header-panel div.content {
+    margin-bottom: 78px;
+  }
+
+  paper-toolbar {
+    --paper-toolbar-background: #00BCD4;
+    color: rgba(255,255,255,0.87);
+  }
+
+  .paper-header {
+    background-color: #00BCD4;
+    color: rgba(255,255,255,0.87);
+    padding: 0 1em;
+    padding-top: 0.5em;
+  }
+
+  .paper-header .right {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    float: right;
+  }
+
+  paper-toolbar .account img, .paper-header .account img {
     width: 24px;
     height: 24px;
     border-radius: 12px;
   }
 
-  paper-toolbar .title a {
-    opacity: 0.5;
+  paper-toolbar .title a, .paper-header .title a {
     pointer-events: auto;
   }
 
-  paper-toolbar a {
-    color: #fff;
+  paper-toolbar a , .paper-header a {
+    color: rgba(255,255,255,0.87);
     z-index: 2;
   }
 
@@ -49,7 +71,7 @@
   paper-icon-button.compact {
     padding: 0;
     position: relative;
-    top: -0.1em;
+    top: -0.4em;
   }
 
   paper-dialog {

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Apps - boop.js</title>
+    <title>boop.js</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" href="/favicon.ico">
 
@@ -23,20 +23,38 @@
         margin: 0.5em 0;
         display: block;
         min-height: 4em;
+        position: relative;
       }
 
       ul#apps .details {
         display: inline-block;
+        margin-left: 4.5em;
       }
 
       ul#apps img {
-        float: left;
-        width: 3em;
-        height: 3em;
+        width: 2em;
+        height: 2em;
         border: none;
-        margin: 0 1em 1em 0;
-        -webkit-filter: drop-shadow(0 0 2px rgba(0,0,0,0.2));
-        filter: drop-shadow(0 0 2px rgba(0,0,0,0.2));
+        -webkit-filter: drop-shadow(0 0 1px rgba(0,0,0,0.5));
+        filter: drop-shadow(0 0 1px rgba(0,0,0,0.5));
+        position: absolute;
+        left: 0.75em;
+        top: 0.75em;
+      }
+
+      ul#apps .graph-data {
+        display: none;
+      }
+
+      ul#apps .peity {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 3.5em;
+        height: 3.5em;
+        z-index: -1;
+        -webkit-filter: drop-shadow(0 0 1px rgba(0,0,0,0.2));
+        filter: drop-shadow(0 0 1px rgba(0,0,0,0.2));
       }
 
       ul#apps h4 {
@@ -45,7 +63,8 @@
 
       ul#apps .info {
         font-size: 0.8em;
-        opacity: 0.8;
+        opacity: 0.5;
+        font-weight: 300;
       }
 
       ul#apps .version {
@@ -56,10 +75,19 @@
         margin-bottom: 1em;
       }
 
+      #app-upload {
+        margin-top: 2em;
+      }
+
       #app-upload .status {
         display: none;
         color: #999;
         text-align: center;
+      }
+
+      #app-update .status.error {
+        color: #D32F2F;
+        font-weight: 300;
       }
 
       input[type=file] {
@@ -98,7 +126,7 @@
     <paper-header-panel class="cyan">
       {{#user}}
       <paper-toolbar>
-        <div class="title">Apps</div>
+        <div class="title">boop.js</div>
 
         {{> feedback-button}}
         {{> admin-button}}
@@ -106,21 +134,22 @@
       </paper-toolbar>
       {{/user}}
       <div class="content">
+        <div id="app-upload">
+          <p class="status"></p>
+          <input type="file" accept=".apk"/>
+          <form action="/api/v1/app" method="POST">
+            <input type="hidden" name="app_url" />
+          </form>
+        </div>
         <ul id="apps">
-          <li id="app-upload">
-            <p class="status"></p>
-            <input type="file" accept=".apk"/>
-            <form action="/apps" method="POST">
-              <input type="hidden" name="app_url" />
-            </form>
-          </li>
           {{#apps}}
           <li>
             <a href="/app/{{id}}">
-              <img src="{{icon}}">
-              <span class="details">
+              <span class="graph-data">{{count failed}},{{count not_run}},{{count running}},{{count successful}}</span>
+              <img src="{{icon}}" title="{{count failed}} failed, {{count successful}} successful, {{count running}} running, {{count not_run}} not run">
+              <span class="details" title="{{identifier}}">
                 <h4>{{name}} <span class="version">{{version}}</span></h4>
-                <span class="info">{{identifier}}</span>
+                <span class="info">{{#updated_at}}Updated {{date_relative .}}{{/updated_at}}</span>
               </span>
             </a>
           </li>
@@ -133,6 +162,9 @@
   {{> google-analytics}}
 
   <script src="/components/jquery/dist/jquery.min.js"></script>
+
+  {{> graph-setup}}
+
   <script src="/js/s3_upload.js"></script>
   <script>
     s3_upload($('#app-upload input[type=file]'), $('#app-upload input[name=app_url]'), {
@@ -142,7 +174,11 @@
       error: function(error) {
         $('#app-upload .status').addClass('error').text(error).show();
       },
+      success: function(response) {
+        location.href = '/app/' + response.app.id + '/test/' + response.test.id + '/edit';
+      },
       google_analytics: ga
     });
   </script>
+
 </html>

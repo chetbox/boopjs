@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{code.name}} report - {{result.app.name}} - boop.js</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="{{result.app.icon}}">
+
+    {{> material-design}}
+
+    <style type="text/css">
+      .content {
+        text-align: center;
+      }
+
+      h3 {
+        margin: 0;
+      }
+
+      h3 a {
+        color: inherit;
+        margin-left: 1em;
+        opacity: 0.67;
+      }
+
+      #report {
+        text-align: left;
+        list-style: none;
+        padding: 0 1em;
+        overflow-y: auto;
+      }
+
+      #report > li {
+        white-space: nowrap;
+        padding-bottom: 0.5em;
+      }
+
+      #report > li pre {
+        display: inline-block;
+        margin: 0;
+      }
+
+      #report > li .line-no {
+        margin-right: 1em;
+        color: #B6B6B6;
+        width: 2em;
+        display: inline-block;
+        vertical-align: top;
+        text-align: right;
+        font-size: 0.8em;
+        font-weight: 300;
+      }
+
+      #report > li .source {
+        vertical-align: top;
+      }
+
+      #report > li.success .source {
+        color: #43A047;
+      }
+
+      #report > li.error .source {
+        color: #D32F2F;
+      }
+
+      #report > li > span:not(.line-no) {
+        display: block;
+        margin-left: 2.67em;
+      }
+
+      #report .line .line-no::after {
+        margin: 0 1em;
+        content: ' ';
+      }
+      #report .line.success .line-no::after {
+        content: '\2713';
+        color: #43A047;
+      }
+      #report .line.error .line-no::after {
+        content: '\2717';
+        color: #D32F2F;
+      }
+
+      div#error {
+        padding: 2em 4em;
+        background-color: #F44336;
+        color: #FFCDD2;
+      }
+
+      div#error pre {
+        text-align: left;
+      }
+
+      .result {
+        padding-right: 0.5em;
+        font-size: 1.5em;
+      }
+
+      .result .success {
+        color: #4CAF50;
+      }
+
+      .result .failure {
+        color: #F44336;
+      }
+
+      ol.logs {
+        margin: 0 0 0 0.2em;
+        list-style: none;
+      }
+      li.log { color: #777; }
+      li.log:first-child { margin-top: 0.25em; }
+      li.log.debug { color: #aaa; }
+      li.log.info  { color: #777; }
+      li.log.warn  { color: #c90; }
+      li.log.error { color: #D32F2F; }
+
+      li.log::before {
+        margin-right: 1em;
+        font-family: monospace;
+        opacity: 0.5;
+      }
+      li.log.debug::before { content: 'D'; }
+      li.log.info::before  { content: 'I'; }
+      li.log.warn::before  { content: 'W'; }
+      li.log.error::before { content: 'E'; }
+    </style>
+  </head>
+  <body class="fullbleed {{#result.success}}successful{{/result.success}} {{#result.error}}failed{{/result.error}} {{#unless result.success}}{{#unless result.error}}running{{/unless}}{{/unless}}">
+    <paper-header-panel class="cyan" mode="waterfall-tall">
+      <div class="paper-header">
+        <div class="right">
+          {{> feedback-button}}
+          {{> admin-button user}}
+          {{> account-button user}}
+        </div>
+        <a href="/app/{{result.app.id}}/test/{{result.code_id}}/reports">
+          <paper-icon-button icon="arrow-back"></paper-icon-button>
+        </a>
+        {{> report-info .}}
+      </div>
+      <div class="content">
+        {{#result}}
+          {{#error}}
+            <div id="error" class="execution">
+              <h3>
+                {{description}}
+                {{^description}}Unknown error{{/description}}
+                {{#line}}
+                  <a href="#line-{{.}}" class="line-no">Line {{.}}</a>
+                {{/line}}
+              </h3>
+              {{#stacktrace}}
+                <pre>{{.}}</pre>
+              {{/stacktrace}}
+            </div>
+          {{/error}}
+          <ol id="report" start="0">
+            {{#report}}
+              {{#.}}
+                <li id="line-{{@index}}" class="line {{#success}} success{{/success}} {{#error}} error{{/error}}">
+                  <span class="line-no">{{@index}}</span>
+                  <pre class="source">{{source}}</pre>
+                  <ol class="logs">
+                    {{#logs}}
+                      <li class="log {{level}}"><pre>{{stringify message}}</pre></li>
+                    {{/logs}}
+                  </ol>
+                  {{#success}}
+                    <span class="success"><pre>{{{stringify result 2}}}</pre></span>
+                  {{/success}}
+                  {{#error}}
+                    <span class="error"><pre>{{description}}</pre></span>
+                    <span class="stacktrace"><pre>{{stacktrace}}</pre></span>
+                  {{/error}}
+                  {{#unless success}}{{#unless error}}
+                    <span>{{result}}</span>
+                  {{/unless}}{{/unless}}
+                </li>
+              {{/.}}
+            {{/report}}
+          </ol>
+        {{/result}}
+      </div>
+    </paper-header-panel>
+  </body>
+
+  {{> google-analytics}}
+
+</html>

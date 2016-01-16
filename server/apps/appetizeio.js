@@ -10,11 +10,11 @@ function appetizeio_update(body) {
     json: true,
     body: body
   })
-  .spread(function(resp, body) {
+  .then(function(resp) {
     if (resp.statusCode !== 200) {
       throw 'HTTP error ' + resp.statusCode + ': ' + body;
     }
-    return body;
+    return resp.body;
   });
 }
 

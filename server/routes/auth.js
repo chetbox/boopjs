@@ -1,12 +1,20 @@
 var passport = require('passport');
 var expressSession = require('express-session');
 var GitHubStrategy = require('passport-github2').Strategy;
+var BearerStrategy = require('passport-http-bearer').Strategy;
 var config = require('config');
 var _ = require('underscore');
 var flash = require('connect-flash');
+var Promise = require('bluebird');
 
-var db = require('./db');
-var email = require('./reporting/email');
+var db = require.main.require('./db');
+var email = require.main.require('./reporting/email');
+var model = {
+  access_tokens: require.main.require('./model/access_tokens'),
+  users: require.main.require('./model/users')
+};
+
+var DEBUG_AS_USER = process.env.DEBUG_AS_USER;
 
 passport.serializeUser(function(user, done) {
   done(null, user.id);
@@ -18,6 +26,21 @@ passport.deserializeUser(function(user_id, done) {
     .catch(done);
 });
 
+// Access Token authentication
+passport.use(new BearerStrategy(
+  function(token, done) {
+    model.access_tokens.get_user_id(token)
+    .then(function(user_id) {
+      return user_id && model.users.get(user_id);
+    })
+    .then(function(user) {
+      done(null, user);
+    })
+    .catch(done);
+  }
+));
+
+// GitHub authentication
 passport.use(new GitHubStrategy(
   _.extend(
     config.get('github-oauth'),
@@ -64,10 +87,35 @@ passport.use(new GitHubStrategy(
 ));
 
 function login_required(req, res, next) {
+  if (DEBUG_AS_USER) {
+    console.warn('WARNING: Skipping authentication in debugging mode:', DEBUG_AS_USER);
+    db.users().find(DEBUG_AS_USER)
+    .then(function(user) {
+      if (!user) throw new Error('User not found: ' + DEBUG_AS_USER);
+      req.user = user;
+      req.isAuthenticated = function() {
+        return true;
+      }
+      next();
+    })
+    .catch(next);
+    return;
+  }
+
   if (req.isAuthenticated()) {
     return next();
   }
   res.redirect('/auth/github?redirect=' + encodeURIComponent(req.url));
+}
+
+var access_token_required = passport.authenticate('bearer', { session: false });
+
+function login_or_access_token_required(req, res, next) {
+  if (req.isAuthenticated()) {
+    next();
+  } else {
+    access_token_required(req, res, next);
+  }
 }
 
 function ensure_user_is_admin(req, res, next) {
@@ -112,11 +160,15 @@ function setup(app, options) {
     login_required,
     ensure_logged_in_user('user_id'),
     function(req, res, next) {
-      db.users().find(req.params.user_id)
-      .then(function(user) {
+      Promise.join(
+        db.users().find(req.params.user_id),
+        model.access_tokens.get_or_create_for_user(req.params.user_id)
+      )
+      .spread(function(user, access_tokens) {
         res.render('account', {
           user: req.user,
-          requested_user: user
+          requested_user: user,
+          access_tokens: access_tokens
         });
       })
       .catch(next);
@@ -155,4 +207,6 @@ function setup(app, options) {
 
 exports.setup = setup;
 exports.login_required = login_required;
+exports.access_token_required = access_token_required;
+exports.login_or_access_token_required = login_or_access_token_required;
 exports.ensure_user_is_admin = ensure_user_is_admin;
