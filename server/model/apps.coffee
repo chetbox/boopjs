@@ -58,3 +58,19 @@ exports.remove_code = (id, code_id) ->
     UpdateExpression: 'DELETE not_run :code_id, running :code_id, successful :code_id, failed :code_id'
     ExpressionAttributeValues:
       ':code_id': db.create_set [ code_id ]
+
+exports.set_pending_report = (id, pending) ->
+  debug 'set_pending_report', pending
+  db.update
+    Key: { id: id }
+    UpdateExpression: 'SET pending_report = :pending'
+    ExpressionAttributeValues:
+      ':pending': !!pending
+
+exports.get_pending_report = (id) ->
+  db.get
+    Key: { id: id }
+    AttributesToGet: [ 'pending_report' ]
+  .then (app) ->
+    if !app then throw new Error("App #{id} not found")
+    !!app.pending_report
