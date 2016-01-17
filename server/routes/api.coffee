@@ -1,6 +1,7 @@
 Promise = require 'bluebird'
 shortid = require 'shortid'
 _ = require 'underscore'
+request = require 'request'
 
 db = require.main.require './db'
 s3 = require.main.require './model/third-party/s3'
@@ -149,3 +150,23 @@ exports.add_routes = (app) ->
       test_runner.run_all req.params.app_id
       .then ->
         res.sendStatus 200
+
+  app.get /\/api\/v1\/app\/([^\/]*?)\/badge\.(svg|png|json)/,
+    (req, res, next) ->
+      model.apps.get req.params[0]
+      .then (app) ->
+        successful = if app.successful then app.successful.values.length else 0
+        total = [ 'failed', 'running', 'successful', 'not_run' ].reduce (total, key) ->
+          total + (if app[key] then app[key].values.length else 0)
+        , 0
+        status_text = [ 'successful', 'running', 'not_run', 'failed' ].reduce (status_text, key) ->
+          if app[key] then key else status_text
+        , 'not_run'
+        color = {
+          failed: 'red'
+          successful: 'green'
+          running: 'blue'
+          not_run: 'lightgrey'
+        }[status_text]
+        request "https://img.shields.io/badge/boop.js-#{app.version.replace(/^v?/,'v')}%20#{status_text.replace '_', ' '}%20(#{successful}/#{total} passed)-#{color}.#{req.params[1]}"
+        .pipe res
