@@ -99,10 +99,7 @@ describe 'model/apps', ->
           app: app
           report: [
             null
-            {
-              source: 'one()'
-              result: null
-            }
+            { source: 'one()', result: null }
           ]
           success: true
         .then ->
@@ -154,3 +151,35 @@ describe 'model/apps', ->
         model.remove_code app.id, 'code_id_successful'
         .then ->
           assert_status app.id, {}
+
+  describe 'set pending report', ->
+
+    beforeEach 'create app', ->
+      model.create_empty 'user_id_pending_report'
+      .then (_app) ->
+        app = _app
+
+    it 'sets the report as pending', ->
+      model.get_pending_report app.id
+      .then (pending) ->
+        assert !pending
+      model.set_pending_report app.id, true
+      .then ->
+        model.get_pending_report app.id
+      .then (pending) ->
+        assert pending
+
+    it 'returns pending report when result updated', ->
+      model.set_pending_report app.id, true
+      .then ->
+        model.update_result
+          code_id: 'code_id_pending_report'
+          started_at: 567890
+          app: app
+          report: [
+            null
+            { source: 'one()', result: null }
+          ]
+          success: true
+      .then (app) ->
+        assert app.pending_report

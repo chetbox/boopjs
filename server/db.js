@@ -146,6 +146,16 @@ exports.v2 = Object.keys(TABLES).reduce(function(fns, table_short_name) {
     };
     return fns;
   }, {});
+  fns[table_short_name].batch_get = function(query) {
+    debug(TABLES[table_short_name].TableName, 'batch_get');
+    if (query.length === 0) return Promise.resolve([]);
+    var request = { RequestItems: {} };
+    request.RequestItems[TABLES[table_short_name].TableName] = query;
+    return doc_client.batchGetAsync(request)
+    .then(function(response) {
+      return response.Responses[TABLES[table_short_name].TableName];
+    });
+  };
   fns[table_short_name].batch_delete = function(keys) {
     debug(TABLES[table_short_name].TableName, 'batch_delete');
     if (keys.length === 0) return Promise.resolve();

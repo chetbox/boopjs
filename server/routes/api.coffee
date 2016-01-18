@@ -136,11 +136,16 @@ exports.add_routes = (app) ->
         existing_app.updated_at = Date.now()
         db.apps().insert existing_app
       .then ->
-        model.code.get_all req.params.app_id
-      .map (code) ->
-        model.code.remove_latest_result code.app_id, code.id
-        .then ->
-          test_runner.run req.params.app_id, code.id
+        test_runner.run_all app_id
       .then ->
         res.sendStatus 200
       .catch next
+
+  # Run all tests - handy for testing
+  app.post '/api/v1/app/:app_id/run',
+    auth.login_or_access_token_required,
+    middleware.check_user_can_access_app 'app_id'
+    (req, res, next) ->
+      test_runner.run_all req.params.app_id
+      .then ->
+        res.sendStatus 200
