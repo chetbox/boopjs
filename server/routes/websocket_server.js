@@ -12,6 +12,7 @@ exports.add_routes = function(app) {
   };
   var model = {
     users: require.main.require('./model/users'),
+    apps: require.main.require('./model/apps'),
     results: require.main.require('./model/results'),
     devices: require.main.require('./model/devices')
   };
@@ -159,6 +160,9 @@ exports.add_routes = function(app) {
               )
               .spread(function(recipients, message) {
                 return reporting.email.send_to(recipients, message);
+              })
+              .then(function() {
+                return model.apps.set_pending_report(app.id, false);
               });
               return null; // The websocket should not wait for emails or report email errors
             }
