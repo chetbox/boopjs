@@ -53,7 +53,7 @@ exports.run = function(app_id, code_id) {
 
 exports.run_all = function(app_id) {
   debug('run_all', app_id);
-  model.apps.set_pending_report(app_id, true)
+  return model.apps.set_pending_report(app_id, true)
   .then(function() {
     return model.code.get_all(app_id);
   })
