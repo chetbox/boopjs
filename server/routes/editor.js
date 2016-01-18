@@ -44,6 +44,10 @@ exports.add_routes = function(app) {
     }
   }
 
+  function lat_lon_str(location) {
+    return location.lat.toFixed(7) + ',' + location.lon.toFixed(7);
+  }
+
   app.get('/apps',
     auth.login_required,
     function(req, res, next) {
@@ -154,9 +158,8 @@ exports.add_routes = function(app) {
           device: _.extend({}, DEFAULT_DEVICE, {
             id: device_id,
             location: function() {
-              // code.location is JSON parsed below
               return code.location
-                ? (code.location.lat.toFixed(7) + ',' + code.location.lon.toFixed(7))
+                ? lat_lon_str(JSON.parse(code.location))
                 : null;
             }
           }),
@@ -268,9 +271,8 @@ exports.add_routes = function(app) {
           device: _.extend({}, DEFAULT_DEVICE, {
             id: device_id,
             location: function() {
-              // code.location is JSON parsed below
               return code.location
-                ? (code.location.lat.toFixed(7) + ',' + code.location.lon.toFixed(7))
+                ? lat_lon_str(JSON.parse(code.location))
                 : null;
             }
           }),
