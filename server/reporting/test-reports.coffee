@@ -33,14 +33,14 @@ exports.app_results = (app_id) ->
     failed = app.failed
     subject:
       if app.failed
-        "❌ #{app.name} failed #{count_set app.failed} test"
+        "❌ #{app.name} failed #{count_set app.failed} test(s)"
       else
-        "✅ #{app.name} passed all #{count_set app.successful} tests"
+        "✅ #{app.name} passed all #{count_set app.successful} test(s)"
     body:
       """
       #{app.name} #{app.version} (#{app.identifier})
-      #{if app.failed then "❌ #{count_set app.failed} tests failed" else ''}
-      ✅ #{count_set app.successful} tests passed
+      #{if app.failed then "❌ #{count_set app.failed} test(s) failed" else ''}
+      ✅ #{count_set app.successful} test(s) passed
       #{host.protocol}://#{host.address}/app/#{app_id}
 
 
