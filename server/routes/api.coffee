@@ -140,3 +140,12 @@ exports.add_routes = (app) ->
       .then ->
         res.sendStatus 200
       .catch next
+
+  # Run all tests - handy for testing
+  app.post '/api/v1/app/:app_id/run',
+    auth.login_or_access_token_required,
+    middleware.check_user_can_access_app 'app_id'
+    (req, res, next) ->
+      test_runner.run_all req.params.app_id
+      .then ->
+        res.sendStatus 200
