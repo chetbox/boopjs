@@ -43,6 +43,7 @@ passport.use(new BearerStrategy(
 // GitHub authentication
 passport.use(new GitHubStrategy(
   _.extend(
+    {},
     config.get('github-oauth'),
     {
       callbackURL: config.get('host.protocol') + '://' + config.get('host.address') + '/auth/github/callback'
@@ -52,6 +53,7 @@ passport.use(new GitHubStrategy(
     console.log('User authenticated: ' + user.username);
     // TODO: generate internal user ID for session serialisation
     var new_db_user = _.extend(
+      {},
       _.pick(user, function(val, key) {
         return val && _.contains(['id', 'username', 'displayName', 'profileUrl', 'provider'], key)
       }),
@@ -77,7 +79,7 @@ passport.use(new GitHubStrategy(
       return db_user;
     })
     .then(function(db_user) {
-      return db.users().insert( _.extend(db_user || {}, new_db_user) );
+      return db.users().insert( _.extend({}, db_user || {}, new_db_user) );
     })
     .then(function() {
       done(null, new_db_user);
