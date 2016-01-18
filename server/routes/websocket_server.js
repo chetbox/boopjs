@@ -77,6 +77,8 @@ exports.add_routes = function(app) {
       }
     })
     .then(function(result) {
+      clients_connected[req.query.device] = ws;
+
       // Allow /api/device endpoint to find the key when saving results
       if (result) {
         var key = model.results.key(result);
@@ -103,7 +105,6 @@ exports.add_routes = function(app) {
           : Promise.resolve()
         )
         .then(function() {
-          clients_connected[req.query.device] = ws;
           var device_socket = devices_connected[req.query.device];
           if (device_socket) {
             device_socket.send(messageStr);
