@@ -152,7 +152,7 @@ exports.add_routes = function(app) {
         }
         res.render('edit', {
           user: req.user,
-          device: _.extend(DEFAULT_DEVICE, {
+          device: _.extend({}, DEFAULT_DEVICE, {
             id: device_id,
             location: function() {
               // code.location is JSON parsed below
@@ -164,7 +164,7 @@ exports.add_routes = function(app) {
           server: host.address,
           app: app,
           autosave: true,
-          code: _.extend(code, {
+          code: _.extend({}, code, {
             name: code.name || 'Untitled test',
             location: code.location && JSON.parse(code.location)
           })
@@ -191,7 +191,7 @@ exports.add_routes = function(app) {
         res.render('reports', {
           user: req.user,
           app: app,
-          code: _.extend(code, {
+          code: _.extend({}, code, {
             name: code.name || 'Untitled test',
             location: code.location && JSON.parse(code.location)
           }),
@@ -215,7 +215,7 @@ exports.add_routes = function(app) {
         res.render('report', {
           user: req.user,
           result: result,
-          code: _.extend(code, {
+          code: _.extend({}, code, {
             name: code.name || 'Untitled test'
           })
         });
@@ -266,7 +266,7 @@ exports.add_routes = function(app) {
           return res.sendStatus(404);
         }
         res.render('run', {
-          device: _.extend(DEFAULT_DEVICE, {
+          device: _.extend({}, DEFAULT_DEVICE, {
             id: device_id,
             location: function() {
               // code.location is JSON parsed below
@@ -277,7 +277,7 @@ exports.add_routes = function(app) {
           }),
           server: host.address,
           app: app,
-          code: _.extend(code, {
+          code: _.extend({}, code, {
             name: code.name,
             location: code.location && JSON.parse(code.location)
           }),
