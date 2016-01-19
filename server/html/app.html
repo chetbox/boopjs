@@ -28,22 +28,68 @@
         text-align: left;
       }
 
-      #code tr > td {
-        padding-bottom: 0.5em;
+      #code > li {
+        margin-bottom: 1em;
       }
 
-      #code tr a {
+      #code > li > * {
+        display: inline-block;
+        vertical-align: top;
+      }
+
+      #code .app-info {
+        position: relative;
+        width: 12em;
+        margin: 0.5em 0 0.5em 2em;
+      }
+
+      #code .app-info .name {
         display: inline-block;
         max-width: 20em;
         white-space: nowrap;
         text-overflow: ellipsis;
         overflow: hidden;
+        margin-top: 0;
+        margin-bottom: 0;
       }
 
-      #code tr paper-icon-button {
-        color: #ddd;
-        padding: 0.5em 0;
-        margin-bottom: -1em;
+      #code .app-info .name paper-icon-button {
+        width: 1.8em;
+        height: 1.8em;
+        margin-top: -8px;
+        margin-bottom: -8px;
+        top: -1px;
+        color: #d7d7d7;
+      }
+
+      #code .app-info > .result {
+        position: absolute;
+        left: 0;
+        top: 8px;
+      }
+
+      #code .app-info > *:not(.result) {
+        margin-left: 38px;
+      }
+
+      #code paper-icon-button, #code paper-button {
+        color: #aaa;
+      }
+
+      paper-button paper-spinner {
+        display: none;
+        position: relative;
+        float: left;
+        top: -4px;
+        left: -4px;
+        margin-bottom: -8px;
+      }
+
+      paper-button.pending paper-spinner {
+        display: inline-block;
+      }
+      paper-button.pending iron-icon {
+        display: none;
       }
 
       #code .result {
@@ -74,6 +120,12 @@
         color: #B6B6B6;
       }
 
+      #code .actions {
+        margin-left: 20px;
+        margin-right: 20px;
+        padding: 0.5em;
+      }
+
       #app-update .status {
         display: none;
         color: #999;
@@ -99,20 +151,6 @@
       #app-update code span.info {
         border-bottom: 2px solid #c7c7c7;
         cursor: default;
-      }
-
-      #actions {
-        margin-bottom: 1.5em;
-      }
-
-      #actions paper-button {
-        background: #FFC107;
-        color: rgba(255, 255, 255, 0.87);
-        font-weight: 300;
-      }
-
-      #actions paper-button > iron-icon:first-child {
-        margin-right: 0.5em;
       }
 
       #app-update {
@@ -176,51 +214,67 @@
             {{> app-info}}
           </div>
         {{/app}}
-        <table id="code">
-          <tbody>
-            {{#code}}
-            <tr>
-              <td class="result">
-                {{#latest_result}}
-                  <a href="/app/{{../app_id}}/test/{{../id}}/report/{{started_at}}" title="{{date_relative started_at}}">
-                    {{#success}}<iron-icon icon="check" class="success" title="Test passed" />{{/success}}
-                    {{#error}}<iron-icon icon="clear" class="failure" title="{{description}}" />{{/error}}
-                    {{#unless success}}{{#unless error}}
-                      <iron-icon icon="autorenew" class="running" />
-                    {{/unless}}{{/unless}}
+        <ul id="code">
+          {{#code}}
+            <li>
+              <div class="app-info">
+                <span class="result">
+                  {{#latest_result}}
+                    <a href="/app/{{../app_id}}/test/{{../id}}/report/{{started_at}}" title="{{date_relative started_at}}">
+                      {{#success}}<iron-icon icon="check" class="success" title="Test passed" />{{/success}}
+                      {{#error}}<iron-icon icon="clear" class="failure" title="{{description}}" />{{/error}}
+                      {{#unless success}}{{#unless error}}
+                        <iron-icon icon="autorenew" class="running" />
+                      {{/unless}}{{/unless}}
+                    </a>
+                  {{/latest_result}}
+                  {{#unless latest_result}}
+                  <a title="Not run">?</a>
+                  {{/unless}}
+                </span>
+                <h3 class="name">
+                  <a href="javascript:rename('/app/{{app_id}}/test/{{id}}/edit', '{{name}}');" title="Rename test">
+                    {{name}}
+                    <paper-icon-button icon="create"></paper-icon-button>
                   </a>
-                {{/latest_result}}
-              </td>
-              <td>
-                <a href="/app/{{app_id}}/test/{{id}}/edit" title="Test editor">{{name}}</a>
+                </h3>
                 {{#latest_result}}
-                <span class="last-run">{{date_relative started_at}}</span>
+                  <a class="last-run" href="/app/{{../app_id}}/test/{{../id}}/report/{{started_at}}">last run {{date_relative started_at}}</a>
                 {{/latest_result}}
-              </td>
-              <td>
-                <a href="/app/{{app_id}}/test/{{id}}/reports" title="All reports">
-                  <paper-icon-button class="compact" icon="receipt"></paper-icon-button>
+              </div>
+              <div class="actions">
+                <a href="/app/{{app_id}}/test/{{id}}/edit" title="View/Edit test">
+                  <paper-button icon="create">
+                    <iron-icon icon="create"></iron-icon>
+                    <paper-spinner active></paper-spinner>
+                    Edit
+                  </paper-button>
                 </a>
-              </td>
-              <td>
                 <a href="javascript:run('{{app_id}}', '{{id}}');" title="Run">
-                  <paper-icon-button class="compact" icon="av:play-arrow"></paper-icon-button>
+                  <paper-button>
+                    <iron-icon icon="av:play-arrow"></iron-icon>
+                    <paper-spinner active></paper-spinner>
+                    Run
+                  </paper-button>
                 </a>
-              </td>
-              <td>
-                <a href="javascript:rename('/app/{{app_id}}/test/{{id}}/edit', '{{name}}');" title="Rename">
-                  <paper-icon-button class="compact" icon="create"></paper-icon-button>
+                <a href="/app/{{app_id}}/test/{{id}}/reports" title="All reports">
+                  <paper-button>
+                    <iron-icon icon="receipt"></iron-icon>
+                    <paper-spinner active></paper-spinner>
+                    Reports
+                  </paper-button>
                 </a>
-              </td>
-            <td>
-              <a href="javascript:ajax_delete('/app/{{app_id}}/test/{{id}}', '{{name}}');" title="Delete">
-                <paper-icon-button class="compact" icon="delete"></paper-icon-button>
-              </a>
-            </td>
-            </tr>
-            {{/code}}
-          </tbody>
-        </table>
+                <a href="javascript:ajax_delete('/app/{{app_id}}/test/{{id}}', '{{name}}');" title="Delete">
+                  <paper-button>
+                    <iron-icon icon="delete"></iron-icon>
+                    <paper-spinner active></paper-spinner>
+                    Delete
+                  </paper-button>
+                </a>
+              </div>
+            </li>
+          {{/code}}
+        </ul>
         <div id="app-update">
           <p class="status"></p>
           <input type="file" accept=".apk"/>
@@ -247,6 +301,12 @@
 
   {{> graph-setup}}
 
+  <script>
+    $('paper-button').click(function() {
+      $(this).addClass('pending');
+    });
+  </script>
+
   <script src="/js/s3_upload.js"></script>
   <script>
     s3_upload($('#app-update input[type=file]'), $('#app-update input[name=app_url]'), {
@@ -272,7 +332,8 @@
     function ajax_delete(url, description, redirect) {
       ga('send', 'event', 'button', 'click', 'delete code');
 
-      if (!confirm('Are you sure you want to delete "' + description + '"?')) {
+      if (!confirm('Are you sure you want to delete "' + description + '" and its test results?')) {
+        $('paper-button').removeClass('pending'); // hack
         return;
       }
       $.ajax(url, {
