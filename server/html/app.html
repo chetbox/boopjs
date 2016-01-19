@@ -76,6 +76,22 @@
         color: #aaa;
       }
 
+      paper-button paper-spinner {
+        display: none;
+        position: relative;
+        float: left;
+        top: -4px;
+        left: -4px;
+        margin-bottom: -8px;
+      }
+
+      paper-button.pending paper-spinner {
+        display: inline-block;
+      }
+      paper-button.pending iron-icon {
+        display: none;
+      }
+
       #code .result {
         padding-right: 0.5em;
       }
@@ -230,24 +246,28 @@
                 <a href="/app/{{app_id}}/test/{{id}}/edit" title="View/Edit test">
                   <paper-button icon="create">
                     <iron-icon icon="create"></iron-icon>
+                    <paper-spinner active></paper-spinner>
                     Edit
                   </paper-button>
                 </a>
                 <a href="javascript:run('{{app_id}}', '{{id}}');" title="Run">
                   <paper-button>
                     <iron-icon icon="av:play-arrow"></iron-icon>
+                    <paper-spinner active></paper-spinner>
                     Run
                   </paper-button>
                 </a>
                 <a href="/app/{{app_id}}/test/{{id}}/reports" title="All reports">
                   <paper-button>
                     <iron-icon icon="receipt"></iron-icon>
+                    <paper-spinner active></paper-spinner>
                     Reports
                   </paper-button>
                 </a>
                 <a href="javascript:ajax_delete('/app/{{app_id}}/test/{{id}}', '{{name}}');" title="Delete">
                   <paper-button>
                     <iron-icon icon="delete"></iron-icon>
+                    <paper-spinner active></paper-spinner>
                     Delete
                   </paper-button>
                 </a>
@@ -281,6 +301,12 @@
 
   {{> graph-setup}}
 
+  <script>
+    $('paper-button').click(function() {
+      $(this).addClass('pending');
+    });
+  </script>
+
   <script src="/js/s3_upload.js"></script>
   <script>
     s3_upload($('#app-update input[type=file]'), $('#app-update input[name=app_url]'), {
@@ -307,6 +333,7 @@
       ga('send', 'event', 'button', 'click', 'delete code');
 
       if (!confirm('Are you sure you want to delete "' + description + '" and its test results?')) {
+        $('paper-button').removeClass('pending'); // hack
         return;
       }
       $.ajax(url, {
