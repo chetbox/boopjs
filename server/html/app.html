@@ -39,8 +39,8 @@
 
       #code .app-info {
         position: relative;
-        width: 12em;
-        margin: 0.5em 0 0.5em 2em;
+        width: 16em;
+        margin: 1.2em 0 0.5em 2em;
       }
 
       #code .app-info .name {
@@ -51,21 +51,29 @@
         overflow: hidden;
         margin-top: 0;
         margin-bottom: 0;
+        font-size: 1em;
+      }
+
+      #code .app-info .name .text {
+        display: inline-block;
+        max-width: 13em;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       #code .app-info .name paper-icon-button {
-        width: 1.8em;
-        height: 1.8em;
+        width: 2em;
+        height: 2em;
         margin-top: -8px;
         margin-bottom: -8px;
-        top: -1px;
+        top: -6px;
         color: #d7d7d7;
       }
 
       #code .app-info > .result {
         position: absolute;
         left: 0;
-        top: 8px;
+        top: 6px;
       }
 
       #code .app-info > *:not(.result) {
@@ -233,9 +241,10 @@
                   {{/unless}}
                 </span>
                 <h3 class="name">
-                  <a href="javascript:rename('/app/{{app_id}}/test/{{id}}/edit', '{{name}}');" title="Rename test">
-                    {{name}}
-                    <paper-icon-button icon="create"></paper-icon-button>
+                    <span class="text">{{name}}</span>
+                    <a href="javascript:rename('/app/{{app_id}}/test/{{id}}/edit', '{{name}}');" title="Rename test">
+                      <paper-icon-button icon="create"></paper-icon-button>
+                    </a>
                   </a>
                 </h3>
                 {{#latest_result}}
