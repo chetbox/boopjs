@@ -339,33 +339,6 @@ function wait_for(wait_for_fn, options) {
   return success;
 }
 
-function wait_until_idle(options) {
-  var main_looper = android.os.Looper.getMainLooper();
-  var queue_interrogator = new com.google.android.apps.common.testing.ui.espresso.base.QueueInterrogator(main_looper);
-  function is_idle() {
-    switch (queue_interrogator.determineQueueState().toString() + '') {
-      case 'EMPTY':
-      case 'TASK_DUE_LONG':
-        return true;
-      default:
-        return false;
-    }
-  }
-
-  if (is_idle()) return;
-
-  var idle_latch = __latch();
-  main_looper.getQueue().addIdleHandler(function() {
-    if (is_idle()) {
-      // idle_latch.signal();
-      return true;
-    } else {
-      return false;
-    }
-  });
-  idle_latch.wait(options);
-}
-
 // Drawers
 
 function open_drawer(which) {

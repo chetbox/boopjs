@@ -36,19 +36,6 @@ public class InteractionTests extends StopwatchTest {
                 equalToIgnoringCase("start"));
     }
 
-    @Test public void waitUntilIdle() {
-        exec(   "tap(_startStopButton_);",
-                "tap(_startStopButton_);",
-                "wait_until_idle();");
-    }
-
-    @Test public void waitUntilIdleTimeout() {
-        exec("tap(_startStopButton_)");
-
-        exception.expectMessage("Timed out");
-        exec("wait_until_idle({timeout: 2})");
-    }
-
     @Test public void waitSeconds() {
         long start = System.currentTimeMillis();
         exec("wait(0.5)");
