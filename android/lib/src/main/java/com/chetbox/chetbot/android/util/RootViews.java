@@ -13,6 +13,7 @@ import android.support.test.espresso.matcher.RootMatchers;
 import android.support.test.runner.lifecycle.ActivityLifecycleMonitor;
 import android.support.test.runner.lifecycle.ActivityLifecycleMonitorRegistry;
 import android.util.Log;
+import android.util.Pair;
 import android.view.View;
 
 import com.chetbox.chetbot.android.Container;
@@ -76,51 +77,80 @@ public class RootViews {
     private RootViews() {}
 
     public static View getTopmostWindowView(Activity activity) {
-        final Container<View> rootView = new Container<>();
+        return reduceRoots(
+                applyDefaultRootMatcher(
+                        activity,
+                        listActiveRoots(activity)
+                )
+        ).getDecorView();
+    }
+
+    private static List<Root> listActiveRoots(Activity activity) {
+        final Container<List<Root>> rootsContainer = new Container<>();
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                rootView.setContent(reduceRoots(applyDefaultRootMatcher(listActiveRoots())).getDecorView());
+                try {
+                    rootsContainer.setContent( (List) sRootsOracle_listActiveRoots.invoke(sRootsOracle) );
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                } catch (InvocationTargetException e) {
+                    throw new RuntimeException(e);
+                }
             }
         });
-        return rootView.waitForContent();
+        return rootsContainer.waitForContent();
     }
 
-    // Must be run on UI thread
-    private static List<Root> listActiveRoots() {
-        try {
-            return (List) sRootsOracle_listActiveRoots.invoke(sRootsOracle);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    private static List<Root> applyDefaultRootMatcher(Activity activity, List<Root> roots) {
+        final int maxFailures = 100;
+        int failCount = 0;
 
-    private static List<Root> applyDefaultRootMatcher(List<Root> roots) {
-        final int maxTries = 100;
-        int tryCount = 0;
-        while (true) {
-            try {
-                return _applyDefaultRootMatcher(roots);
-            } catch (NoActivityResumedException e) {
-                if (++tryCount == maxTries) {
-                    throw new RuntimeException("Failed to get resumed activity after " + tryCount + " attempts", e);
-                }
-                Log.w(TAG, e.getMessage() + ", retrying...");
-            }
-            Uninterruptibles.sleepUninterruptibly(100, TimeUnit.MILLISECONDS);
-        }
-    }
-
-    private static List<Root> _applyDefaultRootMatcher(List<Root> roots) throws NoActivityResumedException {
         ImmutableList.Builder<Root> selectedRoots = new ImmutableList.Builder<>();
-        for (Root root : roots) {
-            if (RootMatchers.DEFAULT.matches(root)) {
-                selectedRoots.add(root);
+
+        MatchRoot:
+        for (final Root root : roots) {
+            while (true) {
+                Pair<Boolean, NoActivityResumedException> matchesContainer = applyDefaultRootMatcherOnUiThread(activity, root);
+
+                // No error
+                if (matchesContainer.first != null) {
+                    if (matchesContainer.first) {
+                        selectedRoots.add(root);
+                    }
+                    continue MatchRoot;
+                }
+
+                // Error
+                if (++failCount == maxFailures) {
+                    throw new NoActivityResumedException("Failed to get resumed activity after " + failCount + " attempts", matchesContainer.second);
+                }
+                Log.w(TAG, matchesContainer.second.getMessage() + ", retrying...");
+                Uninterruptibles.sleepUninterruptibly(100, TimeUnit.MILLISECONDS);
             }
         }
         return selectedRoots.build();
+    }
+
+    private static Pair<Boolean, NoActivityResumedException> applyDefaultRootMatcherOnUiThread(Activity activity, final Root root) {
+        final Container<Pair<Boolean, NoActivityResumedException>> matchesContainer = new Container<>();
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    matchesContainer.setContent(new Pair<Boolean, NoActivityResumedException>(
+                            RootMatchers.DEFAULT.matches(root),
+                            null
+                    ));
+                } catch (NoActivityResumedException error) {
+                    matchesContainer.setContent(new Pair<Boolean, NoActivityResumedException>(
+                            null,
+                            error
+                    ));
+                }
+            }
+        });
+        return matchesContainer.waitForContent();
     }
 
     private static Root reduceRoots(List<Root> roots) {
