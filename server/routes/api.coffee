@@ -107,23 +107,28 @@ exports.add_routes = (app) ->
     (req, res, next) ->
       app_id = req.params.app_id
       user_apk_url = req.body.app_url
+      existing_app = undefined
 
-      inject_s3_apk user_apk_url
-      .spread (apk_info, modified_apk_url) -> [
-        apk_info
-        modified_apk_url
-        db.apps().find app_id
-      ]
-      .spread (apk_info, modified_apk_url, existing_app) ->
-        # TODO: check that app has the same package name
+      db.apps().find app_id
+      .then (app) ->
+        if !app
+          throw new Error("App #{app_id} not found")
+        existing_app = app
+      .then ->
+        if req.body.app_url == 'EXISTING'
+          console.log "Using existing app URL #{existing_app.user_app_url}"
+          user_apk_url = existing_app.user_app_url
+        inject_s3_apk user_apk_url
+      .spread (apk_info, modified_apk_url) ->
+        if apk_info.identifier != existing_app.identifier
+          throw new Error("Incorrect app identifier: #{apk_info.identifier}")
         console.log 'Updating appetize.io app', modified_apk_url
         [
           apk_info
           modified_apk_url
-          existing_app
           appetizeio.update_app existing_app.privateKey, modified_apk_url, 'android'
         ]
-      .spread (apk_info, modified_apk_url, existing_app, appetize_resp) ->
+      .spread (apk_info, modified_apk_url, appetize_resp) ->
         console.log 'Updating app', app_id
         if existing_app.privateKey and existing_app.privateKey != appetize_resp.privateKey
           throw new Error('New private key does not match existing')
@@ -137,7 +142,10 @@ exports.add_routes = (app) ->
         existing_app.updated_at = Date.now()
         db.apps().insert existing_app
       .then ->
-        test_runner.run_all app_id
+        if !req.body.skip_tests
+          return test_runner.run_all app_id
+        else
+          console.log "Skipping tests for #{app_id}"
       .then ->
         res.sendStatus 200
       .catch next
