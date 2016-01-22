@@ -8,16 +8,17 @@ import android.support.test.espresso.UiController;
 import android.support.test.espresso.base.ActiveRootLister;
 import android.support.test.espresso.base.RootViewPicker;
 import android.support.test.espresso.base.RootViewPicker_Factory;
+import android.support.test.espresso.core.deps.guava.collect.Lists;
 import android.support.test.espresso.core.deps.guava.util.concurrent.Uninterruptibles;
 import android.support.test.espresso.matcher.RootMatchers;
 import android.support.test.runner.lifecycle.ActivityLifecycleMonitor;
 import android.support.test.runner.lifecycle.ActivityLifecycleMonitorRegistry;
 import android.util.Log;
-import android.util.Pair;
 import android.view.View;
 
 import com.chetbox.chetbot.android.Container;
-import com.google.common.collect.ImmutableList;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 
 import org.hamcrest.Matcher;
 
@@ -77,90 +78,63 @@ public class RootViews {
     private RootViews() {}
 
     public static View getTopmostWindowView(Activity activity) {
-        return reduceRoots(
-                applyDefaultRootMatcher(
-                        activity,
-                        listActiveRoots(activity)
-                )
-        ).getDecorView();
-    }
-
-    private static List<Root> listActiveRoots(Activity activity) {
-        final Container<List<Root>> rootsContainer = new Container<>();
-        activity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    rootsContainer.setContent( (List) sRootsOracle_listActiveRoots.invoke(sRootsOracle) );
-                } catch (IllegalAccessException e) {
-                    throw new RuntimeException(e);
-                } catch (InvocationTargetException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        });
-        return rootsContainer.waitForContent();
-    }
-
-    private static List<Root> applyDefaultRootMatcher(Activity activity, List<Root> roots) {
-        final int maxFailures = 100;
+        final long timeoutMillis = 10 * 1000;
+        final long startedAt = System.nanoTime();
         int failCount = 0;
+        Throwable lastError = new RuntimeException("Not yet run");
 
-        ImmutableList.Builder<Root> selectedRoots = new ImmutableList.Builder<>();
-
-        MatchRoot:
-        for (final Root root : roots) {
-            while (true) {
-                Pair<Boolean, NoActivityResumedException> matchesContainer = applyDefaultRootMatcherOnUiThread(activity, root);
-
-                // No error
-                if (matchesContainer.first != null) {
-                    if (matchesContainer.first) {
-                        selectedRoots.add(root);
+        while (System.nanoTime() < startedAt + timeoutMillis * 1000 * 1000) {
+            final Container<Either<View, Throwable>> topmostViewContainer = new Container<>();
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        topmostViewContainer.setContent(
+                                Either.<View, Throwable>left(reduceRoots(
+                                        applyDefaultRootMatcher(
+                                                listActiveRoots()
+                                        )
+                                ).getDecorView())
+                        );
+                    } catch (InvocationTargetException | IllegalAccessException | NoActivityResumedException e) {
+                        topmostViewContainer.setContent(
+                                Either.<View, Throwable>right(e)
+                        );
                     }
-                    continue MatchRoot;
                 }
-
-                // Error
-                if (++failCount == maxFailures) {
-                    throw new NoActivityResumedException("Failed to get resumed activity after " + failCount + " attempts", matchesContainer.second);
-                }
-                Log.w(TAG, matchesContainer.second.getMessage() + ", retrying...");
+            });
+            Either<View, Throwable> topmostView = topmostViewContainer.waitForContent();
+            if (topmostView.isLeft()) {
+                return topmostView.left();
+            } else {
+                failCount++;
+                lastError = topmostView.right();
+                Log.w(TAG, lastError.getMessage() + ", retrying...");
                 Uninterruptibles.sleepUninterruptibly(100, TimeUnit.MILLISECONDS);
             }
         }
-        return selectedRoots.build();
+        throw new RuntimeException("Unable to get topmost window view after " + timeoutMillis + " milliseconds (" + failCount + " attempts)", lastError);
     }
 
-    private static Pair<Boolean, NoActivityResumedException> applyDefaultRootMatcherOnUiThread(Activity activity, final Root root) {
-        final Container<Pair<Boolean, NoActivityResumedException>> matchesContainer = new Container<>();
-        activity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    matchesContainer.setContent(new Pair<Boolean, NoActivityResumedException>(
-                            RootMatchers.DEFAULT.matches(root),
-                            null
-                    ));
-                } catch (NoActivityResumedException error) {
-                    matchesContainer.setContent(new Pair<Boolean, NoActivityResumedException>(
-                            null,
-                            error
-                    ));
-                }
-            }
-        });
-        return matchesContainer.waitForContent();
+    // Should be run on UI thread
+    private static List<Root> listActiveRoots() throws IllegalAccessException, InvocationTargetException {
+        return (List) sRootsOracle_listActiveRoots.invoke(sRootsOracle);
     }
 
-    private static Root reduceRoots(List<Root> roots) {
-        try {
-            return (Root) sRootViewPicker_reduceRoots.invoke(sRootViewPicker, roots);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
-        }
+    // Should be run on UI thread
+    private static List<Root> applyDefaultRootMatcher(Iterable<Root> roots) {
+        return Lists.newArrayList(
+                Iterables.filter(roots, new Predicate<Root>() {
+                    @Override
+                    public boolean apply(Root root) {
+                        return RootMatchers.DEFAULT.matches(root);
+                    }
+                })
+        );
+    }
+
+    private static Root reduceRoots(List<Root> roots) throws IllegalAccessException, InvocationTargetException {
+        return (Root) sRootViewPicker_reduceRoots.invoke(sRootViewPicker, roots);
     }
 
 }
