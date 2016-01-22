@@ -80,6 +80,12 @@
         color: #D32F2F;
       }
 
+      #report .bitmap img {
+        max-height: 300px;
+        margin-top: 0.5em;
+        border: none;
+      }
+
       div#error {
         padding: 2em 4em;
         background-color: #F44336;
@@ -166,7 +172,15 @@
                     {{/logs}}
                   </ol>
                   {{#success}}
-                    <span class="success"><pre>{{{stringify result 2}}}</pre></span>
+                    <span class="success">
+                      {{#if_eq result.type "BITMAP"}}
+                        <a class="bitmap" href="{{result.uri}}" target="_blank">
+                          <img src="{{result.uri}}" />
+                        </a>
+                      {{else}}
+                        <pre>{{{stringify result 2}}}</pre>
+                      {{/if_eq}}
+                    </span>
                   {{/success}}
                   {{#error}}
                     <span class="error"><pre>{{description}}</pre></span>
