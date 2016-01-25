@@ -45,6 +45,11 @@ var hbs = express_handlebars.create({
       },
       count: function(arr) {
         return arr ? arr.length : 0;
+      },
+      if_eq: function(val, obj, options) {
+        return val === obj
+          ? options.fn(this)
+          : options.inverse(this);
       }
     },
 });
@@ -64,7 +69,7 @@ app.use(body_parser.urlencoded());
 
 app.use(express.static(__dirname + '/public'));
 require('./routes/auth')             .setup(app, {logged_in_homepage: '/apps'});
-require('./routes/landing_page')     .add_routes(app);
+require('./routes/public')           .add_routes(app);
 require('./routes/editor_demo')      .add_routes(app);
 require('./routes/editor')           .add_routes(app);
 require('./routes/websocket_server') .add_routes(app);
