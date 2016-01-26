@@ -29,6 +29,15 @@ public class WebViewTests extends WebViewTest {
         assertThat(buttonText, equalTo("\"Search\""));
     }
 
+    @Test public void returnsDataShorthand() {
+        exec(   "var button_text = in_webview(function() {",
+                "  return document.querySelector('input[type=submit]').value;",
+                "});");
+
+        String buttonText = exec("button_text");
+        assertThat(buttonText, equalTo("\"Search\""));
+    }
+
     @Test(expected = JavaScriptException.class)
     public void noWebViewError() {
         exec("in_webview({type: 'DoesNotExist'}, function() {});");
