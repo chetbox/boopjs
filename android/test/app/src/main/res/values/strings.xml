@@ -19,4 +19,6 @@
     <string name="alert_deny">Cancel</string>
     <string name="alert_undefined">Undefined</string>
 
+    <string name="web">Web view</string>
+
 </resources>
