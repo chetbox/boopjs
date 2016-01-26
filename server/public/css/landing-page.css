@@ -85,6 +85,14 @@ h6 {
     }
 }
 
+a.github {
+  padding-left: 2.5em !important;
+  background-image: url(/images/GitHub-Mark-Light-64px.png);
+  background-repeat: no-repeat;
+  background-size: 1.5em;
+  background-position: 0.5em center;
+}
+
 .network-name {
     text-transform: uppercase;
     font-size: 14px;
@@ -180,8 +188,9 @@ code {
   margin-top: 8px;
 }
 
+a.login-button, a.login-button:hover,
 .nav>li>a.login-button, .nav>li>a.login-button:hover {
-  padding: 0.5em 1em !important;
+  padding: 0.5em 1em;
   background-color: #FF5722 !important;
   color: rgba(255,255,255,0.87) !important;
   border-radius: 0.25em;
