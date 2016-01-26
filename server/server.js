@@ -46,10 +46,10 @@ var hbs = express_handlebars.create({
       count: function(arr) {
         return arr ? arr.length : 0;
       },
-      if_eq: function(val, obj, options) {
-        return val === obj
-          ? options.fn(this)
-          : options.inverse(this);
+      if_eq: function(a, b, opts) {
+        return (a === b)
+          ? opts.fn(this)
+          : opts.inverse(this);
       }
     },
 });
