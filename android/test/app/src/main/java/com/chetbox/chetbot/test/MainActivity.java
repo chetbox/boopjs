@@ -44,6 +44,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         mScreens.add(new Screen(Intents.SCREEN_STOPWATCH, getString(R.string.stopwatch), new StopwatchFragment()));
         mScreens.add(new Screen(Intents.SCREEN_TEXTFIELDS, getString(R.string.text_fields), new TextFieldsFragment()));
         mScreens.add(new Screen(Intents.SCREEN_ALERTS, getString(R.string.alerts), new AlertsFragment()));
+        mScreens.add(new Screen(Intents.SCREEN_WEBVIEW, getString(R.string.web), new WebFragment()));
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 

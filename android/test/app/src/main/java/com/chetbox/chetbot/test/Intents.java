@@ -7,4 +7,5 @@ public class Intents {
     public static final int SCREEN_STOPWATCH = 1;
     public static final int SCREEN_TEXTFIELDS = 2;
     public static final int SCREEN_ALERTS = 3;
+    public static final int SCREEN_WEBVIEW = 4;
 }
