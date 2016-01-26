@@ -1,4 +1,4 @@
-var version = [0, 7, 2];
+var version = [0, 7, 3];
 
 // Import android.*
 
@@ -510,4 +510,22 @@ function open_uri(uri) {
   var intent = new android.content.Intent(android.content.Intent.ACTION_VIEW);
   intent.setData(android.net.Uri.parse(uri));
   activity().startActivity(intent);
+}
+
+// WebViews
+
+function in_webview(selector, fn) {
+  var script = '(' + fn + ')()';
+  var v = view(selector);
+  if (!v) throw 'WebView not found';
+  if (!(v instanceof android.webkit.WebView)) throw v + ' is not a WebView';
+  var return_value = __container();
+  run_on_ui_thread(function() {
+    v.getSettings().setJavaScriptEnabled(true);
+    v.evaluateJavascript(script, function(value) {
+      return_value.set_content(value);
+    });
+  });
+  java.lang.Thread.sleep(100);
+  return return_value.wait_for_content();
 }
