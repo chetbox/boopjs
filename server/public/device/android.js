@@ -514,11 +514,18 @@ function open_uri(uri) {
 
 // WebViews
 
-function in_webview(selector, fn) {
+function in_webview(selector, fn, options) {
+  if (arguments.length === 1) {
+    // Shorthand
+    return in_webview({type: 'WebView'}, arguments[0]);
+  }
+  options = options || {};
   var script = '(' + fn + ')()';
-  var v = view(selector);
+
+  var v = wait_for(selector, options);
   if (!v) throw 'WebView not found';
   if (!(v instanceof android.webkit.WebView)) throw v + ' is not a WebView';
+
   var return_value = __container();
   run_on_ui_thread(function() {
     v.getSettings().setJavaScriptEnabled(true);
