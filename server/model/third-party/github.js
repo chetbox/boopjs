@@ -9,7 +9,7 @@ exports.user = function(username) {
     },
     json: true
   })
-  .spread(function(resp) {
+  .then(function(resp) {
     if (resp.statusCode !== 200) {
       throw 'HTTP error ' + resp.statusCode + ': ' + resp.body;
     }
