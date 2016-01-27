@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "NODE_ENV=test node_modules/mocha/bin/mocha --compilers coffee:coffee-script/register --recursive",
-    "postinstall": "node_modules/bower/bin/bower --allow-root install"
+    "postinstall": "node_modules/bower/lib/bin/bower --allow-root install"
   },
   "repository": {
     "type": "git",
@@ -22,7 +22,7 @@
     "aws-sdk": "^2.2.22",
     "bluebird": "^3.1.1",
     "body-parser": "^1.13.2",
-    "bower": "^1.4.1",
+    "bower": "1.7.x",
     "coffee-script": "^1.10.0",
     "config": "^1.14.0",
     "connect-flash": "^0.1.1",
