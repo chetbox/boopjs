@@ -32,15 +32,12 @@ exports.add_routes = (app) ->
   app.post '/api/v1/app',
     auth.login_required,
     (req, res, next) ->
-      user_apk_url = req.body.app_url
-      new_app_id = shortid.generate()
-
       # Allow admins to create a new app
       if req.body.as_user
         if !req.user.admin
           res.sendStatus 403
           return
-        console.log "Creating app #{new_app_id} for user #{req.body.as_user} (admin)"
+        console.log "Creating app for user #{req.body.as_user} (admin)"
         as_user = null
         db.users().find req.body.as_user
         .then (u) ->
@@ -49,14 +46,17 @@ exports.add_routes = (app) ->
           as_user = u
         .then ->
           model.apps.create_empty as_user.id
-        .then ->
+        .then (new_app) ->
           # Keep existing info (dynasty's .update is broken)
-          as_user.apps = _.union as_user.apps, [ new_app_id ]
+          as_user.apps = _.union as_user.apps, [ new_app.id ]
           db.users().insert as_user
-        .then ->
-          res.redirect '/app/' + new_app_id
+          .then ->
+            res.redirect '/app/' + new_app.id
         .catch next
         return
+
+      user_apk_url = req.body.app_url
+      new_app_id = shortid.generate()
 
       inject_s3_apk(user_apk_url)
       .spread (apk_info, modified_apk_url) ->
