@@ -120,7 +120,7 @@ exports.add_routes = (app) ->
           user_apk_url = existing_app.user_app_url
         inject_s3_apk user_apk_url
       .spread (apk_info, modified_apk_url) ->
-        if apk_info.identifier != existing_app.identifier
+        if existing_app.identifier && apk_info.identifier != existing_app.identifier
           throw new Error("Incorrect app identifier: #{apk_info.identifier}")
         console.log 'Updating appetize.io app', modified_apk_url
         [
