@@ -22,7 +22,6 @@ public class WebFragment extends Fragment {
             "<input name='q' type='text'/>" +
             "<input type='submit' name='sa' value='Search' />" +
             "</form>" +
-            "<script>document.body.innerHTML = 'nope';</script>" +
             "</body></html>";
 
     @Nullable
