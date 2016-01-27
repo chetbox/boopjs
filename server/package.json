@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "NODE_ENV=test node_modules/mocha/bin/mocha --compilers coffee:coffee-script/register --recursive",
-    "postinstall": "node_modules/bower/lib/bin/bower --allow-root install"
+    "postinstall": "node_modules/bower/bin/bower --allow-root install"
   },
   "repository": {
     "type": "git",
