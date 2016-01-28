@@ -27,6 +27,8 @@
         list-style: none;
         padding: 0;
         font-weight: 300;
+        display: inline-block;
+        text-align: left;
       }
 
       #emails li {
@@ -90,7 +92,7 @@
               {{#emails}}
                 <li>
                     <iron-icon icon="communication:email"></iron-icon>
-                    <span class="address">{{.}}</span>
+                    <span class="address">{{#unless email}}{{.}}{{else}}{{email}}{{/unless}}</span>
                 </li>
               {{/emails}}
             </ol>
