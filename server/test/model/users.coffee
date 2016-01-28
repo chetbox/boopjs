@@ -30,3 +30,31 @@ describe 'model/users', ->
       .then (emails) ->
         assert.deepEqual emails.sort(),
           [ 'one@example.com', 'too@example.com', 'two@example.com' ]
+
+  describe 'set_email_enabled', ->
+
+    it 'disables new email', ->
+      model.add
+        id: 'user_disable_email'
+        emails:
+          'byebye@example.com': { verified: true }
+      .then ->
+        model.set_email_enabled 'user_disable_email', 'byebye@example.com', false
+      .then ->
+        model.get 'user_disable_email'
+      .then (user) ->
+        assert.deepEqual user.emails,
+          'byebye@example.com': { verified: true, disabled: true }
+
+    it 'enables disabled email', ->
+      model.add
+        id: 'user_enable_email'
+        emails:
+          'hello@example.com': { verified: true, disabled: true }
+      .then ->
+        model.set_email_enabled 'user_enable_email', 'hello@example.com', true
+      .then ->
+        model.get 'user_enable_email'
+      .then (user) ->
+        assert.deepEqual user.emails,
+          'hello@example.com': { verified: true }

@@ -9,6 +9,7 @@ appetizeio = require.main.require './apps/appetizeio'
 inject_s3_apk = require.main.require './apps/android/inject-s3-apk'
 email = require.main.require './reporting/email'
 model =
+  users: require.main.require './model/users'
   apps: require.main.require './model/apps'
   code: require.main.require './model/code'
 test_runner = require.main.require './test_runner'
@@ -17,6 +18,14 @@ middleware = require './middleware'
 auth = require './auth'
 
 exports.add_routes = (app) ->
+
+  app.put '/api/v1/user/:user_id/email',
+    auth.login_required,
+    auth.ensure_logged_in_user('user_id'),
+    (req, res, next) ->
+      model.users.set_email_enabled req.params.user_id, req.body.address, req.body.enabled == 'true'
+      .then ->
+        res.sendStatus 200
 
   app.post '/api/v1/s3/sign_upload',
     auth.login_required,
@@ -27,7 +36,6 @@ exports.add_routes = (app) ->
         req.query.file_type
       .then (upload_req) ->
         res.json upload_req
-      .catch next
 
   app.post '/api/v1/app',
     auth.login_required,
@@ -39,21 +47,18 @@ exports.add_routes = (app) ->
           return
         console.log "Creating app for user #{req.body.as_user} (admin)"
         as_user = null
-        db.users().find req.body.as_user
-        .then (u) ->
-          if !u
+        return db.users().find req.body.as_user
+        .then (as_user) ->
+          if !as_user
             throw new Error("User not found: #{req.body.as_user}")
-          as_user = u
-        .then ->
+
           model.apps.create_empty as_user.id
-        .then (new_app) ->
-          # Keep existing info (dynasty's .update is broken)
-          as_user.apps = _.union as_user.apps, [ new_app.id ]
-          db.users().insert as_user
-          .then ->
-            res.redirect '/app/' + new_app.id
-        .catch next
-        return
+          .then (new_app) ->
+            # Keep existing info (dynasty's .update is broken)
+            as_user.apps = _.union as_user.apps, [ new_app.id ]
+            db.users().insert as_user
+            .then ->
+              res.redirect '/app/' + new_app.id
 
       user_apk_url = req.body.app_url
       new_app_id = shortid.generate()
@@ -99,7 +104,6 @@ exports.add_routes = (app) ->
         res.json
           app: { id: app.id }
           test: { id: code.id }
-      .catch next
 
   app.put '/api/v1/app/:app_id',
     auth.login_or_access_token_required,
@@ -148,7 +152,6 @@ exports.add_routes = (app) ->
           console.log "Skipping tests for #{app_id}"
       .then ->
         res.sendStatus 200
-      .catch next
 
   # Run all tests - handy for testing
   app.post '/api/v1/app/:app_id/run',

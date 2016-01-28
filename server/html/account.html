@@ -95,7 +95,7 @@
             <ol>
               {{#each emails}}
                 <li class="email {{#unless disabled}}enabled{{/unless}}">
-                  <paper-button>
+                  <paper-button onclick="set_email_enabled('{{@key}}', {{#disabled}}true{{else}}false{{/disabled}})">
                     <iron-icon icon="communication:email"></iron-icon>
                     <span class="address">{{@key}}</span>
                   </paper-button>
@@ -115,6 +115,22 @@
       </div>
     </paper-header-panel>
   </body>
+
+  <script src="/components/jquery/dist/jquery.min.js"></script>
+  <script>
+    function set_email_enabled(address, new_state) {
+      $.ajax({
+        url: '/api/v1/user/{{user.id}}/email',
+        data: {
+          address: address,
+          enabled: new_state
+        },
+        method: 'PUT',
+        success: function() { location.reload(); },
+        error: function(xhr) { alert(xhr.status + ' ' + xhr.statusText + ': ' + xhr.responseText); }
+      });
+    }
+  </script>
 
   {{> google-analytics}}
 
