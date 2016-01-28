@@ -30,12 +30,21 @@ exports.send_to_admins = function(message) {
 
 var admin_footer = util.format('\nAdmin: %s://%s/admin\n', config.host.protocol, config.host.address);
 
+function email_addresses(user) {
+  return Array.isArray(user.emails)
+    ? user.emails.map(function(e) {
+        return e.email;
+      })
+    : [];
+}
+
 exports.message = {
   new_user: function(user) {
     return {
       subject: util.format('%s signed up', user.displayName),
       body: util.format('%s (%s) signed up\n', user.displayName, user.username) +
             util.format('%s: %s\n', user.provider, user.profileUrl) +
+            util.format('email: %s\n\n', email_addresses(user).join(' ')) +
             admin_footer
     };
   },
@@ -44,7 +53,7 @@ exports.message = {
       subject: util.format('%s uploaded %s', user.displayName, app.name),
       body: util.format('%s (%s) uploaded an %s app\n', user.displayName, user.username, app.platform) +
             util.format('%s: %s\n', user.provider, user.profileUrl) +
-            util.format('email: %s\n\n', user.emails && user.emails.join(' ')) +
+            util.format('email: %s\n\n', email_addresses(user).join(' ')) +
             util.format('%s (%s)\n', app.name, app.identifier) +
             util.format('%s://%s/app/%s\n', config.host.protocol, config.host.address, app.id) +
             admin_footer
