@@ -21,8 +21,26 @@ exports.emails_for_users = (user_ids) ->
   .then (users) ->
     _.flatten(
       users \
-      .map (u) -> u.emails
-      .map (emails) -> if Array.isArray(emails) then emails else emails.values # Handle DynamoDB sets
-      .filter (emails) -> emails
+      .map (user) ->
+        _.map user.emails, (meta, address) ->
+          if meta.disabled then false else address
+        .filter (email) -> email
     )
-    .map (email) -> if typeof(email) == 'string' then email else email.email # TODO: never a string with new data model
+
+exports.set_email_enabled = (id, address, enabled) ->
+  if enabled
+    return db.update
+      Key: { id: id }
+      UpdateExpression: 'REMOVE emails.#address.disabled'
+      ConditionExpression: 'attribute_exists(emails.#address)'
+      ExpressionAttributeNames:
+        '#address': address
+  else
+    return db.update
+      Key: { id: id }
+      UpdateExpression: 'SET emails.#address.disabled = :disabled'
+      ConditionExpression: 'attribute_exists(emails.#address)'
+      ExpressionAttributeNames:
+        '#address': address
+      ExpressionAttributeValues:
+        ':disabled': true

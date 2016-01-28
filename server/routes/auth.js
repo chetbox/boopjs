@@ -59,7 +59,7 @@ passport.use(new GitHubStrategy(
       db.users().find(user.id),
       github.emails(accessToken)
     )
-    .spread(function(db_user, all_emails) {
+    .spread(function(db_user, emails) {
       var new_db_user = _.extend({},
         _.pick(user, function(val, key) {
           return val && _.contains(['id', 'username', 'displayName', 'profileUrl', 'provider'], key)
@@ -67,7 +67,7 @@ passport.use(new GitHubStrategy(
         {
           access_token: accessToken,
           avatarUrl: user._json.avatar_url,
-          emails: all_emails,
+          emails: emails,
           last_signed_in: new Date().getTime()
         },
         user.username === 'chetbox'
@@ -216,3 +216,4 @@ exports.login_required = login_required;
 exports.access_token_required = access_token_required;
 exports.login_or_access_token_required = login_or_access_token_required;
 exports.ensure_user_is_admin = ensure_user_is_admin;
+exports.ensure_logged_in_user = ensure_logged_in_user;

@@ -9,29 +9,20 @@ describe 'model/users', ->
 
   describe 'emails_for_users', ->
 
-    it 'gets emails for some users from set (old way)', ->
-      Promise.join(
-        model.add { id: 'user_email_old_1', emails: { type: 'String', values: [ 'one@example.com' ] } } # AWS-SDK
-        model.add { id: 'user_email_old_2', emails: [ 'two@example.com', 'too@example.com' ] } # Dynasty
-        model.add { id: 'user_email_old_3', emails: {} }
-        model.add { id: 'user_email_old_4' }
-      )
-      .then ->
-        model.emails_for_users [ 'user_email_old_1', 'user_email_old_2', 'user_email_old_3' ]
-      .then (emails) ->
-        assert.deepEqual emails.sort(),
-          [ 'one@example.com', 'too@example.com', 'two@example.com' ]
-
     it 'gets emails for some users', ->
       Promise.join(
-        model.add { id: 'user_email_1', emails: [
-          { email: 'one@example.com' }
-        ] }
-        model.add { id: 'user_email_2', emails: [
-          { email: 'two@example.com', verified: true }
-          { email: 'too@example.com', verified: true }
-        ] }
-        model.add { id: 'user_email_3', emails: {} }
+        model.add
+          id: 'user_email_1'
+          emails:
+            'one@example.com': { verified: true }
+        model.add
+          id: 'user_email_2'
+          emails:
+            'two@example.com': { verified: true, primary: true }
+            'too@example.com': { verified: true }
+        model.add
+          id: 'user_email_3'
+          emails: {}
         model.add { id: 'user_email_4' }
       )
       .then ->
@@ -39,3 +30,42 @@ describe 'model/users', ->
       .then (emails) ->
         assert.deepEqual emails.sort(),
           [ 'one@example.com', 'too@example.com', 'two@example.com' ]
+
+    it 'ignores disabled email addresses', ->
+      model.add
+        id: 'user_email_ignored'
+        emails:
+          'mememe@example.com': { verified: true }
+          'ignoreme@example.com': { verified: true, disabled: true }
+      .then ->
+        model.emails_for_users [ 'user_email_ignored' ]
+      .then (emails) ->
+        assert.deepEqual emails, [ 'mememe@example.com' ]
+
+  describe 'set_email_enabled', ->
+
+    it 'disables new email', ->
+      model.add
+        id: 'user_disable_email'
+        emails:
+          'byebye@example.com': { verified: true }
+      .then ->
+        model.set_email_enabled 'user_disable_email', 'byebye@example.com', false
+      .then ->
+        model.get 'user_disable_email'
+      .then (user) ->
+        assert.deepEqual user.emails,
+          'byebye@example.com': { verified: true, disabled: true }
+
+    it 'enables disabled email', ->
+      model.add
+        id: 'user_enable_email'
+        emails:
+          'hello@example.com': { verified: true, disabled: true }
+      .then ->
+        model.set_email_enabled 'user_enable_email', 'hello@example.com', true
+      .then ->
+        model.get 'user_enable_email'
+      .then (user) ->
+        assert.deepEqual user.emails,
+          'hello@example.com': { verified: true }
