@@ -25,3 +25,4 @@ exports.emails_for_users = (user_ids) ->
       .map (emails) -> if Array.isArray(emails) then emails else emails.values # Handle DynamoDB sets
       .filter (emails) -> emails
     )
+    .map (email) -> if typeof(email) == 'string' then email else email.email # TODO: never a string with new data model
