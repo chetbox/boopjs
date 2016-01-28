@@ -19,8 +19,13 @@ exports.emails_for_users = (user_ids) ->
     Keys: user_ids.map (id) -> id: id
     AttributesToGet: [ 'emails' ]
   .then (users) ->
-    _.flatten \
-      users.map (u) -> Object.keys u.emails
+    _.flatten(
+      users \
+      .map (user) ->
+        _.map user.emails, (meta, address) ->
+          if meta.disabled then false else address
+        .filter (email) -> email
+    )
 
 exports.set_email_enabled = (id, address, enabled) ->
   if enabled

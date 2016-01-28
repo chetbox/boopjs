@@ -31,6 +31,17 @@ describe 'model/users', ->
         assert.deepEqual emails.sort(),
           [ 'one@example.com', 'too@example.com', 'two@example.com' ]
 
+    it 'ignores disabled email addresses', ->
+      model.add
+        id: 'user_email_ignored'
+        emails:
+          'mememe@example.com': { verified: true }
+          'ignoreme@example.com': { verified: true, disabled: true }
+      .then ->
+        model.emails_for_users [ 'user_email_ignored' ]
+      .then (emails) ->
+        assert.deepEqual emails, [ 'mememe@example.com' ]
+
   describe 'set_email_enabled', ->
 
     it 'disables new email', ->
