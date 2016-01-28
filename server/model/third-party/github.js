@@ -40,5 +40,9 @@ exports.emails = function(access_token) {
   .filter(function(entry) {
     // Remove GitHub's noreply address
     return !entry.email.match(/@users\.noreply\.github\.com$/);
-  });
+  })
+  .reduce(function(obj, entry) {
+    obj[entry.email] = _.omit(entry, 'email');
+    return obj;
+  }, {});
 }

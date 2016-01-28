@@ -31,14 +31,18 @@
         text-align: left;
       }
 
-      #emails li {
-        opacity: 0.5;
+      #emails li paper-button {
+        color: #777;
         text-transform: lowercase;
       }
 
       #emails li iron-icon {
-        opacity: 0.5;
+        color: #a7a7a7;
         margin-right: 0.25em;
+      }
+
+      #emails li.enabled iron-icon {
+        color: #2196F3;
       }
 
       #emails .address {
@@ -89,12 +93,14 @@
           </div>
           <div id="emails">
             <ol>
-              {{#emails}}
-                <li>
+              {{#each emails}}
+                <li class="email {{#unless disabled}}enabled{{/unless}}">
+                  <paper-button>
                     <iron-icon icon="communication:email"></iron-icon>
-                    <span class="address">{{#unless email}}{{.}}{{else}}{{email}}{{/unless}}</span>
+                    <span class="address">{{@key}}</span>
+                  </paper-button>
                 </li>
-              {{/emails}}
+              {{/each}}
             </ol>
           </div>
         {{/requested_user}}

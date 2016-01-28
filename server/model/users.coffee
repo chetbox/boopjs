@@ -19,10 +19,5 @@ exports.emails_for_users = (user_ids) ->
     Keys: user_ids.map (id) -> id: id
     AttributesToGet: [ 'emails' ]
   .then (users) ->
-    _.flatten(
-      users \
-      .map (u) -> u.emails
-      .map (emails) -> if Array.isArray(emails) then emails else emails.values # Handle DynamoDB sets
-      .filter (emails) -> emails
-    )
-    .map (email) -> if typeof(email) == 'string' then email else email.email # TODO: never a string with new data model
+    _.flatten \
+      users.map (u) -> Object.keys u.emails
