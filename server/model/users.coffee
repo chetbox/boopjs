@@ -21,3 +21,21 @@ exports.emails_for_users = (user_ids) ->
   .then (users) ->
     _.flatten \
       users.map (u) -> Object.keys u.emails
+
+exports.set_email_enabled = (id, address, enabled) ->
+  if enabled
+    return db.update
+      Key: { id: id }
+      UpdateExpression: 'REMOVE emails.#address.disabled'
+      ConditionExpression: 'attribute_exists(emails.#address)'
+      ExpressionAttributeNames:
+        '#address': address
+  else
+    return db.update
+      Key: { id: id }
+      UpdateExpression: 'SET emails.#address.disabled = :disabled'
+      ConditionExpression: 'attribute_exists(emails.#address)'
+      ExpressionAttributeNames:
+        '#address': address
+      ExpressionAttributeValues:
+        ':disabled': true
