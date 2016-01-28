@@ -67,7 +67,12 @@ passport.use(new GitHubStrategy(
         {
           access_token: accessToken,
           avatarUrl: user._json.avatar_url,
-          emails: emails,
+          emails: _.mapObject(emails, function(meta, address) {
+            if (db_user && db_user.emails && db_user.emails[address] && db_user.emails[address].disabled) {
+              meta.disabled = true;
+            }
+            return meta;
+          }),
           last_signed_in: new Date().getTime()
         },
         user.username === 'chetbox'
