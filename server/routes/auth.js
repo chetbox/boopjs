@@ -13,6 +13,7 @@ var model = {
   access_tokens: require.main.require('./model/access_tokens'),
   users: require.main.require('./model/users')
 };
+var github = require.main.require('./model/third-party/github');
 
 var DEBUG_AS_USER = process.env.DEBUG_AS_USER;
 
@@ -51,38 +52,46 @@ passport.use(new GitHubStrategy(
   ),
   function(accessToken, refreshToken, user, done) {
     console.log('User authenticated: ' + user.username);
+
     // TODO: generate internal user ID for session serialisation
-    var new_db_user = _.extend(
-      {},
-      _.pick(user, function(val, key) {
-        return val && _.contains(['id', 'username', 'displayName', 'profileUrl', 'provider'], key)
-      }),
-      {
-        avatarUrl: user._json.avatar_url,
-        emails: user.emails.map(function(i) { return i.value; }),
-        last_signed_in: new Date().getTime()
-      }
-    );
 
-    // Make Chet an admin
-    if (new_db_user.username == 'chetbox') {
-      new_db_user.admin = 1;
-    }
+    Promise.join(
+      db.users().find(user.id),
+      github.emails(accessToken)
+    )
+    .spread(function(db_user, emails) {
+      var new_db_user = _.extend({},
+        _.pick(user, function(val, key) {
+          return val && _.contains(['id', 'username', 'displayName', 'profileUrl', 'provider'], key)
+        }),
+        {
+          access_token: accessToken,
+          avatarUrl: user._json.avatar_url,
+          emails: _.mapObject(emails, function(meta, address) {
+            if (db_user && db_user.emails && db_user.emails[address] && db_user.emails[address].disabled) {
+              meta.disabled = true;
+            }
+            return meta;
+          }),
+          last_signed_in: new Date().getTime()
+        },
+        user.username === 'chetbox'
+          ? { admin: 1 }
+          : {}
+      );
 
-    // TODO: fix grossness ('apps' stored as part of user object)
-    db.users()
-    .find(user.id)
-    .then(function(db_user) {
       if (!db_user) {
-        email.send_to_admins(email.message.new_user(new_db_user));
+        email.send_to_admins(email.message.new_user(new_db_user))
+        .catch(console.error);
       }
-      return db_user;
+
+      return [
+        new_db_user,
+        db.users().insert( _.extend({}, db_user || {}, new_db_user) )
+      ];
     })
-    .then(function(db_user) {
-      return db.users().insert( _.extend({}, db_user || {}, new_db_user) );
-    })
-    .then(function() {
-      done(null, new_db_user);
+    .spread(function(user) {
+      done(null, user);
     })
     .catch(done);
   }
@@ -212,3 +221,4 @@ exports.login_required = login_required;
 exports.access_token_required = access_token_required;
 exports.login_or_access_token_required = login_or_access_token_required;
 exports.ensure_user_is_admin = ensure_user_is_admin;
+exports.ensure_logged_in_user = ensure_logged_in_user;

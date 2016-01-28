@@ -27,16 +27,22 @@
         list-style: none;
         padding: 0;
         font-weight: 300;
+        display: inline-block;
+        text-align: left;
       }
 
-      #emails li {
-        opacity: 0.5;
+      #emails li paper-button {
+        color: #777;
         text-transform: lowercase;
       }
 
       #emails li iron-icon {
-        opacity: 0.5;
+        color: #a7a7a7;
         margin-right: 0.25em;
+      }
+
+      #emails li.enabled iron-icon {
+        color: #2196F3;
       }
 
       #emails .address {
@@ -87,12 +93,14 @@
           </div>
           <div id="emails">
             <ol>
-              {{#emails}}
-                <li>
+              {{#each emails}}
+                <li class="email {{#unless disabled}}enabled{{/unless}}">
+                  <paper-button onclick="set_email_enabled('{{@key}}', {{#disabled}}true{{else}}false{{/disabled}})">
                     <iron-icon icon="communication:email"></iron-icon>
-                    <span class="address">{{.}}</span>
+                    <span class="address">{{@key}}</span>
+                  </paper-button>
                 </li>
-              {{/emails}}
+              {{/each}}
             </ol>
           </div>
         {{/requested_user}}
@@ -107,6 +115,22 @@
       </div>
     </paper-header-panel>
   </body>
+
+  <script src="/components/jquery/dist/jquery.min.js"></script>
+  <script>
+    function set_email_enabled(address, new_state) {
+      $.ajax({
+        url: '/api/v1/user/{{user.id}}/email',
+        data: {
+          address: address,
+          enabled: new_state
+        },
+        method: 'PUT',
+        success: function() { location.reload(); },
+        error: function(xhr) { alert(xhr.status + ' ' + xhr.statusText + ': ' + xhr.responseText); }
+      });
+    }
+  </script>
 
   {{> google-analytics}}
 
