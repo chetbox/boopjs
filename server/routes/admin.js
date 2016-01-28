@@ -28,7 +28,7 @@ exports.add_routes = function(app) {
     auth.login_required,
     auth.ensure_user_is_admin,
     function(req, res, next) {
-      github_api.user(req.params.username)
+      github_api.user_public(req.params.username)
       .then(function(gh_user) {
         return [gh_user, db.users().find(gh_user.id)];
       })
