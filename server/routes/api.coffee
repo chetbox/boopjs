@@ -29,7 +29,7 @@ exports.add_routes = (app) ->
       .catch next
 
   app.post '/api/v1/s3/sign_upload',
-    auth.login_required,
+    auth.login_or_access_token_required,
     (req, res, next) ->
       s3.client_upload_request \
         'chetbot-apps',
