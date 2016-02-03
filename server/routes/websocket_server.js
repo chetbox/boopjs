@@ -1,6 +1,6 @@
 var debug = require('debug')('chetbot/' + require('path').relative(process.cwd(), __filename).replace(/\.js$/, ''));
 
-exports.add_routes = function(app) {
+exports.add_routes = function(app, server) {
 
   var _ = require('underscore');
   var Promise = require('bluebird');
@@ -19,7 +19,7 @@ exports.add_routes = function(app) {
 
   var auth = require('./auth');
 
-  var expressWs = require('express-ws')(app);
+  var expressWs = require('express-ws')(app, server);
 
   var devices_connected = {};
   var clients_connected = {};

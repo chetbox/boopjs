@@ -7,6 +7,7 @@ var express_handlebars = require('express-handlebars');
 var Handlebars = require('handlebars');
 var moment = require('moment');
 var body_parser = require('body-parser');
+var http = require('http');
 var https = require('https');
 var fs = require('fs');
 
@@ -74,7 +75,6 @@ require('./routes/auth')             .setup(app, {logged_in_homepage: '/apps'});
 require('./routes/public')           .add_routes(app);
 require('./routes/editor_demo')      .add_routes(app);
 require('./routes/editor')           .add_routes(app);
-require('./routes/websocket_server') .add_routes(app);
 require('./routes/admin')            .add_routes(app);
 require('./routes/api')              .add_routes(app);
 
@@ -87,17 +87,27 @@ app.use(function(err, req, res, next) {
   email.send_to_admins(email.message.error(req.url, req.user, err));
 });
 
-// SSL
 
+// HTTP(S) server
+
+var server;
 if (process.env.SSL_KEY && process.env.SSL_CERT) {
-  app = https.createServer({
+  server = https.createServer({
     key: fs.readFileSync(process.env.SSL_KEY),
     cert: fs.readFileSync(process.env.SSL_CERT)
   }, app);
+} else {
+  server = http.createServer(app);
 }
+
+
+// Websocket server
+
+require('./routes/websocket_server') .add_routes(app, server);
+
 
 // Launch
 
-app.listen(port, function() {
+server.listen(port, function() {
     console.log((new Date()) + ' Server is listening on port ' + port + ' with configuration: ' + process.env.NODE_ENV);
 });
