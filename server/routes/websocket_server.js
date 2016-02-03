@@ -129,21 +129,24 @@ exports.add_routes = function(app, server) {
 
   app.ws('/api/device', function(ws, req) {
 
-    debug('device: connected');
+    debug('device: connected', req.query.id);
+
+    if (!req.query.id) {
+      fail_on_error(ws, true)(new Error('Device ID not specified'));
+      return;
+    }
+
+    model.devices.check_device_exists(req.query.id)
+    .then(function() {
+      ws.device_registered = req.query.id;
+      devices_connected[req.query.id] = ws;
+    })
+    .catch(fail_on_error(ws, true));
 
     ws.on('message', function(messageStr) {
       var message = JSON.parse(messageStr);
 
-      if (message.register_device) {
-        debug('device: register', message.register_device);
-        model.devices.check_device_exists(message.register_device)
-        .then(function() {
-          ws.device_registered = message.register_device;
-          devices_connected[message.register_device] = ws;
-        })
-        .catch(fail_on_error(ws));
-
-      } else if (ws.device_registered) {
+      if (ws.device_registered) {
         debug('device: response', messageStr.substring(0, 200));
         var client = clients_connected[ws.device_registered];
 

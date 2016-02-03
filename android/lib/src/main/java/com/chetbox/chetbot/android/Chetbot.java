@@ -65,7 +65,6 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler, Provider<
 
         // Connect to Chetbot server
         if (!TextUtils.isEmpty(mServerWsUrl)) {
-
             Log.d(TAG, "Starting boop.js (" + mServerWsUrl + ")");
             if (!quiet) {
                 Toast.makeText(activity, "Starting boop.js", Toast.LENGTH_SHORT).show();
