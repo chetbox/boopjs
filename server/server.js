@@ -53,7 +53,8 @@ var hbs = express_handlebars.create({
         return (a === b)
           ? opts.fn(this)
           : opts.inverse(this);
-      }
+      },
+      encodeURIComponent: encodeURIComponent
     },
 });
 
