@@ -7,6 +7,8 @@ var express_handlebars = require('express-handlebars');
 var Handlebars = require('handlebars');
 var moment = require('moment');
 var body_parser = require('body-parser');
+var https = require('https');
+var fs = require('fs');
 
 require('bluebird').config({
   longStackTraces: true
@@ -84,6 +86,15 @@ app.use(function(err, req, res, next) {
   res.status(500).send(err.message || err.toString());
   email.send_to_admins(email.message.error(req.url, req.user, err));
 });
+
+// SSL
+
+if (process.env.SSL_KEY && process.env.SSL_CERT) {
+  app = https.createServer({
+    key: fs.readFileSync(process.env.SSL_KEY),
+    cert: fs.readFileSync(process.env.SSL_CERT)
+  }, app);
+}
 
 // Launch
 
