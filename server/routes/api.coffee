@@ -116,14 +116,21 @@ exports.add_routes = (app) ->
     middleware.check_user_can_access_app 'app_id'
     (req, res, next) ->
       app_id = req.params.app_id
-      user_app_url = if req.body.s3_path \
-        then s3.url(req.body.s3_bucket, req.body.s3_path)
-        else req.body.url
 
       db.apps().find app_id
       .then (existing_app) ->
         if !existing_app
           throw new Error("App #{app_id} not found")
+
+        # Hack to allow updating an existing app
+        if req.body.use_existing == 'true'
+          s3_url = existing_app.user_app_url.match /https?:\/\/([^\./]+)\.s3\.amazonaws\.com\/(.*)/
+          if s3_url
+            req.body.s3_bucket = s3_url[1]
+            req.body.s3_path = s3_url[2]
+          else
+            req.body.url = existing_app.user_app_url
+
         inject_apk
           s3_src_bucket: req.body.s3_bucket
           s3_src_path: req.body.s3_path
@@ -144,14 +151,16 @@ exports.add_routes = (app) ->
           if existing_app.publicKey and existing_app.publicKey != appetize_resp.publicKey
             throw new Error('New public key does not match existing')
           new_app = _.extend {}, existing_app, apk_info,
-            user_app_url: user_app_url
+            user_app_url: if req.body.s3_path \
+              then s3.url(req.body.s3_bucket, req.body.s3_path)
+              else req.body.url
             app_url: modified_apk_url
             privateKey: appetize_resp.privateKey # ensure this is set
             publicKey: appetize_resp.publicKey # ensure this is set
             updated_at: Date.now()
           db.apps().insert new_app
         .then ->
-          if !req.body.skip_tests
+          if req.body.skip_tests != 'true'
             return test_runner.run_all app_id
           else
             console.log "Skipping tests for #{app_id}"
