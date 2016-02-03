@@ -2,17 +2,12 @@ var config = require('config');
 var AWS = require('aws-sdk');
 var Promise = require('bluebird');
 var s3 = Promise.promisifyAll(new AWS.S3(config.get('aws.s3')));
-var requestAsync = Promise.promisify(require('request'));
 var fs = Promise.promisifyAll(require('fs'));
-var os = require('os');
-var path = require('path');
-var sh = require('shelljs');
 var url = require('url');
 
-var tmp_dir = path.join(os.tmpdir(), 'chetbot.s3');
-sh.mkdir('-p', tmp_dir);
+var debug = require('debug')('chetbot/' + require('path').relative(process.cwd(), __filename).replace(/\.(js|coffee)$/, ''));
 
-function s3_url(bucket, file_path) {
+exports.url = function(bucket, file_path) {
   return url.format({
     protocol: 'https',
     host: bucket + '.s3.amazonaws.com',
@@ -20,44 +15,47 @@ function s3_url(bucket, file_path) {
   });
 }
 
-module.exports.client_upload_request = function(bucket, file_path, content_type) {
+exports.client_upload_request = function(bucket, path, content_type) {
+  debug('client_upload_request', bucket, path, content_type);
   return s3.getSignedUrlAsync('putObject', {
     Bucket: bucket,
-    Key: file_path,
+    Key: path,
     Expires: 60,
-    ACL: 'public-read', // We should be able to make this private as long as the S3 user can read
+    ACL: 'authenticated-read',
     ContentType: content_type || undefined
   })
   .then(function(data) {
     return {
       signed_request: data,
-      url: s3_url(bucket, file_path)
+      s3_bucket: bucket,
+      s3_path: path
     };
   })
 };
 
-module.exports.download = function(url) {
-  var output_file = path.join(tmp_dir, path.basename(url));
-  return requestAsync(url, { encoding: null })
+exports.download = function(bucket, path) {
+  debug('download', bucket, path);
+  return s3.getObjectAsync({
+    Bucket: bucket,
+    Key: path
+  })
   .then(function(response) {
-    return fs.writeFileAsync(output_file, response.body);
-  })
-  .then(function() {
-    return output_file;
-  })
+    return response.Body;
+  });
 };
 
-module.exports.upload = function(file, bucket, file_path) {
+exports.upload = function(file, bucket, s3_path) {
+  debug('upload', file, bucket, s3_path);
   return fs.readFileAsync(file)
   .then(function(data) {
     return s3.putObjectAsync({
       Bucket: bucket,
-      Key: file_path.replace(/^\//, ''),
+      Key: s3_path.replace(/^\//, ''),
       ACL: 'public-read',
       Body: new Buffer(data, 'binary')
     });
   })
   .then(function() {
-    return s3_url(bucket, file_path);
+    return exports.url(bucket, s3_path);
   });
 }
