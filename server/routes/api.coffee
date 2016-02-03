@@ -26,9 +26,10 @@ exports.add_routes = (app) ->
       model.users.set_email_enabled req.params.user_id, req.body.address, req.body.enabled == 'true'
       .then ->
         res.sendStatus 200
+      .catch next
 
   app.post '/api/v1/s3/sign_upload',
-    auth.login_required,
+    auth.login_or_access_token_required,
     (req, res, next) ->
       s3.client_upload_request \
         'chetbot-apps',
@@ -36,6 +37,7 @@ exports.add_routes = (app) ->
         req.query.file_type
       .then (upload_req) ->
         res.json upload_req
+      .catch next
 
   app.post '/api/v1/app',
     auth.login_required,
@@ -59,6 +61,7 @@ exports.add_routes = (app) ->
             db.users().insert as_user
             .then ->
               res.redirect '/app/' + new_app.id
+            .catch next
 
       user_apk_url = req.body.app_url
       new_app_id = shortid.generate()
@@ -104,6 +107,7 @@ exports.add_routes = (app) ->
         res.json
           app: { id: app.id }
           test: { id: code.id }
+      .catch next
 
   app.put '/api/v1/app/:app_id',
     auth.login_or_access_token_required,
@@ -152,6 +156,7 @@ exports.add_routes = (app) ->
           console.log "Skipping tests for #{app_id}"
       .then ->
         res.sendStatus 200
+      .catch next
 
   app.get /\/api\/v1\/app\/([^\/]*?)\/badge\.(svg|png|json)/,
     (req, res, next) ->
@@ -172,6 +177,7 @@ exports.add_routes = (app) ->
         }[status_text]
         request "https://img.shields.io/badge/boop.js-#{app.version.replace(/^v?/,'v')}%20#{status_text.replace '_', ' '}%20(#{successful}/#{total} passed)-#{color}.#{req.params[1]}"
         .pipe res
+      .catch next
 
   # Run all tests - handy for testing
   app.post '/api/v1/app/:app_id/run',
@@ -181,3 +187,4 @@ exports.add_routes = (app) ->
       test_runner.run_all req.params.app_id
       .then ->
         res.sendStatus 200
+      .catch next
