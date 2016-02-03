@@ -1,16 +1,13 @@
 package com.chetbox.chetbot.android;
 
-import android.graphics.Bitmap;
 import android.util.Log;
 
-import com.chetbox.chetbot.android.util.Images;
 import com.chetbox.chetbot.android.util.Logs;
 import com.chetbox.chetbot.android.util.Rhino;
 import com.google.common.base.Throwables;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
-import org.mozilla.javascript.Scriptable;
 
 import java.net.URI;
 
@@ -28,7 +25,6 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
     public static class Script {
         private Statement[] statements;
         private String name;
-        private String device;
     }
 
     public static class Statement {
@@ -51,12 +47,10 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
     }
 
     private static class Result {
-        private String device;
         private int line;
         private Object result;
 
-        public Result(String device, int line, Object result) {
-            this.device = device;
+        public Result(int line, Object result) {
             this.line = line;
             this.result = result;
         }
@@ -64,13 +58,11 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
 
     private static class LogMessage {
 
-        private String device;
         private int line;
         private Object log;
         private Logs.Level level;
 
-        public LogMessage(String device, int lineNo, Logs.Level level, Object logObject) {
-            this.device = device;
+        public LogMessage(int lineNo, Logs.Level level, Object logObject) {
             this.line = lineNo;
             this.log = logObject;
             this.level = level;
@@ -78,14 +70,12 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
     }
 
     private static class Error {
-        private String device;
         private int line;
         private String error;
         private String stacktrace;
         private String type = "execution";
 
-        public Error(String device, int line, Throwable error) {
-            this.device = device;
+        public Error(int line, Throwable error) {
             this.line = line;
             this.error = error.getMessage();
             this.stacktrace = Throwables.getStackTraceAsString(error);
@@ -93,24 +83,20 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
     }
 
     private static class UncaughtError {
-        private String device;
         private String error;
         private String stacktrace;
         private String type = "uncaught";
 
-        public UncaughtError(String device, Throwable error) {
-            this.device = device;
+        public UncaughtError(Throwable error) {
             this.error = error.getMessage();
             this.stacktrace = Throwables.getStackTraceAsString(error);
         }
     }
 
     private static class Success {
-        private String device;
         private boolean success;
 
-        public Success(String device, boolean success) {
-            this.device = device;
+        public Success(boolean success) {
             this.success = success;
         }
     }
@@ -128,7 +114,7 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            Log.d(TAG, "Reconnecting to ChetBot server...");
+            Log.d(TAG, "Reconnecting to boop.js server...");
             mServerConnection = new ServerConnectionImpl();
             mServerConnection.connect();
         }
@@ -136,7 +122,6 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
     private Thread mReconnectThread = null;
 
     private final URI mHost;
-    private final String mDeviceId;
     private final ScriptHandler mScriptHandler;
 
     private volatile int mCurrentLine = 0;
@@ -145,9 +130,8 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
     private boolean mRequiresSetup = true;
 
 
-    public ChetbotServerConnection(String host, String deviceId, ScriptHandler scriptHandler) {
-        mHost = URI.create("ws://" + host + "/api/device");
-        mDeviceId = deviceId;
+    public ChetbotServerConnection(String serverUrl, ScriptHandler scriptHandler) {
+        mHost = URI.create(serverUrl);
         mScriptHandler = scriptHandler;
         mServerConnection = new ServerConnectionImpl();
         mServerConnection.connect();
@@ -170,7 +154,6 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
                 mRequiresSetup = false;
             }
             Log.d(TAG, "HTTP " + handshakeData.getHttpStatus() + ": " + handshakeData.getHttpStatusMessage());
-            sendAsJson(new DeviceRegistration(mDeviceId));
         }
 
         @Override
@@ -187,16 +170,16 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
                     }
                     mCurrentLine = stmt.line;
                     Object result = mScriptHandler.onStatement(stmt, script.name);
-                    sendAsJson(new Result(script.device, stmt.line, result));
+                    sendAsJson(new Result(stmt.line, result));
                 }
             } catch (Throwable e) {
                 mCurrentScriptSuccess = false;
-                Error error = new Error(script.device, mCurrentLine, e);
+                Error error = new Error(mCurrentLine, e);
                 Log.e(TAG, "error: " + Rhino.GSON.toJson(error));
                 e.printStackTrace();
                 sendAsJson(error);
             } finally {
-                sendAsJson(new Success(script.device, mCurrentScriptSuccess));
+                sendAsJson(new Success(mCurrentScriptSuccess));
                 mScriptHandler.onFinishScript();
                 mCurrentLine = 0;
             }
@@ -205,21 +188,13 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
         private void onUncaughtError(Throwable e) {
             e.printStackTrace();
             mCurrentScriptSuccess = false;
-            if (mDeviceId != null) {
-                UncaughtError error = new UncaughtError(mDeviceId, e);
-                Log.e(TAG, "uncaught error: " + Rhino.GSON.toJson(error));
-                sendAsJson(error);
-            } else {
-                Log.w(TAG, "Not connected. Unable to send to device.");
-            }
+            UncaughtError error = new UncaughtError(e);
+            Log.e(TAG, "uncaught error: " + Rhino.GSON.toJson(error));
+            sendAsJson(error);
         }
 
         private void onLogMessage(Logs.Level level, Object data) {
-            if (mDeviceId != null) {
-                sendAsJson(new LogMessage(mDeviceId, mCurrentLine, level, data));
-            } else {
-                Log.w(TAG, "Not connected. Unable to send log message to device.");
-            }
+            sendAsJson(new LogMessage(mCurrentLine, level, data));
         }
 
         @Override

@@ -39,7 +39,10 @@ public abstract class BaseTest {
         @Override
         protected Intent getActivityIntent() {
             Intent intent = super.getActivityIntent();
-            intent.putExtra("chetbot.server", mAssetServer.getHostName() + ":" + mAssetServer.getPort());
+            intent.putExtra("boop.server", "ws://dummy/device/XXXXXX");
+            intent.putExtra("boop.scripts", Rhino.GSON.toJson(new String[]{
+                    mAssetServer.url("/device/android.js").toString()
+            }));
             return withIntent(intent);
         }
     };
