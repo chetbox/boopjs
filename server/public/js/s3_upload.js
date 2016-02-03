@@ -70,7 +70,7 @@ function s3_upload(file_input, target_input, opts) {
           $.ajax({
             url: $form.attr('action') || location.pathname,
             method: $form.attr('method'),
-            data: { app_url: req.url },
+            data: { s3_bucket: req.s3_bucket, s3_path: req.s3_path },
             success: function(data) {
               progress('Done.');
               success(data);
