@@ -11,6 +11,7 @@ import com.chetbox.chetbot.android.util.InputEvents;
 import com.chetbox.chetbot.android.util.Logs;
 import com.chetbox.chetbot.android.util.Rhino;
 import com.chetbox.chetbot.android.util.RootViews;
+import com.google.gson.JsonSyntaxException;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
@@ -28,7 +29,6 @@ import javax.inject.Provider;
 public class Chetbot implements ChetbotServerConnection.ScriptHandler, Provider<Logs.LogMessageHandler> {
 
     public static final String TAG = Chetbot.class.getSimpleName();
-    private static final String CHETBOT_LIB_ENDPOINT = "/device/android.js";
     private static final OkHttpClient HTTP_CLIENT = new OkHttpClient();
 
     private static Chetbot sInstance = null;
@@ -39,36 +39,38 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler, Provider<
     private org.mozilla.javascript.Context mJsContext;
     private ScriptableObject mJsScope;
 
-    private String mServer;
+    private String mServerWsUrl;
     private String[] mScriptsUrls = new String[]{};
     private String mUserScript = null;
 
 
     private Chetbot(Activity activity) {
-        mServer = activity.getIntent().getStringExtra("chetbot.server");
-
-        String extraScriptUrls = activity.getIntent().getStringExtra("chetbot.scripts");
-        if (extraScriptUrls != null) {
-            mScriptsUrls = extraScriptUrls.split(",");
+        String scriptUrls = activity.getIntent().getStringExtra("boop.scripts");
+        if (scriptUrls != null) {
+            try {
+                mScriptsUrls = Rhino.GSON.fromJson(scriptUrls, String[].class);
+            } catch (JsonSyntaxException e) {
+                e.printStackTrace();
+                Toast.makeText(activity, e.toString(), Toast.LENGTH_LONG).show();
+            }
         }
 
-        mUserScript = activity.getIntent().getStringExtra("chetbot.exec");
-
+        mServerWsUrl = activity.getIntent().getStringExtra("boop.server");
+        mUserScript = activity.getIntent().getStringExtra("boop.exec");
         mPackageName = activity.getPackageName();
     }
 
     public void connect(final Activity activity) {
-        String deviceId = activity.getIntent().getStringExtra("chetbot.device");
-        boolean quiet = !TextUtils.isEmpty( activity.getIntent().getStringExtra("chetbot.quiet") );
+        boolean quiet = !TextUtils.isEmpty( activity.getIntent().getStringExtra("boop.quiet") );
 
         // Connect to Chetbot server
-        if (!TextUtils.isEmpty(mServer) && !TextUtils.isEmpty(deviceId)) {
+        if (!TextUtils.isEmpty(mServerWsUrl)) {
 
-            Log.d(TAG, "Starting ChetBot (" + deviceId + ")");
+            Log.d(TAG, "Starting boop.js (" + mServerWsUrl + ")");
             if (!quiet) {
-                Toast.makeText(activity, "Starting ChetBot", Toast.LENGTH_SHORT).show();
+                Toast.makeText(activity, "Starting boop.js", Toast.LENGTH_SHORT).show();
             }
-            mServerConnection = new ChetbotServerConnection(mServer, deviceId, this);
+            mServerConnection = new ChetbotServerConnection(mServerWsUrl, this);
 
             UncaughtExceptionHandler.addListener(new UncaughtExceptionHandler.ExceptionListener() {
                 @Override
@@ -124,18 +126,6 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler, Provider<
 
         mJsScope = sealJsScope(mJsContext, mJsScope);
 
-        if (mServer != null) {
-            try {
-                String script = getTextFromUrl("http://" + mServer + CHETBOT_LIB_ENDPOINT);
-                mJsContext.evaluateString(mJsScope, script, "<chetbot>", 1, null);
-            } catch (Throwable t) {
-                handleScriptError(t);
-                return;
-            } finally {
-                 mJsScope = sealJsScope(mJsContext, mJsScope);
-            }
-        }
-
         try {
             for (final String scriptUrl : mScriptsUrls) {
                 String script = getTextFromUrl(scriptUrl);
@@ -146,6 +136,8 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler, Provider<
             }
         } catch (Throwable t) {
             handleScriptError(t);
+        } finally {
+            mJsScope = sealJsScope(mJsContext, mJsScope);
         }
     }
 
