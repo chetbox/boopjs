@@ -165,6 +165,8 @@ exports.add_routes = function(app) {
             }
           }),
           server: host.address,
+          server_url: (host.protocol === 'https' ? 'wss' : 'ws') + '://' + host.address + '/api/device?id=' + device_id,
+          api_url: host.protocol + '://' + host.address + '/device/android.js',
           app: app,
           autosave: true,
           code: _.extend({}, code, {
