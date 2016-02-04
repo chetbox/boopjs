@@ -6,10 +6,14 @@ import com.chetbox.chetbot.android.util.Logs;
 import com.chetbox.chetbot.android.util.Rhino;
 import com.google.common.base.Throwables;
 
+import org.java_websocket.client.DefaultSSLWebSocketClientFactory;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
 import java.net.URI;
+import java.security.NoSuchAlgorithmException;
+
+import javax.net.ssl.SSLContext;
 
 public class ChetbotServerConnection implements Logs.LogMessageHandler {
 
@@ -145,6 +149,15 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
 
         public ServerConnectionImpl() {
             super(mHost);
+            if (mHost.getScheme().equals("wss")) {
+                try {
+                    SSLContext sslContext = SSLContext.getDefault();
+                    setWebSocketFactory(new DefaultSSLWebSocketClientFactory(sslContext));
+                } catch (NoSuchAlgorithmException e) {
+                    e.printStackTrace();
+                    onUncaughtError(e);
+                }
+            }
         }
 
         @Override
