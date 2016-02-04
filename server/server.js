@@ -93,10 +93,14 @@ app.use(function(err, req, res, next) {
 
 var server;
 if (process.env.SSL_KEY && process.env.SSL_CERT) {
-  server = https.createServer({
+  var options = {
     key: fs.readFileSync(process.env.SSL_KEY),
     cert: fs.readFileSync(process.env.SSL_CERT)
-  }, app);
+  };
+  if (process.env.SSL_CA) {
+    options.ca = fs.readFileSync(process.env.SSL_CA);
+  }
+  server = https.createServer(options, app);
 } else {
   server = http.createServer(app);
 }
