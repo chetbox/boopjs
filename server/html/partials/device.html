@@ -1,3 +1,4 @@
+<script src="/components/underscore/underscore-min.js" charset="utf-8"></script>
 <style type="text/css">
   #device {
     position: absolute;
@@ -15,19 +16,27 @@
 </iframe>
 
 <script>
-  // Heartbeat to prevent device timing out
+  // Ensure the device starts
   var device_iframe = document.getElementById('device');
-  setInterval(function() {
-    device_iframe.contentWindow.postMessage('heartbeat', '*');
-  }, 15 * 1000);
-
-  // Ensure the device is running
-  setInterval(function() {
+  var ensure_device_loaded = setInterval(function() {
     device_iframe.contentWindow.postMessage('requestSession', '*');
   }, 5 * 1000);
 
-  // Appetize.io logging
+  // Expose a way of keeping the device running
+  window.keep_device_running = _.throttle(
+    function() {
+      device_iframe.contentWindow.postMessage('requestSession', '*');
+      device_iframe.contentWindow.postMessage('heartbeat', '*');
+    },
+    5 * 1000,
+    { trailing: false }
+  );
+
   window.addEventListener('message', function(event) {
+    if (event.data === 'firstFrameReceived') {
+      clearInterval(ensure_device_loaded);
+    }
+    // Appetize.io logging
     console.log('appetize.io: ' + event.data);
   });
 </script>
