@@ -2,7 +2,7 @@ exports.add_routes = function(app) {
 
   var fs = require('fs');
   var shortid = require('shortid');
-  var host_address = require('config').get('host.address');
+  var host = require('config').get('host');
 
   var devices = require.main.require('./model/devices');
 
@@ -17,7 +17,9 @@ exports.add_routes = function(app) {
           model: 'nexus5',
           orientation: 'portrait',
         },
-        server: host_address,
+        server: host.address,
+        server_url: (host.protocol === 'https' ? 'wss' : 'ws') + '://' + host.address + '/api/device?id=' + device_id,
+        api_url: host.protocol + '://' + host.address + '/device/android.js',
         app: {
           icon: '/favicon.ico',
           publicKey: '5v1d0qrmwy74yhq5w33zc12ar0'
