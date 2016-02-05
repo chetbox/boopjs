@@ -6,7 +6,7 @@ request = require 'request'
 db = require.main.require './db'
 s3 = require.main.require './model/third-party/s3'
 appetizeio = require.main.require './apps/appetizeio'
-inject_s3_apk = require.main.require './apps/android/inject-s3-apk'
+inject_apk = require.main.require './apps/android/inject-remote-apk'
 email = require.main.require './reporting/email'
 model =
   users: require.main.require './model/users'
@@ -63,10 +63,12 @@ exports.add_routes = (app) ->
               res.redirect '/app/' + new_app.id
             .catch next
 
-      user_apk_url = req.body.app_url
+      user_app_url = s3.url(req.body.s3_bucket, req.body.s3_path)
       new_app_id = shortid.generate()
 
-      inject_s3_apk(user_apk_url)
+      inject_apk
+        s3_src_bucket: req.body.s3_bucket
+        s3_src_path: req.body.s3_path
       .spread (apk_info, modified_apk_url) ->
         console.log 'Creating appetize.io app', modified_apk_url
         [
@@ -80,7 +82,7 @@ exports.add_routes = (app) ->
           id: new_app_id
           admins: [ req.user.id ]
           platform: 'android'
-          user_app_url: user_apk_url
+          user_app_url: user_app_url
           app_url: modified_apk_url
           publicKey: appetize_resp.publicKey
           privateKey: appetize_resp.privateKey
@@ -114,48 +116,56 @@ exports.add_routes = (app) ->
     middleware.check_user_can_access_app 'app_id'
     (req, res, next) ->
       app_id = req.params.app_id
-      user_apk_url = req.body.app_url
-      existing_app = undefined
 
       db.apps().find app_id
-      .then (app) ->
-        if !app
+      .then (existing_app) ->
+        if !existing_app
           throw new Error("App #{app_id} not found")
-        existing_app = app
-      .then ->
-        if req.body.app_url == 'EXISTING'
-          console.log "Using existing app URL #{existing_app.user_app_url}"
-          user_apk_url = existing_app.user_app_url
-        inject_s3_apk user_apk_url
-      .spread (apk_info, modified_apk_url) ->
-        if existing_app.identifier && apk_info.identifier != existing_app.identifier
-          throw new Error("Incorrect app identifier: #{apk_info.identifier}")
-        console.log 'Updating appetize.io app', modified_apk_url
-        [
-          apk_info
-          modified_apk_url
-          appetizeio.update_app existing_app.privateKey, modified_apk_url, 'android'
-        ]
-      .spread (apk_info, modified_apk_url, appetize_resp) ->
-        console.log 'Updating app', app_id
-        if existing_app.privateKey and existing_app.privateKey != appetize_resp.privateKey
-          throw new Error('New private key does not match existing')
-        if existing_app.publicKey and existing_app.publicKey != appetize_resp.publicKey
-          throw new Error('New public key does not match existing')
-        existing_app.user_app_url = user_apk_url
-        existing_app.app_url = modified_apk_url
-        existing_app.privateKey = appetize_resp.privateKey # ensure this is set
-        existing_app.publicKey = appetize_resp.publicKey # ensure this is set
-        existing_app = _.extend existing_app, apk_info
-        existing_app.updated_at = Date.now()
-        db.apps().insert existing_app
-      .then ->
-        if !req.body.skip_tests
-          return test_runner.run_all app_id
-        else
-          console.log "Skipping tests for #{app_id}"
-      .then ->
-        res.sendStatus 200
+
+        # Hack to allow updating an existing app
+        if req.body.use_existing == 'true'
+          s3_url = existing_app.user_app_url.match /https?:\/\/([^\./]+)\.s3\.amazonaws\.com\/(.*)/
+          if s3_url
+            req.body.s3_bucket = s3_url[1]
+            req.body.s3_path = s3_url[2]
+          else
+            req.body.url = existing_app.user_app_url
+
+        inject_apk
+          s3_src_bucket: req.body.s3_bucket
+          s3_src_path: req.body.s3_path
+          src_url: req.body.url
+        .spread (apk_info, modified_apk_url) ->
+          if existing_app.identifier && apk_info.identifier != existing_app.identifier
+            throw new Error("Incorrect app identifier: #{apk_info.identifier}")
+          console.log 'Updating appetize.io app', modified_apk_url
+          [
+            apk_info
+            modified_apk_url
+            appetizeio.update_app existing_app.privateKey, modified_apk_url, 'android'
+          ]
+        .spread (apk_info, modified_apk_url, appetize_resp) ->
+          console.log 'Updating app', app_id
+          if existing_app.privateKey and existing_app.privateKey != appetize_resp.privateKey
+            throw new Error('New private key does not match existing')
+          if existing_app.publicKey and existing_app.publicKey != appetize_resp.publicKey
+            throw new Error('New public key does not match existing')
+          new_app = _.extend {}, existing_app, apk_info,
+            user_app_url: if req.body.s3_path \
+              then s3.url(req.body.s3_bucket, req.body.s3_path)
+              else req.body.url
+            app_url: modified_apk_url
+            privateKey: appetize_resp.privateKey # ensure this is set
+            publicKey: appetize_resp.publicKey # ensure this is set
+            updated_at: Date.now()
+          db.apps().insert new_app
+        .then ->
+          if req.body.skip_tests != 'true'
+            return test_runner.run_all app_id
+          else
+            console.log "Skipping tests for #{app_id}"
+        .then ->
+          res.sendStatus 200
       .catch next
 
   app.get /\/api\/v1\/app\/([^\/]*?)\/badge\.(svg|png|json)/,

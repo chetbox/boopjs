@@ -12,8 +12,9 @@ function run_script(server, device_id, app_id, code_id, started_at, statements, 
 
   callback('beforeStart', script.statements);
 
+  var protocol = window.location.protocol.match(/https/) ? 'wss' : 'ws';
   var ws = new WebSocket(
-    'ws://' + server + '/api/client'
+    protocol + '://' + server + '/api/client'
     + '?device=' + encodeURIComponent(device_id)
     + '&app=' + encodeURIComponent(app_id)
     + (code_id

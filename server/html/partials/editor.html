@@ -273,6 +273,14 @@ window.addEventListener('message', function(event) {
   }
 </script>
 
+<script>
+  // If the user is interacting with the editor or REPL prevent the device timing out
+  editor.on('change', keep_device_running);
+  if (window.repl) {
+    repl.on('change', keep_device_running);
+  }
+</script>
+
 <!-- test runner -->
 <script src="/js/esprima.min.js" charset="utf-8"></script>
 <script src="/js/escodegen.min.js" charset="utf-8"></script>
