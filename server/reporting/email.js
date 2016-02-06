@@ -59,10 +59,21 @@ exports.message = {
             admin_footer
     };
   },
+  updated_app: function(user, app) {
+    return {
+      subject: util.format('%s updated %s', user.displayName, app.name),
+      body: util.format('%s (%s) updated an %s app\n', user.displayName, user.username, app.platform) +
+            util.format('%s: %s\n', user.provider, user.profileUrl) +
+            util.format('email: %s\n\n', email_addresses(user).join(' ')) +
+            util.format('%s (%s)\n', app.name, app.identifier) +
+            util.format('%s://%s/app/%s\n', config.host.protocol, config.host.address, app.id) +
+            admin_footer
+    };
+  },
   error: function(url, user, err) {
     return {
       subject: util.format('Error: %s', err.message || err.toString()),
-      body: (user ? util.format('User %s (%s) ', user.displayName, user.username) : '') +
+      body: (user ? util.format('User %s (%s, %s) ', user.displayName, user.username, user.id) : '') +
             'encountered an uncaught error on page:\n' +
             util.format('%s://%s%s\n', config.host.protocol, config.host.address, url) +
             (user ? util.format('%s: %s\n', user.provider, user.profileUrl) : '') +
