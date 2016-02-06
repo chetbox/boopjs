@@ -1,6 +1,8 @@
 assert = require 'assert'
 Promise = require 'bluebird'
 
+db = require('../../db').v2.users
+
 # SUT
 model = require '../../model/users'
 
@@ -69,3 +71,50 @@ describe 'model/users', ->
       .then (user) ->
         assert.deepEqual user.emails,
           'hello@example.com': { verified: true }
+
+  describe 'grant_access_to_app', ->
+
+    it 'adds apps to existing user', ->
+      model.add
+        id: 'user_grant_access'
+      .then ->
+        model.grant_access_to_app 'user_grant_access', 'app_1'
+      .then ->
+        model.get 'user_grant_access'
+        .then (user) ->
+          assert.deepEqual user.apps.values, [ 'app_1' ]
+      .then ->
+        model.grant_access_to_app 'user_grant_access', 'app_2'
+      .then ->
+        model.get 'user_grant_access'
+        .then (user) ->
+          assert.deepEqual user.apps.values.sort(), [ 'app_1', 'app_2' ]
+
+    it 'fails to add app to non-existent user', (done) ->
+      model.grant_access_to_app 'user_does_not_exist', 'app'
+      .thenThrow new Error('Expected error')
+      .catch -> done()
+
+  describe 'revoke_access_to_app', ->
+
+    it 'removes apps from existing user', ->
+      model.add
+        id: 'user_revoke_access'
+        apps: db.create_set [ 'app_1', 'app_2' ]
+      .then ->
+        model.revoke_access_to_app 'user_revoke_access', 'app_1'
+      .then ->
+        model.get 'user_revoke_access'
+        .then (user) ->
+          assert.deepEqual user.apps.values, [ 'app_2' ]
+      .then ->
+        model.revoke_access_to_app 'user_revoke_access', 'app_2'
+      .then ->
+        model.get 'user_revoke_access'
+        .then (user) ->
+          assert !user.apps
+
+    it 'fails to remove app from non-existent user', (done) ->
+      model.revoke_access_to_app 'user_does_not_exist', 'app'
+      .thenThrow new Error('Expected error')
+      .catch -> done()
