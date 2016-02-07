@@ -5,7 +5,7 @@ var s3 = Promise.promisifyAll(new AWS.S3(config.get('aws.s3')));
 var fs = Promise.promisifyAll(require('fs'));
 var url = require('url');
 
-var debug = require('debug')('chetbot/' + require('path').relative(process.cwd(), __filename).replace(/\.(js|coffee)$/, ''));
+var debug = require('debug')('chetbot:' + require('path').relative(process.cwd(), __filename).replace(/\.(js|coffee)$/, ''));
 
 exports.url = function(bucket, file_path) {
   return url.format({

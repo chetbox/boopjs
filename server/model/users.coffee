@@ -1,5 +1,5 @@
 _ = require 'underscore'
-debug = require('debug')('chetbot/' + require('path').relative(process.cwd(), __filename).replace(/\.(js|coffee)$/, ''))
+debug = require('debug')('chetbot:' + require('path').relative(process.cwd(), __filename).replace(/\.(js|coffee)$/, ''))
 
 db = require('../db').v2.users
 

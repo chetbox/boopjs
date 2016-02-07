@@ -1,7 +1,7 @@
 var config = require('config');
 var Promise = require('bluebird');
 var request = Promise.promisifyAll(require('request'));
-var debug = require('debug')('chetbot/' + require('path').relative(process.cwd(), __filename).replace(/\.js$/, ''));
+var debug = require('debug')('chetbot:' + require('path').relative(process.cwd(), __filename).replace(/\.js$/, ''));
 
 var db = require.main.require('./db');
 var model = {

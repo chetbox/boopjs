@@ -8,7 +8,7 @@ var cluster = require('cluster');
 var _ = require('underscore');
 var fs = require('fs');
 
-var debug = require('debug')('chetbot/' + require('path').relative(process.cwd(), __filename).replace(/\.(js|coffee)$/, ''));
+var debug = require('debug')('chetbot:' + require('path').relative(process.cwd(), __filename).replace(/\.(js|coffee)$/, ''));
 
 require('coffee-script/register');
 var tmp = require('./tmp');
