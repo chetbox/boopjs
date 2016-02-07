@@ -2,8 +2,8 @@
   "name": "chetbot-server",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
+    "start": "node index.js",
     "test": "NODE_ENV=test node_modules/mocha/bin/mocha --compilers coffee:coffee-script/register --recursive",
     "postinstall": "node_modules/bower/bin/bower --allow-root install"
   },
