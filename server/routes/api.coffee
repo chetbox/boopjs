@@ -67,7 +67,7 @@ exports.add_routes = (app) ->
           res.status 202
           .json
             ready: false
-            status: app.processing_status.status
+            progress: app.processing_status.progress
             error: app.processing_status.error
         else
           res.status 200

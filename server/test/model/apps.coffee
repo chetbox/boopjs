@@ -202,13 +202,13 @@ describe 'model/apps', ->
       .then ->
         model.get app.id
       .then (app) ->
-        assert.equal app.processing_status.status, 'Starting'
+        assert.equal app.processing_status.progress, 'Starting'
       .then ->
         model.set_processing_status app.id, 'Downloading'
       .then ->
         model.get app.id
       .then (app) ->
-        assert.equal app.processing_status.status, 'Downloading'
+        assert.equal app.processing_status.progress, 'Downloading'
 
   describe 'mark_as_processed', ->
     app = undefined

@@ -318,21 +318,47 @@
 
   <script src="/js/s3_upload.js"></script>
   <script>
+    function handle_upload_error(error) {
+      $('#app-update .status').addClass('error').text(error).show();
+    }
+
+    function handle_upload_progress(progress) {
+      $('#app-update .status').removeClass('error').text(progress).show();
+    }
+
+    function update_processing_status() {
+      $.ajax({
+        url: '/api/v1/app/{{app.id}}/processing-status',
+        method: 'GET',
+        success: function(status) {
+          if (status.error) {
+            return handle_upload_error(error);
+          }
+          if (status.ready) {
+            location.reload();
+          } else {
+            handle_upload_progress(status.progress)
+            setTimeout(update_processing_status, 1000);
+          }
+        },
+        error: handle_upload_error
+      });
+    }
+
     s3_upload($('#app-update input[type=file]'), $('#app-update input[name=app_url]'), {
       click: function() {
         stop_auto_refresh();
       },
-      progress: function(progress) {
-        $('#app-update .status').removeClass('error').text(progress).show();
-      },
-      error: function(error) {
-        $('#app-update .status').addClass('error').text(error).show();
-      },
-      success: function() {
-        location.reload();
-      },
+      progress: handle_upload_progress,
+      success: update_processing_status,
+      error: handle_upload_error,
       google_analytics: ga
     });
+
+    {{#app.processing_status}}
+    $('#app-update input[type=file]').hide();
+    update_processing_status();
+    {{/app.processing_status}}
   </script>
 
   <script src="/js/rename-test.js"></script>
