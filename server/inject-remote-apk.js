@@ -87,6 +87,12 @@ function check_app_identifier(apk_info, expected_identifier) {
   }
 }
 
+function upload_to_s3(path) {
+  var new_filename = shortid.generate() + '.chetbot.apk';
+  debug('Uploading to S3', path, new_filename);
+  return s3.upload(path, 'chetbot-apps-v1', new_filename);
+}
+
 function upload_to_appetize(existing_app, apk_url) {
   debug('Uploading to appetize.io');
   return (existing_app.publicKey
@@ -154,11 +160,9 @@ if (cluster.isWorker) {
     .then(function(modified_apk_file) {
       var apk_info = get_apk_info(modified_apk_file);
 
-      var new_app_s3_filename = shortid.generate() + '.chetbot.apk';
-      debug('Uploading ' + modified_apk_file + ' to S3', new_app_s3_filename);
       return Promise.join(
         db.apps().find(job.data.app_id),
-        s3.upload(modified_apk_file, 'chetbot-apps-v1', new_app_s3_filename)
+        upload_to_s3(modified_apk_file)
       )
       .tap(function() {
         fs.unlinkSync(modified_apk_file);
