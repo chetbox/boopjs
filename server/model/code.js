@@ -5,7 +5,7 @@ var Promise = require('bluebird');
 
 var db = require('../db').v2.code;
 var apps = require('./apps');
-var debug = require('debug')('chetbot/' + require('path').relative(process.cwd(), __filename).replace(/\.js$/, ''));
+var debug = require('debug')('chetbot:' + require('path').relative(process.cwd(), __filename).replace(/\.js$/, ''));
 
 var welcome_code = fs.readFileSync(__dirname + '/../demos/welcome.js', 'utf8');
 

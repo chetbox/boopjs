@@ -5,7 +5,7 @@ var shortid = require('shortid');
 var yaml = require('js-yaml');
 var walk = require('fs-walk').walkSync;
 
-var debug = require('debug')('chetbot/' + require('path').relative(process.cwd(), __filename).replace(/\.(js|coffee)$/, ''));
+var debug = require('debug')('chetbot:' + require('path').relative(process.cwd(), __filename).replace(/\.(js|coffee)$/, ''));
 
 var xml_utils = require('./utils/xml');
 var smali_utils = require('./utils/smali');

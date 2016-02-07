@@ -2,7 +2,7 @@ var config = require('config');
 var dynasty = require('dynasty')(config.get('aws.dynamodb'));
 var Promise = require('bluebird');
 var _ = require('underscore');
-var debug = require('debug')('chetbot/' + require('path').relative(process.cwd(), __filename).replace(/\.(js|coffee)$/, ''));
+var debug = require('debug')('chetbot:' + require('path').relative(process.cwd(), __filename).replace(/\.(js|coffee)$/, ''));
 
 var TABLES = {
   'users': {

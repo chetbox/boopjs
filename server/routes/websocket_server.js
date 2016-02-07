@@ -1,4 +1,4 @@
-var debug = require('debug')('chetbot/' + require('path').relative(process.cwd(), __filename).replace(/\.js$/, ''));
+var debug = require('debug')('chetbot:' + require('path').relative(process.cwd(), __filename).replace(/\.js$/, ''));
 
 exports.add_routes = function(app, server) {
 

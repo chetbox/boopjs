@@ -5,7 +5,7 @@ var shortid = require('shortid');
 var db = require('../db').v2.results;
 var code = require('./code');
 
-var debug = require('debug')('chetbot/' + require('path').relative(process.cwd(), __filename).replace(/\.js$/, ''));
+var debug = require('debug')('chetbot:' + require('path').relative(process.cwd(), __filename).replace(/\.js$/, ''));
 
 exports.report_from_statements = function(statements) {
   return statements.reduce(function(report, stmt) {
