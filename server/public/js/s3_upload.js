@@ -13,6 +13,7 @@ function s3_upload(file_input, target_input, opts) {
   }
 
   function progress(msg) {
+    $(file_input).hide();
     if (opts.progress) { opts.progress(msg); }
   }
 
@@ -22,6 +23,27 @@ function s3_upload(file_input, target_input, opts) {
 
   function success(response) {
     if (opts.success) { opts.success(response); }
+  }
+
+  function update_processing_status(upload_response) {
+    $.ajax({
+      url: '/api/v1/app/' + upload_response.app.id + '/processing-status',
+      method: 'GET',
+      success: function(status) {
+        if (status.error) {
+          return error(status.error);
+        }
+        if (status.ready) {
+          success(upload_response);
+        } else {
+          progress(status.progress);
+          setTimeout(function() {
+            update_processing_status(upload_response);
+          }, 5 * 1000);
+        }
+      },
+      error: error
+    });
   }
 
   $(file_input)
@@ -63,7 +85,7 @@ function s3_upload(file_input, target_input, opts) {
         if (xhr.status === 200) {
           ga('send', 'event', 'app-upload', 'uploaded');
 
-          progress('Waiting for server');
+          progress('Notifiying server');
           $(target_input).val(req.url);
 
           var $form = $(target_input).closest('form');
@@ -72,8 +94,8 @@ function s3_upload(file_input, target_input, opts) {
             method: $form.attr('method'),
             data: { s3_bucket: req.s3_bucket, s3_path: req.s3_path },
             success: function(data) {
-              progress('Done.');
-              success(data);
+              progress('Waiting for server');
+              update_processing_status(data);
             },
             error: function(xhr) {
               console.error(xhr);
@@ -95,4 +117,8 @@ function s3_upload(file_input, target_input, opts) {
       xhr.send(file);
     });
   });
+
+  return {
+    show_processing_status: update_processing_status
+  };
 }
