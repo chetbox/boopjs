@@ -2,8 +2,8 @@
   "name": "chetbot-server",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
+    "start": "node index.js",
     "test": "NODE_ENV=test node_modules/mocha/bin/mocha --compilers coffee:coffee-script/register --recursive",
     "postinstall": "node_modules/bower/bin/bower --allow-root install"
   },
@@ -23,6 +23,7 @@
     "bluebird": "^3.1.1",
     "body-parser": "^1.13.2",
     "bower": "1.7.x",
+    "bull": "^0.7.0",
     "coffee-script": "^1.10.0",
     "config": "^1.14.0",
     "connect-flash": "^0.1.1",

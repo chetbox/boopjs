@@ -1,5 +1,5 @@
 _ = require 'underscore'
-debug = require('debug')('chetbot/' + require('path').relative(process.cwd(), __filename).replace(/\.(js|coffee)$/, ''))
+debug = require('debug')('chetbot:' + require('path').relative(process.cwd(), __filename).replace(/\.(js|coffee)$/, ''))
 
 db = require('../db').v2.users
 
@@ -44,3 +44,18 @@ exports.set_email_enabled = (id, address, enabled) ->
         '#address': address
       ExpressionAttributeValues:
         ':disabled': true
+
+exports.grant_access_to_app = (id, app_ids...) ->
+  return db.update
+    Key: { id: id }
+    UpdateExpression: 'ADD apps :new_apps'
+    ExpressionAttributeValues:
+      ':new_apps': db.create_set app_ids
+    ConditionExpression: 'attribute_exists(id)'
+
+exports.revoke_access_to_app = (id, app_ids...) ->
+  return db.update
+    Key: { id: id }
+    UpdateExpression: 'DELETE apps :apps_to_remove'
+    ExpressionAttributeValues:
+      ':apps_to_remove': db.create_set app_ids

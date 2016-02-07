@@ -318,21 +318,25 @@
 
   <script src="/js/s3_upload.js"></script>
   <script>
-    s3_upload($('#app-update input[type=file]'), $('#app-update input[name=app_url]'), {
+    var app_upload = s3_upload($('#app-update input[type=file]'), $('#app-update input[name=app_url]'), {
       click: function() {
-        stop_auto_refresh();
+        if (window.stop_auto_refresh) stop_auto_refresh();
       },
-      progress: function(progress) {
-        $('#app-update .status').removeClass('error').text(progress).show();
-      },
-      error: function(error) {
-        $('#app-update .status').addClass('error').text(error).show();
+      progress: function(msg) {
+        $('#app-update .status').removeClass('error').text(msg).show();
       },
       success: function() {
         location.reload();
       },
+      error: function(msg) {
+        $('#app-update .status').addClass('error').text(msg).show();
+      },
       google_analytics: ga
     });
+
+    {{#app.processing_status}}
+      app_upload.show_processing_status({ app: { id: '{{../app.id}}' }});
+    {{/app.processing_status}}
   </script>
 
   <script src="/js/rename-test.js"></script>

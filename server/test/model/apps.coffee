@@ -183,3 +183,63 @@ describe 'model/apps', ->
           success: true
       .then (app) ->
         assert app.pending_report
+
+  describe 'set_processing_status', ->
+    app = undefined
+
+    beforeEach 'create app', ->
+      model.create_empty 'user_set_processing_status'
+      .then (_app) ->
+        app = _app
+
+    it 'has no processing status', ->
+      model.get app.id
+      .then (app) ->
+        assert !app.processing_status
+
+    it 'sets status', ->
+      model.set_processing_status app.id, 'Starting'
+      .then ->
+        model.get app.id
+      .then (app) ->
+        assert.equal app.processing_status.progress, 'Starting'
+      .then ->
+        model.set_processing_status app.id, 'Downloading'
+      .then ->
+        model.get app.id
+      .then (app) ->
+        assert.equal app.processing_status.progress, 'Downloading'
+
+  describe 'mark_as_processed', ->
+    app = undefined
+
+    beforeEach 'create app', ->
+      model.create_empty 'user_mark_as_processed'
+      .then (_app) ->
+        app = _app
+      .then ->
+        model.set_processing_status app.id, 'Unprocessed'
+
+    it 'sets status', ->
+      model.mark_as_processed app.id
+      .then ->
+        model.get app.id
+      .then (app) ->
+        assert !app.processing_status
+
+  describe 'set_processing_error', ->
+    app = undefined
+
+    beforeEach 'create app', ->
+      model.create_empty 'user_set_processing_error'
+      .then (_app) ->
+        app = _app
+      .then ->
+        model.set_processing_status app.id, 'Unprocessed'
+
+    it 'sets processing error', ->
+      model.set_processing_error app.id, new Error('Some error')
+      .then ->
+        model.get app.id
+      .then (app) ->
+        assert app.processing_status.error, 'Some error'
