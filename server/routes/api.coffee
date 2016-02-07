@@ -57,22 +57,6 @@ exports.add_routes = (app) ->
           test: { id: new_code.id }
       .catch next
 
-  app.get '/api/v1/app/:app_id/processing-status',
-    auth.login_required
-    middleware.check_user_can_access_app 'app_id'
-    (req, res, next) ->
-      model.apps.get req.params.app_id
-      .then (app) ->
-        if app.processing_status
-          res.status 202
-          .json
-            ready: false
-            progress: app.processing_status.progress
-            error: app.processing_status.error
-        else
-          res.status 200
-          .json { ready: true }
-
   app.put '/api/v1/app/:app_id',
     auth.login_or_access_token_required
     middleware.check_user_can_access_app 'app_id'
@@ -96,7 +80,28 @@ exports.add_routes = (app) ->
           inject_apk.add_public_url_to_queue req.user.id, req.params.app_id, req.body.url, options
         else
           inject_apk.add_s3_file_to_queue req.user.id, req.params.app_id, req.body.s3_bucket, req.body.s3_path, options
-        res.sendStatus 202
+        res.status 202
+        .json
+          app: { id: req.params.app_id }
+      .catch next
+
+  app.get '/api/v1/app/:app_id/processing-status',
+    auth.login_required
+    middleware.check_user_can_access_app 'app_id'
+    (req, res, next) ->
+      model.apps.get req.params.app_id
+      .then (app) ->
+        if !app
+          throw new Error("app #{req.params.app_id} not found")
+        if app.processing_status
+          res.status 202
+          .json
+            ready: false
+            progress: app.processing_status.progress
+            error: app.processing_status.error
+        else
+          res.status 200
+          .json { ready: true }
       .catch next
 
   app.get /\/api\/v1\/app\/([^\/]*?)\/badge\.(svg|png|json)/,
