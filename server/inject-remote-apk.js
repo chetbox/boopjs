@@ -6,6 +6,7 @@ var Queue = require('bull');
 var config = require('config');
 var cluster = require('cluster');
 var _ = require('underscore');
+var fs = require('fs');
 
 var debug = require('debug')('chetbot/' + require('path').relative(process.cwd(), __filename).replace(/\.(js|coffee)$/, ''));
 
@@ -159,6 +160,9 @@ if (cluster.isWorker) {
         db.apps().find(job.data.app_id),
         s3.upload(modified_apk_file, 'chetbot-apps-v1', new_app_s3_filename)
       )
+      .tap(function() {
+        fs.unlinkSync(modified_apk_file);
+      })
       .spread(function(existing_app, modified_apk_url) {
         check_app_identifier(apk_info, existing_app.identifier);
 
