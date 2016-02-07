@@ -1,6 +1,3 @@
-// Set random seed
-require('shortid').seed(56873);
-
 var express = require('express');
 var app = express();
 var express_handlebars = require('express-handlebars');
@@ -11,23 +8,12 @@ var http = require('http');
 var https = require('https');
 var fs = require('fs');
 
-require('bluebird').config({
-  longStackTraces: true
-});
-
-require('coffee-script/register');
-
-var db = require('./db').v2;
 var email = require('./reporting/email');
 
 // Settings
 
 var port = process.env.PORT || 8001;
 
-
-// Database
-
-db.setup();
 
 // Mustache setup
 
@@ -113,6 +99,8 @@ require('./routes/websocket_server') .add_routes(app, server);
 
 // Launch
 
-server.listen(port, function() {
+exports.run = function() {
+  server.listen(port, function() {
     console.log((new Date()) + ' Server is listening on port ' + port + ' with configuration: ' + process.env.NODE_ENV);
-});
+  });
+}
