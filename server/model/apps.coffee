@@ -78,3 +78,31 @@ exports.get_pending_report = (id) ->
   .then (app) ->
     if !app then throw new Error("App #{id} not found")
     !!app.pending_report
+
+exports.set_processing_status = (id, status) ->
+  debug 'set_processing_status', id, status
+  db.update
+    Key: { id: id }
+    UpdateExpression: 'SET processing_status = :status'
+    ExpressionAttributeValues:
+      ':status':
+        timestamp: Date.now()
+        status: status
+    ConditionExpression: 'attribute_exists(id)'
+
+exports.mark_as_processed = (id) ->
+  debug 'mark_as_processed', id
+  db.update
+    Key: { id: id }
+    UpdateExpression: 'REMOVE processing_status'
+
+exports.set_processing_error = (id, err) ->
+  debug 'set_processing_error', id, err
+  db.update
+    Key: { id: id }
+    UpdateExpression: 'SET processing_status = :err'
+    ExpressionAttributeValues:
+      ':err':
+        timestamp: Date.now()
+        error: err.toString()
+    ConditionExpression: 'attribute_exists(id)'

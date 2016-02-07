@@ -16,8 +16,8 @@ auth = require './auth'
 exports.add_routes = (app) ->
 
   app.put '/api/v1/user/:user_id/email',
-    auth.login_required,
-    auth.ensure_logged_in_user('user_id'),
+    auth.login_required
+    auth.ensure_logged_in_user('user_id')
     (req, res, next) ->
       model.users.set_email_enabled req.params.user_id, req.body.address, req.body.enabled == 'true'
       .then ->
@@ -25,7 +25,7 @@ exports.add_routes = (app) ->
       .catch next
 
   app.post '/api/v1/s3/sign_upload',
-    auth.login_or_access_token_required,
+    auth.login_or_access_token_required
     (req, res, next) ->
       s3.client_upload_request \
         'chetbot-apps',
@@ -36,7 +36,7 @@ exports.add_routes = (app) ->
       .catch next
 
   app.post '/api/v1/app',
-    auth.login_required,
+    auth.login_required
     (req, res, next) ->
       # Admins can pass as_user to perform action on behalf of another user
       if req.body.as_user && !req.user.admin
@@ -57,8 +57,24 @@ exports.add_routes = (app) ->
           test: { id: new_code.id }
       .catch next
 
+  app.get '/api/v1/app/:app_id/processing-status',
+    auth.login_required
+    middleware.check_user_can_access_app 'app_id'
+    (req, res, next) ->
+      model.apps.get req.params.app_id
+      .then (app) ->
+        if app.processing_status
+          res.status 202
+          .json
+            ready: false
+            status: app.processing_status.status
+            error: app.processing_status.error
+        else
+          res.status 200
+          .json { ready: true }
+
   app.put '/api/v1/app/:app_id',
-    auth.login_or_access_token_required,
+    auth.login_or_access_token_required
     middleware.check_user_can_access_app 'app_id'
     (req, res, next) ->
       model.apps.get req.params.app_id
@@ -106,7 +122,7 @@ exports.add_routes = (app) ->
 
   # Run all tests - handy for testing
   app.post '/api/v1/app/:app_id/run',
-    auth.login_or_access_token_required,
+    auth.login_or_access_token_required
     middleware.check_user_can_access_app 'app_id'
     (req, res, next) ->
       test_runner.run_all req.params.app_id
