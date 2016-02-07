@@ -74,7 +74,6 @@ function download_file(url) {
 }
 
 function download_apk(job_data) {
-  console.log(job_data);
   debug('Downloading app', job_data.public_url || [job_data.s3_bucket, job_data.s3_path]);
   return job_data.public_url
     ? download_file(job_data.public_url)
@@ -151,17 +150,14 @@ if (cluster.isWorker) {
     .then(download_apk)
     .then(tmp.save_file)
     .then(inject_chetbot.add_chetbot_to_apk)
-    .then(function(apk_path) {
-      var apk_info = get_apk_info(apk_path);
+    .then(function(modified_apk_file) {
+      var apk_info = get_apk_info(modified_apk_file);
 
-      debug('Adding Chetbot to APK', apk_path, apk_info.name);
-      var modified_apk_file = inject_chetbot.add_chetbot_to_apk(apk_path);
-
-      var new_app_filename = shortid.generate() + '.chetbot.apk';
-      debug('Uploading ' + modified_apk_file + ' to S3', new_app_filename);
-      Promise.join(
+      var new_app_s3_filename = shortid.generate() + '.chetbot.apk';
+      debug('Uploading ' + modified_apk_file + ' to S3', new_app_s3_filename);
+      return Promise.join(
         db.apps().find(job.data.app_id),
-        s3.upload(modified_apk_file, 'chetbot-apps-v1', new_app_filename)
+        s3.upload(modified_apk_file, 'chetbot-apps-v1', new_app_s3_filename)
       )
       .spread(function(existing_app, modified_apk_url) {
         check_app_identifier(apk_info, existing_app.identifier);
