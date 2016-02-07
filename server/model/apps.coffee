@@ -79,15 +79,15 @@ exports.get_pending_report = (id) ->
     if !app then throw new Error("App #{id} not found")
     !!app.pending_report
 
-exports.set_processing_status = (id, status) ->
-  debug 'set_processing_status', id, status
+exports.set_processing_status = (id, progress) ->
+  debug 'set_processing_status', id, progress
   db.update
     Key: { id: id }
     UpdateExpression: 'SET processing_status = :status'
     ExpressionAttributeValues:
       ':status':
         timestamp: Date.now()
-        status: status
+        progress: progress
     ConditionExpression: 'attribute_exists(id)'
 
 exports.mark_as_processed = (id) ->

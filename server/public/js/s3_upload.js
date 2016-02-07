@@ -63,7 +63,7 @@ function s3_upload(file_input, target_input, opts) {
         if (xhr.status === 200) {
           ga('send', 'event', 'app-upload', 'uploaded');
 
-          progress('Processing...');
+          progress('Waiting for server');
           $(target_input).val(req.url);
 
           var $form = $(target_input).closest('form');
