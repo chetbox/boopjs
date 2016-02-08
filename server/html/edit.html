@@ -80,6 +80,17 @@
     </paper-header-panel>
   </body>
 
+  {{#unless user}}
+    <script>
+      // Automatically start the test when the device starts
+      window.addEventListener('message', function(event) {
+        if (event.data === 'firstFrameReceived') {
+          eval( $('a.run').attr('href') );
+        }
+      });
+    </script>
+  {{/unless}}
+
   <!-- required br rename-button.html -->
   <script src="/js/rename-test.js"></script>
 
