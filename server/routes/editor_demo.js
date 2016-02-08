@@ -16,6 +16,7 @@ exports.add_routes = function(app) {
           id: device_id,
           model: 'nexus5',
           orientation: 'portrait',
+          wait_for_user_to_start: true,
         },
         server: host.address,
         server_url: (host.protocol === 'https' ? 'wss' : 'ws') + '://' + host.address + '/api/device?id=' + device_id,

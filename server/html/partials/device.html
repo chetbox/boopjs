@@ -10,17 +10,25 @@
 </style>
 <iframe
   id="device"
-  src="https://appetize.io/embed/{{app.publicKey}}?device={{device.model}}&amp;osVersion=5.1&amp;autoplay=true&amp;orientation={{device.orientation}}&amp;deviceColor=black&amp;xdocMsg=true&amp;params=%7b%22boop.server%22%3a%22{{encodeURIComponent server_url}}%22%2c%22boop.scripts%22%3A%22%5B%5C%22{{encodeURIComponent api_url}}%5C%22%5D%22%7D{{#device.location}}&amp;location={{.}}{{/device.location}}"
+  src="https://appetize.io/embed/{{app.publicKey}}?device={{device.model}}&amp;osVersion=5.1&amp;autoplay={{#device.wait_for_user_to_start}}false{{else}}true{{/device.wait_for_user_to_start}}&amp;orientation={{device.orientation}}&amp;deviceColor=black&amp;xdocMsg=true&amp;params=%7b%22boop.server%22%3a%22{{encodeURIComponent server_url}}%22%2c%22boop.scripts%22%3A%22%5B%5C%22{{encodeURIComponent api_url}}%5C%22%5D%22%7D{{#device.location}}&amp;location={{.}}{{/device.location}}"
   frameborder="0"
   scrolling="no">
 </iframe>
 
 <script>
-  // Ensure the device starts
   var device_iframe = document.getElementById('device');
-  var ensure_device_loaded = setInterval(function() {
-    device_iframe.contentWindow.postMessage('requestSession', '*');
-  }, 5 * 1000);
+
+  {{#unless device.wait_for_user_to_start}}
+    // Ensure the device starts
+    var ensure_device_loaded = setInterval(function() {
+      device_iframe.contentWindow.postMessage('requestSession', '*');
+    }, 5 * 1000);
+    window.addEventListener('message', function(event) {
+      if (event.data === 'firstFrameReceived') {
+        clearInterval(ensure_device_loaded);
+      }
+    });
+  {{/unless}}
 
   // Expose a way of keeping the device running
   window.keep_device_running = _.throttle(
@@ -32,11 +40,8 @@
     { trailing: false }
   );
 
+  // Appetize.io logging
   window.addEventListener('message', function(event) {
-    if (event.data === 'firstFrameReceived') {
-      clearInterval(ensure_device_loaded);
-    }
-    // Appetize.io logging
     console.log('appetize.io: ' + event.data);
   });
 </script>
