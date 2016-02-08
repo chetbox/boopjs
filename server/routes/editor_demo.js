@@ -22,7 +22,7 @@ exports.add_routes = function(app) {
         api_url: host.protocol + '://' + host.address + '/device/android.js',
         app: {
           icon: '/favicon.ico',
-          publicKey: '5v1d0qrmwy74yhq5w33zc12ar0'
+          publicKey: 'jhbfavaxy778ap8nka5ndjq01c'
         },
         autosave: false,
         code: {
