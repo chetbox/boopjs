@@ -84,28 +84,32 @@ public class RootViews {
         Throwable lastError = new RuntimeException("Not yet run");
 
         while (System.nanoTime() < startedAt + timeoutMillis * 1000 * 1000) {
-            final Container<Either<View, Throwable>> topmostViewContainer = new Container<>();
+            final Container<Either<List<Root>, Throwable>> topmostViewContainer = new Container<>();
             activity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     try {
                         topmostViewContainer.setContent(
-                                Either.<View, Throwable>left(reduceRoots(
+                                Either.<List<Root>, Throwable>left(
                                         applyDefaultRootMatcher(
                                                 listActiveRoots()
                                         )
-                                ).getDecorView())
+                                )
                         );
                     } catch (InvocationTargetException | IllegalAccessException | NoActivityResumedException e) {
                         topmostViewContainer.setContent(
-                                Either.<View, Throwable>right(e)
+                                Either.<List<Root>, Throwable>right(e)
                         );
                     }
                 }
             });
-            Either<View, Throwable> topmostView = topmostViewContainer.waitForContent();
+            Either<List<Root>, Throwable> topmostView = topmostViewContainer.waitForContent();
             if (topmostView.isLeft()) {
-                return topmostView.left();
+                try {
+                    return reduceRoots(topmostView.left()).getDecorView();
+                } catch (InvocationTargetException | IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
             } else {
                 failCount++;
                 lastError = topmostView.right();
