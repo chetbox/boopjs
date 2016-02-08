@@ -464,6 +464,7 @@ function type_text(text) {
     done.signal();
   });
   done.wait();
+  java.lang.Thread.sleep(250);
 }
 
 function hide_keyboard() {
@@ -490,13 +491,17 @@ function crash() {
 
 function screenshot(selector) {
   var screenshot_container = __container();
-  run_on_ui_thread(function(activity) {
-    var v = selector ? view(selector) : activity.getWindow().getDecorView();
+  var current_activity = activity();
+  var v = selector ? view(selector) : current_activity.getWindow().getDecorView();
+  current_activity.runOnUiThread(function() {
     v.destroyDrawingCache();
     v.setDrawingCacheEnabled(true);
     try {
       var screenshot = v.getDrawingCache();
-      screenshot_container.set_content(screenshot.copy(screenshot.getConfig(), false));
+      screenshot_container.set_content(screenshot
+        ? screenshot.copy(screenshot.getConfig(), false)
+        : null
+      );
     } finally {
       v.setDrawingCacheEnabled(false);
     }
