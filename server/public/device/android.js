@@ -464,6 +464,7 @@ function type_text(text) {
     done.signal();
   });
   done.wait();
+  java.lang.Thread.sleep(250);
 }
 
 function hide_keyboard() {
