@@ -12,7 +12,6 @@ function sign_in(team, email, password) {
     tap('password');
     type_text(password);
 
-    wait(2); // Slack crashes without this
     tap('Continue');
     wait_for(team);
 }
