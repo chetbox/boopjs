@@ -16,13 +16,14 @@ exports.add_routes = function(app) {
           id: device_id,
           model: 'nexus5',
           orientation: 'portrait',
+          wait_for_user_to_start: true,
         },
         server: host.address,
         server_url: (host.protocol === 'https' ? 'wss' : 'ws') + '://' + host.address + '/api/device?id=' + device_id,
         api_url: host.protocol + '://' + host.address + '/device/android.js',
         app: {
           icon: '/favicon.ico',
-          publicKey: '5v1d0qrmwy74yhq5w33zc12ar0'
+          publicKey: 'jhbfavaxy778ap8nka5ndjq01c'
         },
         autosave: false,
         code: {
