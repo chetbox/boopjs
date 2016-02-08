@@ -15,7 +15,7 @@ shell.config.silent = true;
   };
 });
 
-exports.apktool = path.join(__dirname, 'deps', 'apktool_2.0.1.jar');
+exports.apktool = path.join(__dirname, 'deps', 'apktool_2.0.3.jar');
 exports.chetbot_dex = path.join(__dirname, 'deps', 'classes-chetbot.dex');
 exports.chetbot_smali = path.join(__dirname, 'deps', 'classes-chetbot');
 exports.chetbot_resources = path.join(__dirname, 'deps', 'resources-chetbot');
