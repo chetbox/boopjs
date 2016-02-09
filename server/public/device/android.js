@@ -341,18 +341,20 @@ function wait_for(wait_for_fn, options) {
 
 // Drawers
 
-function open_drawer(which) {
+function open_drawer(which, options) {
   which = which || 'START';
-  activity().runOnUiThread(function() {
-    view({type: 'DrawerLayout'}).openDrawer(android.support.v4.view.GravityCompat[which.toUpperCase()]);
+  var drawer_layout = wait_for({type: 'DrawerLayout'});
+  run_on_ui_thread(function() {
+    drawer_layout.openDrawer(android.support.v4.view.GravityCompat[which.toUpperCase()]);
   });
   java.lang.Thread.sleep(0.75 * 1000);
 }
 
-function close_drawer(which) {
+function close_drawer(which, options) {
   which = which || 'START';
-  activity().runOnUiThread(function() {
-    view({type: 'DrawerLayout'}).closeDrawer(android.support.v4.view.GravityCompat[which.toUpperCase()]);
+  var drawer_layout = wait_for({type: 'DrawerLayout'});
+  run_on_ui_thread(function() {
+    drawer_layout.closeDrawer(android.support.v4.view.GravityCompat[which.toUpperCase()]);
   });
   java.lang.Thread.sleep(0.75 * 1000);
 }
