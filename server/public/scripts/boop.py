@@ -5,7 +5,7 @@ import sys
 import os.path
 import requests
 
-HOST = 'http://debug.boopjs.com:8001'
+HOST = 'https://boopjs.com'
 
 def auth_header(access_token):
     return { 'Authorization': 'Bearer ' + access_token }
