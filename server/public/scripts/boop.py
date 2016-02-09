@@ -5,7 +5,7 @@ import sys
 import os.path
 import requests
 
-HOST = 'http://debug.boopjs.com:8001'
+HOST = 'https://boopjs.com'
 
 def auth_header(access_token):
     return { 'Authorization': 'Bearer ' + access_token }
@@ -23,7 +23,7 @@ def upload_file_to_url(file, url):
             url,
             data = data
         )
-        if r.status_code != 200:
+        if r.status_code / 100 != 2:
             raise Exception('HTTP {0} ({1}) - {2}'.format(r.status_code, r.url, r.text))
 
 def upload_from_url(access_token, app_id, app_url):
@@ -32,7 +32,7 @@ def upload_from_url(access_token, app_id, app_url):
         headers = auth_header(access_token),
         data = { 'url': app_url }
     )
-    if r.status_code != 200:
+    if r.status_code / 100 != 2:
         raise Exception('HTTP {0} ({1}) - {2}'.format(r.status_code, r.url, r.text))
 
 def upload_from_s3(access_token, app_id, s3_bucket, s3_path):
@@ -41,7 +41,7 @@ def upload_from_s3(access_token, app_id, s3_bucket, s3_path):
         headers = auth_header(access_token),
         data = { 's3_bucket': s3_bucket, 's3_path': s3_path }
     )
-    if r.status_code != 200:
+    if r.status_code / 100 != 2:
         raise Exception('HTTP {0} ({1}) - {2}'.format(r.status_code, r.url, r.text))
 
 def upload_from_file(access_token, app_id, file):
@@ -49,7 +49,7 @@ def upload_from_file(access_token, app_id, file):
         HOST + '/api/v1/s3/sign_upload',
         headers = auth_header(access_token)
     )
-    if r.status_code != 200:
+    if r.status_code / 100 != 2:
         raise Exception('HTTP {0} ({1}) - {2}'.format(r.status_code, r.url, r.text))
     response = r.json()
     upload_file_to_url(file, response['signed_request'])
