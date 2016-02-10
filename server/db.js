@@ -1,7 +1,20 @@
-var config = require('config');
-var dynasty = require('dynasty')(config.get('aws.dynamodb'));
 var Promise = require('bluebird');
 var _ = require('underscore');
+var https = require('https');
+
+// node #3692 workaround (https://github.com/nodejs/node/issues/3692)
+var dynamodb_config = _.extend({}, require('config').get('dynamodb')); // copy
+if (!dynamodb_config.endpoint || dynamodb_config.endpoint.startsWith('https://')) {
+  dynamodb_config.httpOptions = {
+    agent: new https.Agent({
+      ciphers: 'ALL',
+      secureProtocol: 'TLSv1_method'
+    })
+  };
+}
+
+var dynasty = require('dynasty')(dynamodb_config);
+
 var debug = require('debug')('chetbot:' + require('path').relative(process.cwd(), __filename).replace(/\.(js|coffee)$/, ''));
 
 var TABLES = {
@@ -112,8 +125,8 @@ _.each(TABLES, function(info, name) {
 
 
 var AWS = require('aws-sdk');
-var dynamodb = Promise.promisifyAll( new AWS.DynamoDB(config.get('aws.dynamodb')) );
-var doc_client = Promise.promisifyAll( new AWS.DynamoDB.DocumentClient(config.get('aws.dynamodb')) );
+var dynamodb = Promise.promisifyAll( new AWS.DynamoDB(dynamodb_config) );
+var doc_client = Promise.promisifyAll( new AWS.DynamoDB.DocumentClient({ service: dynamodb }) );
 
 // Provide a neat, promisified API with TableName already set
 // e.g. new_api.devices.put({...})
