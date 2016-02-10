@@ -2,7 +2,7 @@ FROM chetbox/android-sdk:23.0.1
 MAINTAINER chetbox
 
 # Install Node
-RUN wget -qO- https://deb.nodesource.com/setup_4.x | bash -
+RUN wget -qO- https://deb.nodesource.com/setup_5.x | bash -
 RUN apt-get install -y git nodejs && \
     apt-get autoremove -y && \
     apt-get clean all
