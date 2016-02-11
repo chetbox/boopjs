@@ -3,7 +3,7 @@ var _ = require('underscore');
 var https = require('https');
 
 // node #3692 workaround (https://github.com/nodejs/node/issues/3692)
-var dynamodb_config = _.extend({}, require('config').get('dynamodb')); // copy
+var dynamodb_config = _.extend({}, require('config').get('aws.dynamodb')); // copy
 if (!dynamodb_config.endpoint || dynamodb_config.endpoint.startsWith('https://')) {
   dynamodb_config.httpOptions = {
     agent: new https.Agent({
