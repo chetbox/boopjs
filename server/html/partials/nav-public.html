@@ -1,0 +1,52 @@
+<style>
+  .mdl-layout__drawer-button {
+    color: white;
+    text-shadow: 0 0 16px #000;
+  }
+
+  .mdl-layout__drawer .mdl-layout-title {
+    color: #39113e;
+  }
+
+  .mdl-layout-title img {
+    width: 1.25em;
+    margin-right: 0.5em;
+  }
+</style>
+<header class="mdl-layout__header mdl-layout__header--transparent mdl-layout__header--scroll">
+  <div class="mdl-layout__header-row">
+    <span class="mdl-layout-title">
+      <img src="/images/logo-white.svg"/>
+      boop.js
+    </span>
+    <!-- Add spacer, to align navigation to the right -->
+    <div class="mdl-layout-spacer"></div>
+    <nav class="mdl-navigation">
+      <a class="mdl-navigation__link" href="#features">Features</a>
+      <a class="mdl-navigation__link" href="/pricing">Pricing</a>
+      <a class="mdl-navigation__link" href="/docs" target="_blank">API Documentation</a>
+      <a href="/login">
+        <button class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent mdl-js-ripple-effect">
+          <i class="fa fa-github fa-lg"></i>
+          Sign in with GitHub
+        </button>
+      </a>
+    </nav>
+  </div>
+</header>
+<div class="mdl-layout__drawer">
+  <span class="mdl-layout-title">
+    <img src="/images/logo.svg"/>
+    boop.js
+  </span>
+  <nav class="mdl-navigation">
+    <a class="mdl-navigation__link" href="/login">
+      <button class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent mdl-js-ripple-effect">
+        <i class="fa fa-github fa-lg"></i>
+        Sign in
+      </button>
+    </a>
+    <a class="mdl-navigation__link" href="/pricing">Pricing</a>
+    <a class="mdl-navigation__link" href="/docs" target="_blank">API Documentation</a>
+  </nav>
+</div>
