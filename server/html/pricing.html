@@ -2,24 +2,19 @@
 <html>
   <head>
     <title>Pricing - boop.js</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" href="/favicon.ico">
 
-    {{> material-design}}
+    {{> material-design-lite}}
 
     <style>
-      div.content {
-        max-width: 44em;
-        margin: 0 auto;
-        padding: 1em;
-      }
-
       #tiers {
         list-style: none;
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
         padding: 0;
+        max-width: 40em;
+        margin: 0 auto;
       }
 
       #tiers * {
@@ -61,61 +56,52 @@
         margin-bottom: 1em;
       }
 
-      #tiers > li .price iron-icon {
+      #tiers > li .price i {
         margin-left: auto;
         margin-right: auto;
+        max-width: 1em;
       }
 
-      .contact paper-button {
+      .contact button {
         color: rgba(255,255,255,0.87);
         background-color: #FF5722;
       }
     </style>
   </head>
-  <body class="fullbleed">
-    <paper-header-panel class="cyan">
-      <paper-toolbar>
-        <a href="/" alt="Home">
-          <paper-icon-button icon="arrow-back"></paper-icon-button>
-        </a>
-        <div class="title">boop.js</div>
-      </paper-toolbar>
-      <div class="content">
+  <body>
+    <div class="mdl-layout mdl-js-layout">
+      {{> nav-public }}
+      <main class="mdl-layout__content">
         <h2>Plans &amp; Pricing</h2>
         <p class="intro">boop.js is free to use for one app. Upgrade to one of our paid plans to test more apps and unlimited testing.</p>
-        <ol id="tiers">
-          {{#tiers}}
-            <li class="{{name}}">
-              <h3>{{name}}</h3>
-              {{#current}}
-                <span class="price current">
-                  <iron-icon icon="check-circle"></iron-icon>
+        <p>
+          <ol id="tiers">
+            {{#tiers}}
+              <li class="{{name}}">
+                <h3>{{name}}</h3>
+                {{#current}}
+                  <span class="price current">
+                    <i class="material-icons">check circle</i>
+                  </span>
+                {{else}}
+                  <a class="price" href="mailto:sales@boopjs.com?subject=Upgrade%20to%20{{name}}%20plan" target="_blank">
+                    {{monthly_cost}}
+                  </a>
+                {{/current}}
+                <span class="test-limit">
+                  {{#test_limit}}{{.}}{{else}}Unlimited{{/test_limit}}
+                  {{#if_eq 1 test_limit}}test{{else}}tests{{/if_eq}}
                 </span>
-              {{else}}
-                <a class="price" href="mailto:sales@boopjs.com?subject=Upgrade%20to%20{{name}}%20plan" target="_blank">
-                  {{monthly_cost}}
-                </a>
-              {{/current}}
-              <span class="test-limit">
-                {{#test_limit}}{{.}}{{else}}Unlimited{{/test_limit}}
-                {{#if_eq 1 test_limit}}test{{else}}tests{{/if_eq}}
-              </span>
-              <span class="app-limit">
-                {{#app_limit}}{{.}}{{else}}Unlimited{{/app_limit}}
-                {{#if_eq 1 app_limit}}app{{else}}apps{{/if_eq}}
-              </span>
-            </li>
-          {{/tiers}}
-        </ol>
-        <div style="text-align: center; padding-top: 1em;">
-          <a class="contact" target="_blank" href="mailto:sales@boopjs.com?subject=Upgrade%20my%20plan">
-            <paper-button raised>
-              <iron-icon icon="communication:email"></iron-icon>
-              Contact us to upgrade
-            </paper-button>
-          </a>
-        </div>
-      </div>
-    </paper-header-panel>
+                <span class="app-limit">
+                  {{#app_limit}}{{.}}{{else}}Unlimited{{/app_limit}}
+                  {{#if_eq 1 app_limit}}app{{else}}apps{{/if_eq}}
+                </span>
+              </li>
+            {{/tiers}}
+          </ol>
+        </p>
+        {{> footer-public }}
+      </main>
+    </div>
   </body>
 </html>

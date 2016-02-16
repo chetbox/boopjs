@@ -1,7 +1,10 @@
 <style>
   .mdl-layout__drawer-button {
-    color: white;
-    text-shadow: 0 0 16px #000;
+    color: #89618e;
+  }
+
+  nav .mdl-layout__drawer-button {
+    color: #89618e;
   }
 
   .mdl-layout__drawer .mdl-layout-title {
@@ -13,11 +16,13 @@
     margin-right: 0.5em;
   }
 </style>
-<header class="mdl-layout__header mdl-layout__header--transparent mdl-layout__header--scroll">
+<header class="mdl-layout__header {{#transparent}}mdl-layout__header--transparent{{/transparent}} mdl-layout__header--scroll">
   <div class="mdl-layout__header-row">
     <span class="mdl-layout-title">
-      <img src="/images/logo-white.svg"/>
-      boop.js
+      <a href="/">
+        <img src="/images/logo-white.svg"/>
+        boop.js
+      </a>
     </span>
     <!-- Add spacer, to align navigation to the right -->
     <div class="mdl-layout-spacer"></div>
@@ -36,8 +41,10 @@
 </header>
 <div class="mdl-layout__drawer">
   <span class="mdl-layout-title">
-    <img src="/images/logo.svg"/>
-    boop.js
+    <a href="/">
+      <img src="/images/logo.svg"/>
+      boop.js
+    </a>
   </span>
   <nav class="mdl-navigation">
     <a class="mdl-navigation__link" href="/login">
@@ -46,6 +53,7 @@
         Sign in
       </button>
     </a>
+    <a class="mdl-navigation__link" href="/">Home</a>
     <a class="mdl-navigation__link" href="/pricing">Pricing</a>
     <a class="mdl-navigation__link" href="/docs" target="_blank">API Documentation</a>
   </nav>
