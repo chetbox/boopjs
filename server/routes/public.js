@@ -4,6 +4,10 @@ exports.add_routes = function(app) {
     res.render('landing-page');
   });
 
+  app.get('/docs', function(req, res) {
+    res.redirect('/docs/BOOP.JS API reference v0.7.3.pdf');
+  });
+
   app.get('/pricing', function(req, res) {
     res.render('pricing', {
       tiers: [
