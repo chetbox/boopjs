@@ -16,11 +16,11 @@
     margin-right: 0.5em;
   }
 </style>
-<header class="mdl-layout__header {{#transparent}}mdl-layout__header--transparent{{/transparent}} mdl-layout__header--scroll">
+<header class="mdl-layout__header {{#transparent}}mdl-layout__header--transparent mdl-layout__header--scroll{{/transparent}}">
   <div class="mdl-layout__header-row">
     <span class="mdl-layout-title">
       <a href="/">
-        <img src="/images/logo-white.svg"/>
+        <img src="/images/logo-white.svg" alt="logo" />
         boop.js
       </a>
     </span>
@@ -30,29 +30,23 @@
       <a class="mdl-navigation__link" href="#features">Features</a>
       <a class="mdl-navigation__link" href="/pricing">Pricing</a>
       <a class="mdl-navigation__link" href="/docs" target="_blank">API Documentation</a>
-      <a href="/login">
-        <button class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent mdl-js-ripple-effect">
-          <i class="fa fa-github fa-lg"></i>
-          Sign in with GitHub
-        </button>
-      </a>
+      <span class="mdl-navigation__link">
+        {{> sign-in-button }}
+      </span>
     </nav>
   </div>
 </header>
 <div class="mdl-layout__drawer">
   <span class="mdl-layout-title">
     <a href="/">
-      <img src="/images/logo.svg"/>
+      <img src="/images/logo.svg" alt="logo" />
       boop.js
     </a>
   </span>
   <nav class="mdl-navigation">
-    <a class="mdl-navigation__link" href="/login">
-      <button class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent mdl-js-ripple-effect">
-        <i class="fa fa-github fa-lg"></i>
-        Sign in
-      </button>
-    </a>
+    <span class="mdl-navigation__link">
+      {{> sign-in-button button_text="Sign in"}}
+    </span>
     <a class="mdl-navigation__link" href="/">Home</a>
     <a class="mdl-navigation__link" href="/pricing">Pricing</a>
     <a class="mdl-navigation__link" href="/docs" target="_blank">API Documentation</a>
