@@ -1,233 +1,197 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
+  <head>
+    <title>boop.js - Android UI tests + continuous integration in minutes</title>
 
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="boop.js - Android UI test automation made simple, right in your web browser.">
     <meta name="author" content="Chetan Padia">
 
     <link rel="icon" href="/favicon.ico">
 
-    <title>boop.js - Android UI automation for humans</title>
+    {{> material-design-lite}}
 
-    <!-- Bootstrap Core CSS -->
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+      code a {
+        color: inherit;
+        text-decoration: inherit;
+      }
 
-    <!-- Custom CSS -->
-    <link href="/css/landing-page.css" rel="stylesheet">
+      body {
+        background-color: #4e265a;
+        background-image: url('/images/Nexus_5-bg.png');
+        background-position: center center;
+        color: rgba(255,255,255,0.87);
+      }
 
-    <!-- Custom Fonts -->
-    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
-    <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic,700italic" rel="stylesheet" type="text/css">
+      .mdl-layout__content {
+        background: none;
+      }
 
-    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-    <![endif]-->
-</head>
+      main > div.test-reports {
+        padding-bottom: 75px;
+      }
 
-<body>
+      #hero {
+        padding: 75px 0 50px 0;
+        text-align: center;
+      }
+      #hero h1 {
+        margin-left: 1em;
+        margin-right: 1em;
+      }
 
-    <!-- Navigation -->
-    <nav class="navbar navbar-default navbar-fixed-top topnav" role="navigation">
-        <div class="container topnav">
-            <!-- Brand and toggle get grouped for better mobile display -->
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a class="navbar-brand topnav" href="#top">boop.js</a>
+      .steps-to-success {
+        margin-top: 75px;
+      }
+      .steps-to-success .mdl-cell {
+        min-width: 300px;
+        margin: 0 auto 2em auto;
+      }
+      .steps-to-success img {
+        margin-bottom: 1em;
+      }
+      .steps-to-success .illustration {
+        margin: 0 auto;
+        position: relative;
+        width: 300px;
+        height: 160px;
+        text-align: left;
+      }
+
+      footer {
+        margin: 0 !important;
+      }
+
+      .feature {
+        background: white;
+        color: black;
+        padding: 1em 4em;
+        margin: 0 !important;
+      }
+
+      .code-examples .mdl-card {
+        margin: 1em 0;
+        min-height: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="mdl-layout mdl-js-layout">
+      {{> nav-public transparent=true }}
+      <main class="mdl-layout__content">
+        <div id="hero">
+          <h1>Android UI tests + continuous integration<br>in minutes</h1>
+          <a href="/apps">
+            <button class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent mdl-js-ripple-effect">
+              Get started
+            </button>
+          </a>
+          <div class="steps-to-success mdl-grid">
+            <div class="mdl-cell mdl-cell--4-col">
+              <h3>Write high-level UI tests</h3>
+              <div class="illustration">
+                <i class="material-icons" style="color: #fff; font-size: 120px; position: absolute; top: 0; left: -10px;">stay_current_portrait</i>
+<pre style="position: absolute; left: 100px; top: 18px;">tap('account')
+type_text('my_username')
+tap('sign in')
+assert_visible('home')
+</pre>
+                <a style="display: block; text-align: center; padding-top: 140px;" href="/demo" target="_blank">
+                  <button class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-js-ripple-effect">
+                    Try our IDE
+                  </button>
+                </a>
+              </div>
+              <br>
             </div>
-            <!-- Collect the nav links, forms, and other content for toggling -->
-            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-                <ul class="nav navbar-nav navbar-right">
-                    <li>
-                        <a href="#features">Features</a>
-                    </li>
-                    <li>
-                        <a href="/pricing">Pricing</a>
-                    </li>
-                    <li>
-                        <a href="{{> documentation-url}}" target="_blank">Docs</a>
-                    </li>
-                    <li>
-                        <a target="_blank" href="https://twitter.com/boop_js">@boop_js</a>
-                    </li>
-                    <li>
-                        <a class="login-button github" href="/login">Sign in with GitHub</a>
-                    </li>
-                </ul>
+            <div class="mdl-cell mdl-cell--4-col">
+              <h3>Integrate into your build</h3>
+              <div class="illustration">
+                <span style="position: absolute; background: #aaa; left: 32px; right: 32px; top: 0; height: 2em; box-shadow: 0 2px 8px rgba(0,0,0,0.5); border-radius: 4px 4px;"></span>
+<pre style="padding: 1em; position: absolute; top: 20px; left: 32px; right: 32px; height: 6em; background: #111; box-shadow: 0 2px 8px rgba(0,0,0,0.5);">$ gradle assembleDebug
+$ boop.py upload app.apk
+</pre>
+              </div>
             </div>
-            <!-- /.navbar-collapse -->
+            <div class="mdl-cell mdl-cell--4-col">
+              <h3>Get test results by email</h3>
+              <div class="illustration">
+                <span style="background: #fff; position: absolute; top: 0; left: 16px; right: 16px; bottom: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.5);"></span>
+                <span style="background: #f33; position: absolute; left: 0; top: -16px; line-height: 32px; width: 32px; height: 32px; border-radius: 16px; text-align: center; box-shadow: 0 1px 4px rgba(0,0,0,0.5);"></span>
+                <i class="material-icons" style="position: absolute; color: #aaa; font-size: 32px; top: 20px; left: 40px;">mail</i>
+                <pre style="position: absolute; top: 24px; left: 84px; color: #b00;">App failed 2 tests</pre>
+                <span style="position: absolute; top: 64px; left: 44px;">
+                  <pre style="color: #0a0;"><span style="display: inline-block; width: 1.5em;">&#x2713;</span> Sign in</pre>
+                  <pre style="color: #0a0;"><span style="display: inline-block; width: 1.5em;">&#x2713;</span> Open "Contact us"</pre>
+                  <pre style="color: #b00;"><span style="display: inline-block; width: 1.5em;">&#x2717;</span> Send a message</pre>
+                  <pre style="color: #b00;"><span style="display: inline-block; width: 1.5em;">&#x2717;</span> Receive a message</pre>
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
-        <!-- /.container -->
-    </nav>
-
-
-    <!-- Header -->
-    <a name="about"></a>
-    <div class="intro-header">
-        <div class="container">
-
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="intro-message">
-                        <h1>boop.js</h1>
-                        <h3>A user-driven approach to test automation<br>for Android</h3>
-                    </div>
+        <a name="features"></a>
+        <div class="feature code-examples">
+          <h2>Extensible JavaScript API</h2>
+          <div class="mdl-grid">
+            <div class="mdl-cell mdl-cell--4-col card-container">
+              <div class="mdl-card">
+                <div class="mdl-card__title mdl-card--border">
+                  Interact with your app
                 </div>
+                <div class="mdl-card__supporting-text">
+<pre><code class="javascript">open_drawer();
+tap('Account');
+type_type('my_username');
+tap('sign in');</code></pre>
+                </div>
+              </div>
             </div>
-
+            <div class="mdl-cell mdl-cell--4-col card-container">
+              <div class="mdl-card">
+                <div class="mdl-card__title mdl-card--border">
+                  Make assertions
+                </div>
+                <div class="mdl-card__supporting-text">
+<pre><code class="javascript">wait_for(function() {
+  return !visible('loading');
+});
+assert_visible('finished');</code></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p>
+            <a href="/demo" target="_blank">Try it here</a> or check out the <a href="/docs" target="_blank">API documentation</a>.
+          </p>
         </div>
-        <!-- /.container -->
-
+        <div class="feature ci">
+          <h2>Automated tests</h2>
+          <p>We run your tests in parallel on reliable, clean devices using <a href="https://appetize.io/" target="_blank">Appetize.io</a>. Start your tests by uploading your APK with our <a href="/scripts/boop.py" target="_blank">script</a>.</p>
+          <p>
+<pre><code class="bash">$ <a href="/scripts/boop.py" target="_blank">boop.py</a> upload $APP_ID $PATH_TO_APK
+</code></pre>
+          </p>
+          <p>That's it! Add this to your build script and we'll send you an email report for every build. You can replay your tests interactively to track down issues.</p>
+        </div>
+        <div class="feature test-reports">
+          <h2>Detailed test reports</h2>
+          <p>Test reports in include logging, screenshots and complete stacktraces for all test failures and uncaught errors.</p>
+          <p>
+<pre><span style="color: #00df50;">&#x2713; open_drawer()</span>
+<span style="color: #df5000">&#x2717; tap('sign in') timed out after 10s (line 15)
+    at com.example....
+    at com.example....
+    at com.example....
+    at com.example....</span>
+</pre>
+          </p>
+          <p>See a <a href="/sample-test-report"  target="_blank">sample test report</a> or run a <a href="/demo" target="_blank">demo</a>.</p>
+        </div>
+        {{> footer-public}}
+      </main>
     </div>
-    <!-- /.intro-header -->
-
-    <a name="demo"></a>
-
-    <div style="line-height: 0;">
-        <iframe frameborder="0" src="/demo" style="width: 100%; height: 650px;"></iframe>
-    </div>
-
-    {{> try-it-banner }}
-
-    <!-- Page Content -->
-
-	<a  name="features"></a>
-    <div class="content-section-a">
-
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-5 col-sm-6">
-                    <hr class="section-heading-spacer">
-                    <div class="clearfix"></div>
-                    <h2 class="section-heading">Describe your tests <i>visually</i></h2>
-                    <p class="lead">Your tests shouldn't need to know how your app is constructed. They describe the user experience, leaving developers free to build and refactor as they see fit.</p>
-                </div>
-                <div class="col-lg-5 col-lg-offset-2 col-sm-6">
-                    <pre class="img-responsive">
-
-tap('Username');
-type_text('alice');
-
-tap('Password');
-type_text('ilovebob');
-
-hide_keyboard();
-
-tap(topmost({type: 'CheckBox'}));
-
-tap('Sign in');
-                    </pre>
-                </div>
-            </div>
-
-        </div>
-        <!-- /.container -->
-
-    </div>
-    <!-- /.content-section-a -->
-
-    <div class="content-section-b">
-
-        <div class="container">
-
-            <div class="row">
-                <div class="col-lg-5 col-lg-offset-1 col-sm-push-6  col-sm-6">
-                    <hr class="section-heading-spacer">
-                    <div class="clearfix"></div>
-                    <h2 class="section-heading">Continuous Integration made simple</h2>
-                    <p class="lead">Run tests in the cloud when you commit code, effortlessly. boop.js gives you a one-line integration into your existing CI system and notifies you of any failures immediately.</p>
-                </div>
-                <div class="col-lg-5 col-sm-pull-6  col-sm-6">
-                    <img class="img-responsive" src="/images/devices.jpg" alt="">
-                </div>
-            </div>
-
-        </div>
-        <!-- /.container -->
-
-    </div>
-    <!-- /.content-section-b -->
-
-    <div class="content-section-a">
-
-        <div class="container">
-
-            <div class="row">
-                <div class="col-lg-5 col-sm-6">
-                    <hr class="section-heading-spacer">
-                    <div class="clearfix"></div>
-                    <h2 class="section-heading">Test reports that matter</h2>
-                    <p class="lead">Test reports tell you how to reproduce the problem, give you the logs that matter and video of the test that failed: All the information you need for bug tracking.</p>
-                </div>
-                <div class="col-lg-5 col-lg-offset-2 col-sm-6">
-                    <img class="img-responsive" src="/images/test-report.png" alt="">
-                </div>
-            </div>
-
-        </div>
-        <!-- /.container -->
-
-    </div>
-    <!-- /.content-section-a -->
-
-    {{> try-it-banner }}
-
-    <!-- Footer -->
-    <footer>
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-12">
-                    <ul class="list-inline">
-                        <li>
-                            <a href="#top">Back to top</a>
-                        </li>
-                        <li class="footer-menu-divider">&sdot;</li>
-                        <li>
-                            <a href="#demo">Demo</a>
-                        </li>
-                        <li class="footer-menu-divider">&sdot;</li>
-                        <li>
-                            <a href="#features">Features</a>
-                        </li>
-                        <li class="footer-menu-divider">&sdot;</li>
-                        <li>
-                            <a href="/pricing">Pricing</a>
-                        </li>
-                        <li class="footer-menu-divider">&sdot;</li>
-                        <li>
-                            <a href="{{> documentation-url}}" target="_blank">Documentation</a>
-                        </li>
-                        <li class="footer-menu-divider">&sdot;</li>
-                        <li>
-                            <a target="_blank" href="https://twitter.com/boop_js">@boop_js</a>
-                        </li>
-                    </ul>
-                    <p class="copyright text-muted small">Copyright &copy; Chetbox ltd 2015. All Rights Reserved</p>
-                </div>
-            </div>
-        </div>
-    </footer>
-
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
-
-    <!-- Bootstrap Core JavaScript -->
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-
-    {{> google-analytics}}
-
-    {{> egg}}
-
-</body>
-
+  </body>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.1.0/highlight.min.js"></script>
+  <script>hljs.initHighlighting();</script>
 </html>

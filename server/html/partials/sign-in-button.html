@@ -1,0 +1,12 @@
+<a href="{{#redirect}}{{.}}{{else}}/apps{{/redirect}}" class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent mdl-js-ripple-effect">
+  {{#user}}
+    Dashboard
+  {{else}}
+    <i class="fa fa-github fa-lg"></i>
+    {{#button_text}}
+      {{.}}
+    {{else}}
+      Sign in with GitHub
+    {{/button_text}}
+  {{/user}}
+</a>

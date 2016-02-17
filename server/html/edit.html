@@ -41,7 +41,7 @@
     <script src="/components/jquery/dist/jquery.min.js"></script>
   </head>
   <body class="fullbleed {{#user}}logged-in{{/user}}">
-    <paper-header-panel class="cyan">
+    <paper-header-panel class="boop-brand-color">
       {{#user}}
       <paper-toolbar>
         <a href="/app/{{../code.app_id}}" alt="Apps">
@@ -76,7 +76,9 @@
       // Automatically start the test when the device starts
       window.addEventListener('message', function(event) {
         if (event.data === 'firstFrameReceived') {
-          eval( $('a.run').attr('href') );
+          setTimeout(function() {
+            eval( $('a.run').attr('href') );
+          }, 1000);
         }
       });
     </script>
