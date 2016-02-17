@@ -17,6 +17,12 @@
 <link href="/components/paper-spinner/paper-spinner.html" rel="import">
 
 <style is="custom-style">
+  /* branding hack */
+  paper-header-panel.boop-brand-color paper-toolbar,
+  paper-header-panel.boop-brand-color .paper-header  {
+    background-color: #4e265a;
+  }
+
   paper-header-panel > div.paper-header {
     padding-bottom: 8px;
   }
@@ -48,6 +54,7 @@
     width: 24px;
     height: 24px;
     border-radius: 12px;
+    box-shadow: 0 0 4px rgba(0,0,0,0.5)
   }
 
   paper-toolbar .title a, .paper-header .title a {
@@ -60,13 +67,13 @@
   }
 
   paper-fab {
-    background-color: #FF5722;
+    background-color: #F44336; /* accent color */
     color: rgba(255,255,255,0.87);
   }
 
   paper-fab.secondary {
     background-color: #fff;
-    color: #00BCD4;
+    color: #653B71;
   }
 
   paper-icon-button.compact {
