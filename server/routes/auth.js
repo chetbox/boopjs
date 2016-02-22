@@ -190,7 +190,7 @@ function setup(app, options) {
     if (req.isAuthenticated()) {
       res.redirect(login_redirect(req));
     } else {
-      res.render('login');
+      res.redirect('/auth/github');
     }
   });
 
