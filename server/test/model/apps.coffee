@@ -243,3 +243,23 @@ describe 'model/apps', ->
         model.get app.id
       .then (app) ->
         assert app.processing_status.error, 'Some error'
+
+  describe 'set_os_version', ->
+    app = undefined
+
+    beforeEach 'create app', ->
+      model.create_empty 'user_set_os_version'
+      .then (_app) ->
+        app = _app
+
+    it 'defaults to 5.1', ->
+      model.get app.id
+      .then (app) ->
+        assert.equal app.os_version, '5.1'
+
+    it 'set to 6.0', ->
+      model.set_os_version app.id, '6.0'
+      .then ->
+        model.get app.id
+      .then (app) ->
+        assert.equal app.os_version, '6.0'
