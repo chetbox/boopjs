@@ -16,31 +16,31 @@ exports.add_routes = function(app) {
       tiers: [
         {
           name: 'Free',
-          monthly_cost: '$0/mo',
+          monthly_cost: '£0/mo',
           app_limit: 1,
           test_limit: 5,
           current: !!req.user
         },
         {
           name: 'Indie',
-          monthly_cost: '$200/mo',
+          monthly_cost: '£150/mo',
           app_limit: 2,
           test_limit: null,
-          support: 'Speedy email support'
+          support: 'Email support'
         },
         {
           name: 'Team',
-          monthly_cost: '$500/mo',
+          monthly_cost: '£350/mo',
           app_limit: 10,
           test_limit: null,
-          support: 'Telephone support'
+          support: 'Telephone + email support'
         },
         {
           name: 'Unlimited',
           monthly_cost: 'Contact us',
           app_limit: null,
           test_limit: null,
-          support: 'Telephone support'
+          support: 'Telephone + email support'
         }
       ]
     });
