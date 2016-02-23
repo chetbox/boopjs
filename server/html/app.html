@@ -250,6 +250,11 @@
                 </span>
                 <h3 class="name">
                     <span class="text">{{name}}</span>
+                    {{#os_version}}
+                      <a>
+                        <iron-icon icon="android" title="Android version: {{.}}"></iron-icon>
+                      </a>
+                    {{/os_version}}
                     {{#location}}
                       <a href="https://www.google.co.uk/maps/search/{{lat}},{{lon}}" target="_blank">
                         <iron-icon icon="communication:location-on" title="Location: {{lat}}, {{lon}}"></iron-icon>
