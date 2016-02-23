@@ -83,6 +83,9 @@ exports.add_routes = function(app) {
           app: app,
           code: code.map(function(c) {
             c.name = c.name || 'Untitled test';
+            c.location = c.location
+              ? JSON.parse(c.location)
+              : undefined;
             return c;
           }),
           host: host,

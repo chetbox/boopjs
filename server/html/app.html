@@ -59,15 +59,23 @@
         max-width: 13em;
         overflow: hidden;
         text-overflow: ellipsis;
+        margin-right: 0.5em;
       }
 
-      #code .app-info .name paper-icon-button {
+      #code .app-info .name > a > paper-icon-button,
+      #code .app-info .name > a > iron-icon {
         width: 2em;
         height: 2em;
-        margin-top: -8px;
-        margin-bottom: -8px;
-        top: -6px;
+        margin: -8px -0.5em;
         color: #d7d7d7;
+        top: -0.4em;
+      }
+
+      #code .app-info .name > a > iron-icon {
+        width: 1em;
+        height: 1em;
+        margin-left: 0;
+        margin-right: 0.5em;
       }
 
       #code .app-info > .result {
@@ -242,6 +250,11 @@
                 </span>
                 <h3 class="name">
                     <span class="text">{{name}}</span>
+                    {{#location}}
+                      <a href="https://www.google.co.uk/maps/search/{{lat}},{{lon}}" target="_blank">
+                        <iron-icon icon="communication:location-on" title="Location: {{lat}}, {{lon}}"></iron-icon>
+                      </a>
+                    {{/location}}
                     <a href="javascript:rename('/app/{{app_id}}/test/{{id}}/edit', '{{name}}');" title="Rename test">
                       <paper-icon-button icon="create"></paper-icon-button>
                     </a>
