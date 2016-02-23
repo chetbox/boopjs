@@ -274,6 +274,7 @@ exports.add_routes = function(app) {
         res.render('run', {
           device: _.extend({}, DEFAULT_DEVICE, {
             id: device_id,
+            os_version: code.os_version || app.os_version,
             location: function() {
               return code.location
                 ? lat_lon_str(JSON.parse(code.location))
