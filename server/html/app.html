@@ -347,7 +347,7 @@
   <script src="/components/jquery-ui/jquery-ui.min.js"></script>
   <script>
     $(document).tooltip({
-      items: 'a:not([href]), [data-geo]',
+      items: 'a[title]:not([href]), [data-geo]',
       content: function() {
         var latlon = $(this).data('geo');
         if (latlon) {
