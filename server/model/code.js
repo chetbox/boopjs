@@ -82,3 +82,17 @@ exports.delete = function(app_id, id) {
     return apps.remove_code(app_id, id);
   });
 };
+
+exports.set_os_version = function(id, version) {
+  debug('set_os_version', id, version);
+  if (typeof(version) !== 'string') {
+    throw new Error('version must be a string', "got #{typeof(version)}");
+  }
+  return db.update({
+    Key: { id: id },
+    UpdateExpression: 'SET os_version = :version',
+    ExpressionAttributeValues: {
+      ':version': version
+    }
+  });
+};
