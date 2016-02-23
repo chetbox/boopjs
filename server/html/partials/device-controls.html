@@ -14,11 +14,13 @@
     }
   </style>
   {{#user}}
+  <paper-fab mini title="Set Android version" icon="android" class="secondary" onclick="open_dialog('os-version');"></paper-fab>
   <paper-fab mini title="Set device location" icon="communication:location-on" class="secondary" onclick="open_dialog('location');"></paper-fab>
   {{/user}}
-  <paper-fab mini title="Restart device" icon="refresh" class="secondary" onclick="reset_device();"></paper-fab>
+<paper-fab mini title="Restart device" icon="refresh" class="secondary" onclick="reset_device();"></paper-fab>
 </div>
 {{#user}}
+{{> set-os-version-dialog ../device}}
 {{> set-location-dialog ../code}}
 {{/user}}
 

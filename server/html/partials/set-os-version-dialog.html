@@ -1,0 +1,42 @@
+<paper-dialog class="os-version"
+    entry-animation="fade-in-animation"
+    exit-animation="fade-out-animation"
+    withBackdrop="true">
+
+  <h2>Android OS</h2>
+
+  <paper-radio-group selected="{{os_version}}">
+    <paper-radio-button name="5.1">5.1 Lollipop</paper-radio-button>
+    <br/>
+    <paper-radio-button name="6.0">6.0 Marshmallow</paper-radio-button>
+  </paper-radio-group>
+
+  <div style="margin-top: 2em; text-align: right;">
+    <paper-button onclick="close_dialog(this);"><iron-icon icon="clear"></iron-icon>Cancel</paper-button>
+    <paper-button onclick="set_os_version(this); close_dialog(this);" class="primary"><iron-icon icon="android"></iron-icon>Save</paper-button>
+  </div>
+</paper-dialog>
+
+<script>
+  function set_os_version(button) {
+    var version = $(button).closest('paper-dialog').find('paper-radio-group').get(0).selected;
+
+    // Change OS version on running device
+    var url = $(device_iframe).attr('src');
+    url = url.replace(/osVersion=[0-9\.]+/, 'osVersion=' + version);
+    $(device_iframe).attr('src', url);
+
+    // Save for later
+    $.ajax(location.pathname + '/os_version', {
+      method: 'PUT',
+      contentType: 'text/plain; charset=UTF-8',
+      data: version,
+      success: function() {
+        console.log('OS version set: ', version);
+      },
+      error: function(e) {
+        console.error(e);
+      }
+    });
+  }
+</script>

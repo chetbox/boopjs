@@ -15,6 +15,7 @@ exports.add_routes = function(app) {
         device: {
           id: device_id,
           model: 'nexus5',
+          os_version: '6.0',
           orientation: 'portrait',
           wait_for_user_to_start: true,
         },

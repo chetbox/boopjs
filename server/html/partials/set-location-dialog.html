@@ -2,6 +2,9 @@
     entry-animation="fade-in-animation"
     exit-animation="fade-out-animation"
     withBackdrop="true">
+
+  <h2>Device location</h2>
+
   <paper-input name="lat" label="Latitude" type="number" min="-90" max="90" no-label-float="true" value="{{location.lat}}" autoFocus="true"></paper-input>
   <paper-input name="lon" label="Longitude" type="number" min="-180" max="180" no-label-float="true" value="{{location.lon}}"></paper-input>
   <div style="margin-top: 2em; text-align: right;">
@@ -24,7 +27,9 @@
     $.ajax(location.pathname + '/location', {
       method: 'PUT',
       contentType: 'text/plain; charset=UTF-8',
-      data: JSON.stringify(location_set ? {lat:lat, lon:lon} : null), // HACK: stored as plain text with JSON string
+      data: location_set
+        ? JSON.stringify({lat:lat, lon:lon}) // HACK: stored as JSON string
+        : null,
       success: function() {
         console.log('Location set: ', [lat, lon]);
       },
