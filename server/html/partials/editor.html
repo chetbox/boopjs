@@ -131,7 +131,7 @@
       <paper-icon-button icon="av:play-arrow"></paper-icon-button>
     </a>
   </div>
-  <div id="editor" class="content-panel">{{code.content}}</div>
+  <div id="editor" class="content-panel">{{#code.content}}{{.}}{{/code.content}}</div>
   {{> test-report}}
   {{#user}}
   <div id="statusbar">
