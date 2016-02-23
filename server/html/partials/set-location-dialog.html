@@ -24,14 +24,15 @@
       device_iframe.contentWindow.postMessage({type:'location', value:[lat, lon]}, '*');
     }
     // Save location to server
+    var new_location = location_set
+      ? JSON.stringify({lat:lat, lon:lon}) // HACK: stored as JSON string
+      : null;
     $.ajax(location.pathname + '/location', {
       method: 'PUT',
       contentType: 'text/plain; charset=UTF-8',
-      data: location_set
-        ? JSON.stringify({lat:lat, lon:lon}) // HACK: stored as JSON string
-        : null,
+      data: new_location,
       success: function() {
-        console.log('Location set: ', [lat, lon]);
+        console.log('Location set: ', new_location);
       },
       error: function(e) {
         console.error(e);
