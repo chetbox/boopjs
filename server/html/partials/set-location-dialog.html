@@ -9,3 +9,28 @@
     <paper-button onclick="set_location(this); close_dialog(this);" class="primary"><iron-icon icon="communication:location-on"></iron-icon>Save</paper-button>
   </div>
 </paper-dialog>
+
+<script>
+  function set_location(button) {
+    var $dialog = $(button).parents('paper-dialog'),
+        lat = parseFloat($dialog.find('paper-input[name=lat]').get(0).value),
+        lon = parseFloat($dialog.find('paper-input[name=lon]').get(0).value),
+        location_set = !isNaN(lat) && !isNaN(lon);
+    if (location_set) {
+      // Update the location on the device now
+      device_iframe.contentWindow.postMessage({type:'location', value:[lat, lon]}, '*');
+    }
+    // Save location to server
+    $.ajax(location.pathname + '/location', {
+      method: 'PUT',
+      contentType: 'text/plain; charset=UTF-8',
+      data: JSON.stringify(location_set ? {lat:lat, lon:lon} : null), // HACK: stored as plain text with JSON string
+      success: function() {
+        console.log('Location set: ', [lat, lon]);
+      },
+      error: function(e) {
+        console.error(e);
+      }
+    });
+  }
+</script>
