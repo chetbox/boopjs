@@ -36,7 +36,7 @@ exports.add_routes = function(app) {
 
   function check_allowed_code_update(key) {
     return function(req, res, next) {
-      if (_.contains(['name', 'content', 'location'], req.params[key])) {
+      if (_.contains(['name', 'content', 'location', 'os_version'], req.params[key])) {
         next();
       } else {
         res.status(400).send('Cannot update code key: ' + req.params[key]);
@@ -83,6 +83,9 @@ exports.add_routes = function(app) {
           app: app,
           code: code.map(function(c) {
             c.name = c.name || 'Untitled test';
+            c.location = c.location
+              ? JSON.parse(c.location)
+              : undefined;
             return c;
           }),
           host: host,
@@ -157,6 +160,7 @@ exports.add_routes = function(app) {
           user: req.user,
           device: _.extend({}, DEFAULT_DEVICE, {
             id: device_id,
+            os_version: code.os_version || app.os_version,
             location: function() {
               return code.location
                 ? lat_lon_str(JSON.parse(code.location))
@@ -272,6 +276,7 @@ exports.add_routes = function(app) {
         res.render('run', {
           device: _.extend({}, DEFAULT_DEVICE, {
             id: device_id,
+            os_version: code.os_version || app.os_version,
             location: function() {
               return code.location
                 ? lat_lon_str(JSON.parse(code.location))
@@ -331,7 +336,7 @@ exports.add_routes = function(app) {
     function(req, res, next) {
       model.code.get(req.params.app_id, req.params.code_id)
       .then(function(code) {
-        code[req.params.code_key] = req.body || ' ';
+        code[req.params.code_key] = req.body || false;
         return db.code().insert(code);
       })
       .then(function() {
