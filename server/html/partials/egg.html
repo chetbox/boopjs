@@ -2,7 +2,7 @@
 <script>
   var easter_egg = new Konami();
   easter_egg.code = function() {
-    $.get('http://api.giphy.com/v1/gifs/search?q=boop&api_key=dc6zaTOxFJmzC')
+    $.get('https://api.giphy.com/v1/gifs/search?q=boop&api_key=dc6zaTOxFJmzC')
     .then(function(data) {
       var image_urls = data.data.map(function(img) {
         return img.images.downsized_large.url;
