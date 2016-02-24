@@ -183,12 +183,21 @@ window.addEventListener('message', function(event) {
 <script type="text/javascript">
   var repl;
 
+  function show_repl() {
+    $('body').addClass('show-repl');
+    repl.focus();
+  }
+
+  function hide_repl() {
+    $('body').removeClass('show-repl');
+    editor.focus();
+  }
+
   function toggle_repl() {
-    $('body').toggleClass('show-repl');
     if ($('body').hasClass('show-repl')) {
-      repl.focus();
+      hide_repl();
     } else {
-      editor.focus();
+      show_repl();
     }
   }
 
@@ -239,7 +248,23 @@ window.addEventListener('message', function(event) {
       return false;
     }
     if (e.which == 27 /* ESC */) {
-      eval( $('#controls a.back:visible').attr('href') );
+      var $back = $('#controls a.back');
+      if ($back.is(':hidden')) {
+        hide_repl();
+      } else {
+        eval( $back.attr('href') );
+      }
+      return false;
+    }
+    if (e.which === 13 && (e.ctrlKey || e.metaKey)) { /* Return */
+      if (!window.repl) return;
+      var selection = editor.getSelection();
+      var script = selection.isEmpty()
+        ? editor.getSession().getLine(editor.getSelectionRange().start.row)
+        : editor.getSession().getTextRange(editor.getSelectionRange());
+      show_repl();
+      repl.run(script);
+      editor.focus();
       return false;
     }
   });
