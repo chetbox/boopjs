@@ -21,11 +21,12 @@
       lat = parseFloat($dialog.find('paper-input[name=lat]').get(0).value),
       lon = parseFloat($dialog.find('paper-input[name=lon]').get(0).value),
       location_set = !isNaN(lat) && !isNaN(lon);
-    if (location_set) {
-      $('paper-dialog.location img.preview').attr('src',
-        'http://maps.googleapis.com/maps/api/staticmap?center=' + lat + ',' + lon + '&zoom=8&scale=false&size=300x150&maptype=roadmap&markers=size:small%7Ccolor:0x4e265a%7C' + lat + ',' + lon
-      );
-    }
+    $('paper-dialog.location img.preview').attr(
+      'src',
+      location_set
+        ? 'http://maps.googleapis.com/maps/api/staticmap?center=' + encodeURIComponent(lat + ',' + lon) + '&zoom=8&scale=false&size=300x150&maptype=roadmap&markers=size:small%7Ccolor:0x4e265a%7C' + encodeURIComponent(lat + ',' + lon)
+        : '/images/location-not-set.png'
+    );
   }
 
   function set_location(button) {
