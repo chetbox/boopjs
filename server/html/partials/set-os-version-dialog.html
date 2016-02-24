@@ -5,7 +5,9 @@
 
   <h2>Android OS</h2>
 
-  <paper-radio-group selected="{{os_version}}">
+  <paper-radio-group selected="{{#code.os_version}}{{.}}{{/code.os_version}}">
+    <paper-radio-button name="">Use default for this app ({{app.os_version}})</paper-radio-button>
+    <br/>
     <paper-radio-button name="5.1">5.1 Lollipop</paper-radio-button>
     <br/>
     <paper-radio-button name="6.0">6.0 Marshmallow</paper-radio-button>
@@ -18,21 +20,26 @@
 </paper-dialog>
 
 <script>
+  var app_os_version = '{{app.os_version}}';
+
   function set_os_version(button) {
-    var version = $(button).closest('paper-dialog').find('paper-radio-group').get(0).selected;
+    var code_os_version = $(button).closest('paper-dialog').find('paper-radio-group').get(0).selected
+        os_version = code_os_version || app_os_version;
 
     // Change OS version on running device
-    var url = $(device_iframe).attr('src');
-    url = url.replace(/osVersion=[0-9\.]+/, 'osVersion=' + version);
-    $(device_iframe).attr('src', url);
+    var old_url = $(device_iframe).attr('src'),
+        new_url = old_url.replace(/osVersion=[0-9\.]+/, 'osVersion=' + os_version);
+    if (new_url !== old_url) {
+      $(device_iframe).attr('src', new_url);
+    }
 
-    // Save for later
+    // Save setting to server
     $.ajax(location.pathname + '/os_version', {
       method: 'PUT',
       contentType: 'text/plain; charset=UTF-8',
-      data: version,
+      data: code_os_version,
       success: function() {
-        console.log('OS version set: ', version);
+        console.log('OS version set: ', code_os_version);
       },
       error: function(e) {
         console.error(e);
