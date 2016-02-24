@@ -8,7 +8,7 @@
         return img.images.downsized_large.url;
       });
       var random_image = image_urls[Math.floor(Math.random() * image_urls.length)];
-      var $span = $('<span>').css({
+      var $span = $('<a target="_blank">').attr('href', random_image).css({
         position: 'absolute',
         top: '25px',
         left: '25px',
