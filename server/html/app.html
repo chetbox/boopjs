@@ -351,7 +351,7 @@
       content: function() {
         var latlon = $(this).data('geo');
         if (latlon) {
-          var url = 'http://maps.googleapis.com/maps/api/staticmap?center=' + latlon + '&amp;zoom=8&amp;scale=false&amp;size=300x150&amp;maptype=roadmap&amp;markers=size:small%7Ccolor:0x4e265a%7C' + latlon;
+          var url = 'http://maps.googleapis.com/maps/api/staticmap?center=' + encodeURIComponent(latlon) + '&amp;zoom=8&amp;scale=false&amp;size=300x150&amp;maptype=roadmap&amp;markers=size:small%7Ccolor:0x4e265a%7C' + encodeURIComponent(latlon);
           return '<img src="' + url + '" />';
         } else {
           return $(this).attr('title');
