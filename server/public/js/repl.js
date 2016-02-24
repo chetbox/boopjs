@@ -27,7 +27,7 @@ function setup_repl(server, device_id, app_id, id, callbacks) {
       doc.removeLines(line_to_update, line_to_update);
       doc.insertLines(line_to_update, [new_line]);
     }
-    repl.gotoLine(line_to_update + 1, Number.MAX_SAFE_INTEGER, false);
+    repl.getSelection().moveCursorFileEnd();
   }
 
   function add_to_history(line) {
