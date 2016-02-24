@@ -14,20 +14,24 @@ function setup_repl(server, device_id, app_id, id, callbacks) {
   var history_cursor = history.length;
   var pending = 0;
 
+  function show(script) {
+    var doc = repl.getSession().getDocument();
+    var line_to_update = doc.getLength() - 1;
+    if (line_to_update === 0) {
+      doc.setValue(script);
+    } else {
+      doc.removeLines(line_to_update, line_to_update);
+      doc.insertLines(line_to_update, [script]);
+    }
+    repl.getSelection().moveCursorFileEnd();
+  }
+
   function show_from_history(new_cursor_value) {
     if (new_cursor_value < 0) return;
     if (new_cursor_value > history.length) return;
     history_cursor = new_cursor_value;
-    var doc = repl.getSession().getDocument();
-    var line_to_update = doc.getLength() - 1;
     var new_line = history[history_cursor];
-    if (line_to_update === 0) {
-      doc.setValue(new_line);
-    } else {
-      doc.removeLines(line_to_update, line_to_update);
-      doc.insertLines(line_to_update, [new_line]);
-    }
-    repl.getSelection().moveCursorFileEnd();
+    show(new_line);
   }
 
   function add_to_history(line) {
@@ -135,6 +139,11 @@ function setup_repl(server, device_id, app_id, id, callbacks) {
       exec: function() {}
     }
   ]);
+
+  repl.run = function(script) {
+    show(script.replace(/\n/g, ' '));
+    run();
+  }
 
   return repl;
 }
