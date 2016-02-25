@@ -59,15 +59,27 @@
         max-width: 13em;
         overflow: hidden;
         text-overflow: ellipsis;
+        margin-right: 0.25em;
       }
 
-      #code .app-info .name paper-icon-button {
+      #code .app-info .name > *:nth-child(2) {
+        margin-right: 1em;
+      }
+
+      #code .app-info .name > a > paper-icon-button,
+      #code .app-info .name > a > iron-icon {
         width: 2em;
         height: 2em;
-        margin-top: -8px;
-        margin-bottom: -8px;
-        top: -6px;
+        margin: -8px -0.5em;
         color: #d7d7d7;
+        top: -0.4em;
+      }
+
+      #code .app-info .name > a > iron-icon {
+        width: 1em;
+        height: 1em;
+        margin-left: 0;
+        margin-right: 0.5em;
       }
 
       #code .app-info > .result {
@@ -85,7 +97,7 @@
       }
 
       paper-button paper-spinner {
-        display: none;
+        display: none !important;
         position: relative;
         float: left;
         top: -4px;
@@ -94,7 +106,7 @@
       }
 
       paper-button.pending paper-spinner {
-        display: inline-block;
+        display: inline-block !important;
       }
       paper-button.pending iron-icon {
         display: none;
@@ -195,6 +207,8 @@
         background: #eee;
       }
     </style>
+
+    <link rel="stylesheet" type="text/css" href="/components/jquery-ui/themes/base/jquery-ui.min.css" />
   </head>
   <body class="fullbleed">
     <paper-header-panel class="boop-brand-color">
@@ -237,7 +251,7 @@
                     </a>
                   {{/latest_result}}
                   {{#unless latest_result}}
-                  <a title="Not run">?</a>
+                    <!-- not run -->
                   {{/unless}}
                 </span>
                 <h3 class="name">
@@ -245,6 +259,16 @@
                     <a href="javascript:rename('/app/{{app_id}}/test/{{id}}/edit', '{{name}}');" title="Rename test">
                       <paper-icon-button icon="create"></paper-icon-button>
                     </a>
+                    {{#os_version}}
+                      <a title="Android version: {{.}}">
+                        <iron-icon icon="android"></iron-icon>
+                      </a>
+                    {{/os_version}}
+                    {{#location}}
+                      <a data-geo="{{lat}},{{lon}}">
+                        <iron-icon icon="communication:location-on"></iron-icon>
+                      </a>
+                    {{/location}}
                   </a>
                 </h3>
                 {{#latest_result}}
@@ -317,6 +341,22 @@
   <script>
     $('paper-button').click(function() {
       $(this).addClass('pending');
+    });
+  </script>
+
+  <script src="/components/jquery-ui/jquery-ui.min.js"></script>
+  <script>
+    $(document).tooltip({
+      items: 'a[title]:not([href]), [data-geo]',
+      content: function() {
+        var latlon = $(this).data('geo');
+        if (latlon) {
+          var url = 'http://maps.googleapis.com/maps/api/staticmap?center=' + encodeURIComponent(latlon) + '&amp;zoom=8&amp;scale=false&amp;size=300x150&amp;maptype=roadmap&amp;markers=size:small%7Ccolor:0x4e265a%7C' + encodeURIComponent(latlon);
+          return '<img src="' + url + '" />';
+        } else {
+          return $(this).attr('title');
+        }
+      }
     });
   </script>
 

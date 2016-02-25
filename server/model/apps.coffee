@@ -10,6 +10,7 @@ exports.create_empty = (user_id) ->
     id: new_app_id,
     admins: [user_id],
     platform: 'android'
+    os_version: '5.1'
   db.put
     Item: item
   .then ->
@@ -106,3 +107,13 @@ exports.set_processing_error = (id, err) ->
         timestamp: Date.now()
         error: err.toString()
     ConditionExpression: 'attribute_exists(id)'
+
+exports.set_os_version = (id, version) ->
+  debug 'set_os_version', id, version
+  if typeof(version) != 'string'
+    throw new Error('version must be a string', "got #{typeof(version)}")
+  db.update
+    Key: { id: id }
+    UpdateExpression: 'SET os_version = :version'
+    ExpressionAttributeValues:
+      ':version': version

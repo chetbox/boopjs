@@ -206,3 +206,16 @@ describe 'model/code', ->
         assert_app_status app_id,
           not_run: [ id ]
       ]
+
+  describe 'set_os_version', ->
+    id = undefined
+
+    beforeEach 'create code', ->
+      model.create app_id
+      .then (c) ->
+        id = c.id
+
+    it 'defaults to undefined', ->
+      model.get app_id, id
+      .then (code) ->
+        assert.equal code.os_version, undefined

@@ -2,6 +2,11 @@
     entry-animation="fade-in-animation"
     exit-animation="fade-out-animation"
     withBackdrop="true">
+
+  <h2>Device location</h2>
+
+  <img width="300" height="150" class="preview" />
+
   <paper-input name="lat" label="Latitude" type="number" min="-90" max="90" no-label-float="true" value="{{location.lat}}" autoFocus="true"></paper-input>
   <paper-input name="lon" label="Longitude" type="number" min="-180" max="180" no-label-float="true" value="{{location.lon}}"></paper-input>
   <div style="margin-top: 2em; text-align: right;">
@@ -9,3 +14,47 @@
     <paper-button onclick="set_location(this); close_dialog(this);" class="primary"><iron-icon icon="communication:location-on"></iron-icon>Save</paper-button>
   </div>
 </paper-dialog>
+
+<script>
+  function preview_location() {
+    var $dialog = $('paper-dialog.location'),
+      lat = parseFloat($dialog.find('paper-input[name=lat]').get(0).value),
+      lon = parseFloat($dialog.find('paper-input[name=lon]').get(0).value),
+      location_set = !isNaN(lat) && !isNaN(lon);
+    $('paper-dialog.location img.preview').attr(
+      'src',
+      location_set
+        ? 'http://maps.googleapis.com/maps/api/staticmap?center=' + encodeURIComponent(lat + ',' + lon) + '&zoom=8&scale=false&size=300x150&maptype=roadmap&markers=size:small%7Ccolor:0x4e265a%7C' + encodeURIComponent(lat + ',' + lon)
+        : '/images/location-not-set.png'
+    );
+  }
+
+  function set_location(button) {
+    var $dialog = $(button).parents('paper-dialog'),
+        lat = parseFloat($dialog.find('paper-input[name=lat]').get(0).value),
+        lon = parseFloat($dialog.find('paper-input[name=lon]').get(0).value),
+        location_set = !isNaN(lat) && !isNaN(lon);
+    if (location_set) {
+      // Update the location on the device now
+      device_iframe.contentWindow.postMessage({type:'location', value:[lat, lon]}, '*');
+    }
+    // Save location to server
+    var new_location = location_set
+      ? JSON.stringify({lat:lat, lon:lon}) // HACK: stored as JSON string
+      : null;
+    $.ajax(location.pathname + '/location', {
+      method: 'PUT',
+      contentType: 'text/plain; charset=UTF-8',
+      data: new_location,
+      success: function() {
+        console.log('Location set: ', new_location);
+      },
+      error: function(e) {
+        console.error(e);
+      }
+    });
+  }
+
+  preview_location();
+  $('paper-dialog.location paper-input').on('keyup', preview_location);
+</script>

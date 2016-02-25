@@ -131,7 +131,7 @@
       <paper-icon-button icon="av:play-arrow"></paper-icon-button>
     </a>
   </div>
-  <div id="editor" class="content-panel">{{code.content}}</div>
+  <div id="editor" class="content-panel">{{#code.content}}{{.}}{{/code.content}}</div>
   {{> test-report}}
   {{#user}}
   <div id="statusbar">
@@ -183,12 +183,21 @@ window.addEventListener('message', function(event) {
 <script type="text/javascript">
   var repl;
 
+  function show_repl() {
+    $('body').addClass('show-repl');
+    repl.focus();
+  }
+
+  function hide_repl() {
+    $('body').removeClass('show-repl');
+    editor.focus();
+  }
+
   function toggle_repl() {
-    $('body').toggleClass('show-repl');
     if ($('body').hasClass('show-repl')) {
-      repl.focus();
+      hide_repl();
     } else {
-      editor.focus();
+      show_repl();
     }
   }
 
@@ -239,37 +248,26 @@ window.addEventListener('message', function(event) {
       return false;
     }
     if (e.which == 27 /* ESC */) {
-      eval( $('#controls a.back:visible').attr('href') );
+      var $back = $('#controls a.back');
+      if ($back.is(':hidden')) {
+        hide_repl();
+      } else {
+        eval( $back.attr('href') );
+      }
+      return false;
+    }
+    if (e.which === 13 && (e.ctrlKey || e.metaKey)) { /* Return */
+      if (!window.repl) return;
+      var selection = editor.getSelection();
+      var script = selection.isEmpty()
+        ? editor.getSession().getLine(editor.getSelectionRange().start.row)
+        : editor.getSession().getTextRange(editor.getSelectionRange());
+      show_repl();
+      repl.run(script);
+      editor.focus();
       return false;
     }
   });
-</script>
-
-<!-- set device location -->
-<script>
-  // Required by partial: set-location-dialog
-  function set_location(button) {
-    var $dialog = $(button).parents('paper-dialog'),
-        lat = parseFloat($dialog.find('paper-input[name=lat]').get(0).value),
-        lon = parseFloat($dialog.find('paper-input[name=lon]').get(0).value),
-        location_set = !isNaN(lat) && !isNaN(lon);
-    if (location_set) {
-      // Update the location on the device now
-      device_iframe.contentWindow.postMessage({type:'location', value:[lat, lon]}, '*');
-    }
-    // Save location to server
-    $.ajax(location.pathname + '/location', {
-      method: 'PUT',
-      contentType: 'text/plain; charset=UTF-8',
-      data: JSON.stringify(location_set ? {lat:lat, lon:lon} : null), // HACK: stored as plain text with JSON string
-      success: function() {
-        console.log('Location set: ', [lat, lon]);
-      },
-      error: function(e) {
-        console.error(e);
-      }
-    });
-  }
 </script>
 
 {{#unless device.wait_for_user_to_start}}
