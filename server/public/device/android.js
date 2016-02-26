@@ -1,4 +1,4 @@
-var version = [0, 7, 3];
+var version = [0, 7, 4];
 
 // Import android.*
 
@@ -387,31 +387,42 @@ function assert_visible(selector) {
 
 // Interaction - touch
 
-function tap(selector, options) {
-  if (!options) options = {};
-  if (options.duration === undefined) options.duration = 0.02;
+function tap(location_or_selector, options) {
+  if (Array.isArray(location_or_selector) &&
+      location_or_selector.length === 2 &&
+      typeof(location_or_selector[0]) === 'number' &&
+      typeof(location_or_selector[1]) === 'number') {
 
-  var view_center = __center(wait_for(selector, options));
-  var timestamp = android.os.SystemClock.uptimeMillis();
-  inject_motion_event(
-    android.view.MotionEvent.obtain(
-      timestamp,
-      timestamp,
-      android.view.MotionEvent.ACTION_DOWN,
-      view_center[0],
-      view_center[1],
-      0
-    ),
-    android.view.MotionEvent.obtain(
-      timestamp,
-      timestamp + options.duration * 1000,
-      android.view.MotionEvent.ACTION_UP,
-      view_center[0],
-      view_center[1],
-      0
-    )
-  );
-  java.lang.Thread.sleep(250);
+    var location = location_or_selector;
+
+    if (!options) options = {};
+    if (options.duration === undefined) options.duration = 0.02;
+
+    var timestamp = android.os.SystemClock.uptimeMillis();
+    inject_motion_event(
+      android.view.MotionEvent.obtain(
+        timestamp,
+        timestamp,
+        android.view.MotionEvent.ACTION_DOWN,
+        location[0],
+        location[1],
+        0
+      ),
+      android.view.MotionEvent.obtain(
+        timestamp,
+        timestamp + options.duration * 1000,
+        android.view.MotionEvent.ACTION_UP,
+        location[0],
+        location[1],
+        0
+      )
+    );
+    java.lang.Thread.sleep(250);
+  } else {
+    var selector = location_or_selector,
+        location = __center(wait_for(selector, options));
+    tap(location, options);
+  }
 }
 
 // Interaction - h/w keys
