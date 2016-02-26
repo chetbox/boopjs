@@ -36,6 +36,22 @@ public class InteractionTests extends StopwatchTest {
                 equalToIgnoringCase("start"));
     }
 
+    @Test public void tapXYCoord() {
+        assertThat(startStopButton.getText().toString(),
+                equalToIgnoringCase("start"));
+
+        int[] location = new int[2];
+        startStopButton.getLocationOnScreen(location);
+        int centerX = location[0] + startStopButton.getWidth() / 2,
+            centerY = location[1] + startStopButton.getHeight() / 2;
+
+        exec("tap([" + centerX + ", " + centerY + "])");
+
+        assertThat(startStopButton.getText().toString(),
+                equalToIgnoringCase("stop"));
+    }
+
+
     @Test public void waitSeconds() {
         long start = System.currentTimeMillis();
         exec("wait(0.5)");
