@@ -171,15 +171,20 @@ function setup(app, options) {
     login_required,
     ensure_logged_in_user('user_id'),
     function(req, res, next) {
-      Promise.join(
-        db.users().find(req.params.user_id),
-        model.access_tokens.get_or_create_for_user(req.params.user_id)
-      )
-      .spread(function(user, access_tokens) {
-        res.render('account', {
-          user: req.user,
-          requested_user: user,
-          access_tokens: access_tokens
+      db.users().find(req.params.user_id)
+      .then(function(requested_user) {
+        if (!requested_user) {
+          res.sendStatus(404);
+          return;
+        }
+
+        return model.access_tokens.get_or_create_for_user(requested_user.id)
+        .then(function(access_tokens) {
+          res.render('account', {
+            user: req.user,
+            requested_user: requested_user,
+            access_tokens: access_tokens
+          });
         });
       })
       .catch(next);
