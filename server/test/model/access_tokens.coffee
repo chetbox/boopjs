@@ -4,9 +4,6 @@ Promise = require 'bluebird'
 # SUT
 model = require('../../model/access_tokens')
 
-assert_token = (expected) ->
-
-
 describe 'model/access_tokens', ->
   require('./in_memory_db').setup_mocha()
 
