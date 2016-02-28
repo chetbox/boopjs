@@ -56,4 +56,26 @@ describe('XML utils', function() {
     );
   });
 
+  describe('add_permission', function() {
+
+    it('adds permssion to AndroidManifest.xml', function() {
+      var manifest = parseXML(read(fixture('StopwatchManifestDefaultApplication.xml')));
+      xml.add_permission('android.permission.ACCESS_FINE_LOCATION', manifest);
+      assert.deepEqual(
+        manifest,
+        parseXML(read(fixture('StopwatchManifestWithLocationPermission.xml')))
+      );
+    });
+
+    it('does not add permssion that already exists in AndroidManifest.xml', function() {
+      var manifest = parseXML(read(fixture('StopwatchManifestWithLocationPermission.xml')));
+      xml.add_permission('android.permission.ACCESS_FINE_LOCATION', manifest);
+      assert.deepEqual(
+        manifest,
+        parseXML(read(fixture('StopwatchManifestWithLocationPermission.xml')))
+      );
+    });
+
+  });
+
 });
