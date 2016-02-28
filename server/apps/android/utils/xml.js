@@ -28,3 +28,16 @@ exports.remove_unsupported_styles = function(styles_xml) {
         && s['$'].parent !== '@android:style/WindowTitleBackground';
   });
 }
+
+exports.add_permission = function(permission_to_add, manifest_xml) {
+  var uses_permissions = manifest_xml.manifest['uses-permission'] || [];
+  var has_permission_to_add = uses_permissions.reduce(function(has_permission, iter_permission) {
+    return has_permission || iter_permission['$']['android:name'] === permission_to_add;
+  }, false);
+  if (!has_permission_to_add) {
+    uses_permissions.push({
+      '$': { 'android:name': permission_to_add }
+    });
+    manifest_xml.manifest['uses-permission'] = uses_permissions;
+  }
+};
