@@ -1,7 +1,9 @@
 Dockerfile
 build/*
 README.md
+android/lib/local.properties
 android/lib/build
+android/test/local.properties
 android/test/app/build
 android/test/build
 server/node_modules
