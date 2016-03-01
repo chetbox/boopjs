@@ -20,6 +20,10 @@ public class GenericMatchers {
         return Matchers.isA(clazz);
     }
 
+    public static Matcher<Object> not(Matcher matcher) {
+        return Matchers.not(matcher);
+    }
+
     public static Matcher<Object> contains(Object... items) {
         return genericMatcher(Matchers.contains(items));
     }

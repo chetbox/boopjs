@@ -2,6 +2,7 @@ package com.chetbox.chetbot.base;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.os.SystemClock;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.core.deps.guava.base.Joiner;
 import android.support.test.rule.ActivityTestRule;
@@ -39,9 +40,9 @@ public abstract class BaseTest {
         @Override
         protected Intent getActivityIntent() {
             Intent intent = super.getActivityIntent();
-            intent.putExtra("boop.server", "ws://dummy/device/XXXXXX");
             intent.putExtra("boop.scripts", Rhino.GSON.toJson(new String[]{
-                    mAssetServer.url("/device/android.js").toString()
+                    mAssetServer.url("/device/android.js").toString(),
+                    mAssetServer.url("/device/android-recorder.js").toString()
             }));
             return withIntent(intent);
         }
@@ -87,6 +88,16 @@ public abstract class BaseTest {
 
     protected Activity getActivity() {
         return mActivityRule.getActivity();
+    }
+
+    protected void runOnUiThreadAfter(final long delayMs, final Runnable runnable) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                SystemClock.sleep(delayMs);
+                getActivity().runOnUiThread(runnable);
+            }
+        }).start();
     }
 
 }
