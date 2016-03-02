@@ -49,8 +49,6 @@
       user_url = '{{id}}' ? '/account/{{id}}' : undefined;
   Cookies.set(cookie_key, username, { expires: 365 });
 
-  console.log('slack username', username);
-
   $('{{querySelector}}').slackChat({
     apiToken: 'xoxp-9932424052-9932677106-23911690193-452c70c624',
     channelId: 'C0PSPC0LB',
