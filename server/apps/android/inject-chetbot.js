@@ -49,8 +49,12 @@ exports.add_chetbot_to_apk = function(input_apk, output_apk) {
   debug('Extracting resources from APK');
   java('-Xmx1024m', '-jar', apktool, 'decode', '--no-src', tmp('app.apk'), '-o', tmp('app'));
 
-  debug('Attempting to set custom Application in AndroidManifest.xml');
   var manifest = xml_utils.parseXML(fs.readFileSync(tmp('app/AndroidManifest.xml')));
+
+  debug('Adding internet permission');
+  xml_utils.add_permission('android.permission.INTERNET', manifest);
+
+  debug('Attempting to set custom Application in AndroidManifest.xml');
   var application_custom_class = xml_utils.get_manifest_application_class(manifest);
 
   if (!application_custom_class) {

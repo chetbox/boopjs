@@ -59,6 +59,20 @@
         color: rgba(255,255,255,0.87);
         background-color: #FF5722;
       }
+
+      #slack-chat-btn {
+        z-index: 2;
+        cursor: pointer;
+        position: fixed;
+        right: 1.5em;
+        bottom: 1em;
+        background-color: white;
+      }
+
+      #slack-chat-btn i {
+        font-size: 0.9em;
+        opacity: 0.85;
+      }
     </style>
   </head>
   <body>
@@ -111,5 +125,14 @@
         {{> footer-public }}
       </main>
     </div>
+    <button id="slack-chat-btn" class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-js-ripple-effect brand-color" title="Have a question?">
+      <i class="material-icons">feedback</i>
+    </button>
   </body>
+
+  {{> google-analytics}}
+
+  <script src="/components/jquery/dist/jquery.min.js"></script>
+  {{> slack-chat querySelector='#slack-chat-btn'}}
+
 </html>
