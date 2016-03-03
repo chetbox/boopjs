@@ -209,6 +209,7 @@
     </style>
 
     <link rel="stylesheet" type="text/css" href="/components/jquery-ui/themes/base/jquery-ui.min.css" />
+    <script src="/components/jquery/dist/jquery.min.js"></script>
   </head>
   <body class="fullbleed">
     <paper-header-panel class="boop-brand-color">
@@ -330,11 +331,10 @@
         </form>
       </div>
     </paper-header-panel>
+    {{> drop-file}}
   </body>
 
   {{> google-analytics}}
-
-  <script src="/components/jquery/dist/jquery.min.js"></script>
 
   {{> graph-setup}}
 
@@ -381,6 +381,15 @@
     {{#app.processing_status}}
       app_upload.show_processing_status({ app: { id: '{{../app.id}}' }});
     {{/app.processing_status}}
+
+    // Handler for dropping file onto window
+    $(function() {
+      $('body').on('drop', function(e) {
+        e.preventDefault();
+        var files = e.originalEvent.target.files || e.originalEvent.dataTransfer.files;
+        app_upload.upload(files);
+      });
+    });
   </script>
 
   <script src="/js/rename-test.js"></script>
@@ -423,6 +432,7 @@
         alert(e.toString());
       });
     }
+
   </script>
 
   {{#app.running.values}}
