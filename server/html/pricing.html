@@ -17,7 +17,6 @@
       }
 
       #tiers .mdl-cell {
-        width: 380px;
         margin-bottom: 2em;
       }
 
@@ -55,6 +54,20 @@
         display: inline-block;
       }
 
+      .banner {
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        padding-bottom: 2em;
+      }
+
+      .banner > *:first-child {
+        padding: 1em;
+        display: inline-block;
+        font-weight: 100;
+        font-size: 1.5em;
+      }
+
       .contact button {
         color: rgba(255,255,255,0.87);
         background-color: #FF5722;
@@ -80,10 +93,20 @@
       {{> nav-public }}
       <main class="mdl-layout__content">
         <h2>Plans &amp; Pricing</h2>
-        <p class="intro">boop.js is free to use for one app. Upgrade to one of our paid plans to test more apps and unlimited testing.</p>
+        <p class="intro">You can use boop.js free of change for one app and we'll also give you a month of unlimited usage for free. Upgrade to one of our paid plans for higher usage and speedy, pro-active support.</p>
         <div id="tiers" class="mdl-grid">
+          <div class="mdl-cell mdl-cell--12-col banner">
+            <div class="mdl-color-text--accent">
+              One month unlimited usage, for free
+            </div>
+            <a href="/apps">
+              <button class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent mdl-js-ripple-effect">
+                Get started
+              </button>
+            </a>
+          </div>
           {{#tiers}}
-            <div class="mdl-cell mdl-cell--6-col {{name}}">
+            <div class="mdl-cell mdl-cell--6-col tier {{name}}">
               <div class="mdl-card mdl-shadow--4dp">
                 <div class="mdl-card__title">
                   <h3 class="mdl-card__title-text">{{name}}</h3>
@@ -113,9 +136,21 @@
                       Selected
                     </a>
                   {{else}}
-                    <a class="mdl-button mdl-button--accent mdl-js-button mdl-js-ripple-effect" target="_blank" href="mailto:sales@boopjs.com?subject=Upgrade%20to%20{{name}}%20plan">
-                      Select
-                    </a>
+                    {{#if_eq name 'Free'}}
+                      <a class="mdl-button mdl-button--accent mdl-js-button mdl-js-ripple-effect" href="/apps">
+                        Get started
+                      </a>
+                    {{else}}
+                      {{#if_eq monthly_cost 'Contact us'}}
+                        <a class="mdl-button mdl-button--accent mdl-js-button mdl-js-ripple-effect" target="_blank" href="mailto:sales@boopjs.com?subject=Upgrade%20to%20{{name}}%20plan">
+                          Enquire
+                        </a>
+                      {{else}}
+                        <a class="mdl-button mdl-button--accent mdl-js-button mdl-js-ripple-effect" target="_blank" href="mailto:sales@boopjs.com?subject=Upgrade%20to%20{{name}}%20plan">
+                          Select
+                        </a>
+                      {{/if_eq}}
+                    {{/if_eq}}
                   {{/current}}
                 </div>
               </div>
