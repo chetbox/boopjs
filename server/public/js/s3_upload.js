@@ -46,17 +46,22 @@ function s3_upload(file_input, target_input, opts) {
     });
   }
 
-  $(file_input)
-  .on('click', click)
-  .on('change', function(e) {
+  function upload(files) {
     ga('send', 'event', 'app-upload', 'start');
 
-    $(e.target).hide();
+    if (files.length !== 1) {
+      error('One file expected');
+      return;
+    }
+    if (!files[0].name.match(/\.apk$/i)) {
+      error('APK file expected');
+      return;
+    }
+    var file = files[0];
+
+    $(file_input).hide();
 
     progress('Requesting upload...');
-
-    var file = e.target.files[0];
-
     change(file);
 
     if (!file) {
@@ -116,9 +121,16 @@ function s3_upload(file_input, target_input, opts) {
       xhr.open('PUT', req.signed_request);
       xhr.send(file);
     });
+  }
+
+  $(file_input)
+  .on('click', click)
+  .on('change', function(e) {
+    upload(e.target.files);
   });
 
   return {
-    show_processing_status: update_processing_status
+    show_processing_status: update_processing_status,
+    upload: upload
   };
 }
