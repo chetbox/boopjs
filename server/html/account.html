@@ -69,6 +69,24 @@
       h2 .username {
         font-size: 0.67em;
       }
+
+      #plan .current-plan-container {
+        display: inline-flex;
+        flex-direction: column;
+      }
+
+      #plan .current {
+        background: #9E9E9E;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+      }
+
+      #plan a.upgrade {
+        margin-top: 0.33em;
+        font-size: 0.67em;
+        text-decoration: underline;
+      }
     </style>
   </head>
   <body class="fullbleed">
@@ -90,6 +108,13 @@
           <div id="header">
             <img id="avatar" src="{{avatarUrl}}" title="{{displayName}} ({{username}})"/>
             <h2>{{displayName}}<br><span class="username">(<a target="_blank" href="{{profileUrl}}" title="{{username}} on GitHub">{{username}}</a>)</span></h2>
+          </div>
+          <div id="plan">
+            Current plan:&nbsp;
+            <span class="current-plan-container">
+              <span class="current">Free</span>
+              <a class="upgrade" href="/pricing">Upgrade</a>
+            </span>
           </div>
           <div id="emails">
             <ol>
