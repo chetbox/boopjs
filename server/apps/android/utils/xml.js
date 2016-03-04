@@ -1,7 +1,20 @@
 var xml2js = require('xml2js');
 
+function expand_class_name(package_name, name) {
+  return name && name[0] === '.'
+    ? package_name + name
+    : name;
+}
+
+exports.package_name = function(manifest_xml) {
+  return manifest_xml.manifest['$'].package;
+}
+
 exports.get_manifest_application_class = function(manifest_xml) {
-  return manifest_xml.manifest.application[0]['$']['android:name'];
+  return expand_class_name(
+    exports.package_name(manifest_xml),
+    manifest_xml.manifest.application[0]['$']['android:name']
+  );
 }
 
 exports.set_manifest_application_class = function(manifest_xml, value) {
