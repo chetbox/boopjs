@@ -1,0 +1,47 @@
+<div id="file-upload-indicator">
+  <iron-icon icon="cloud-upload"></iron-icon>
+</div>
+<style>
+  #file-upload-indicator {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    background: rgba(255,255,255,0.5);
+    z-index: 3;
+    color: #4e265a;
+    align-items: center;
+    justify-content: center;
+    display: none;
+  }
+  #file-upload-indicator.show {
+    display: flex;
+  }
+
+  #file-upload-indicator iron-icon {
+    width: 200px;
+    height: 200px;
+    opacity: 0.9;
+    -webkit-filter: drop-shadow(0 0 50px #eee);
+    filter: drop-shadow(0 0 50px #eee);
+  }
+</style>
+<script>
+  $indicator = $('#file-upload-indicator');
+  $('body')
+  .on('dragover', function(e) {
+    e.preventDefault();
+    e.originalEvent.dataTransfer.dropEffect = 'copy';
+    $indicator.addClass('show');
+  })
+  .on('dragleave', function(e) {
+    if ($(e.target).is($indicator)) {
+      $indicator.removeClass('show');
+    }
+  })
+  .on('drop', function(e) {
+    e.preventDefault();
+    $indicator.removeClass('show');
+  });
+</script>
