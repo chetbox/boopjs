@@ -74,10 +74,7 @@
                 <ul>
                   {{#apps}}<li><a href="/app/{{.}}">{{.}}</a></li>{{/apps}}
                   <li>
-                    <form method="POST" action="/api/v1/app">
-                      <input type="hidden" name="as_user" value="{{id}}" />
-                      <input type="submit" value="Add" />
-                    </form>
+                    <button onclick="add_app({as_user: '{{id}}'})">Add</button>
                   </li>
                 </ul>
               </td>
@@ -96,6 +93,16 @@
 
   <script src="/components/jquery/dist/jquery.min.js"></script>
   <script>
+    function add_app(params) {
+      $.post('/api/v1/app', params || {})
+      .done(function(resp) {
+        location.href = '/app/' + resp.app.id
+      })
+      .fail(function(jqXHR) {
+        alert(jqXHR.responseText);
+      });
+    }
+
     function add_user() {
       var gh_username = prompt('GitHub user');
       if (!gh_username) return;
