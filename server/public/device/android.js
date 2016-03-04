@@ -196,7 +196,8 @@ function views(selectors, root_views) {
   }
 
   return selectors.length === 0
-    ? root_viewsr
+    ? root_views
+    : views(
         selectors.slice(1),
         find_matching_views(root_views, make_selector_fn(selectors[0]))
       );
