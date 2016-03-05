@@ -3,19 +3,16 @@ package com.chetbox.chetbot;
 import android.graphics.Bitmap;
 import android.view.View;
 
-import com.chetbox.chetbot.android.util.Activities;
 import com.chetbox.chetbot.base.screens.StopwatchTest;
 
 import org.junit.Test;
 import org.mozilla.javascript.Undefined;
 
-import java.util.Collection;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import static com.chetbox.chetbot.util.GenericMatchers.*;
-import static com.chetbox.chetbot.util.Lists.*;
 
 public class SelectorTests extends StopwatchTest {
 
@@ -77,7 +74,7 @@ public class SelectorTests extends StopwatchTest {
 
     @Test public void findViewByText_notFound() {
         assertThat(exec("text({text: 'nonsense'})"),
-                is(false));
+                is(Undefined.instance));
     }
 
     @Test public void findViewByShortId() {
@@ -152,7 +149,7 @@ public class SelectorTests extends StopwatchTest {
 
     @Test public void viewText_notTextView() {
         assertThat(exec("text({type: 'RelativeLayout'})"),
-                is(false));
+                is(Undefined.instance));
     }
 
     @Test public void countViewsWithClassName() {
