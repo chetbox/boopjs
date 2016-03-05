@@ -58,12 +58,17 @@ function screen_size() {
 // View selectors
 
 function __text(view) {
-  return (view instanceof android.widget.TextView)
-      && (!android.text.TextUtils.isEmpty(view.getText())
-          ? view.getText().toString()
-          : (!android.text.TextUtils.isEmpty(view.getHint())
-              ? view.getHint().toString()
-              : null));
+  function to_string(char_seq) {
+    if (char_seq) return char_seq.toString();
+  }
+  if (view instanceof android.widget.TextView) {
+    return !android.text.TextUtils.isEmpty(view.getText())
+      ? to_string(view.getText())
+      : to_string(view.getHint());
+  }
+  if (view instanceof android.support.design.widget.TextInputLayout) {
+    return view.getHint().toString();
+  }
 }
 
 function __id(view) {

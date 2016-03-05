@@ -17,12 +17,28 @@ public class TextEntryTests extends TextFieldsTest {
                 equalTo("Once upon a time..."));
     }
 
-    @Test public void typeInPasswordField() {
+    @Test public void typeInTextInputLayout() {
         exec(   "tap('password');",
                 "type_text('my!secret*passw0rd');");
 
         assertThat(passwordField.getText().toString(),
                 equalTo("my!secret*passw0rd"));
+    }
+
+    @Test public void typeInTextInputLayoutWithText() {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                // Cause hint to float about EditText
+                passwordField.setText("hello");
+            }
+        });
+
+        exec(   "tap('password');",
+                "type_text(' world');");
+
+        assertThat(passwordField.getText().toString(),
+                equalTo("hello world"));
     }
 
 }
