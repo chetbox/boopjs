@@ -1,4 +1,4 @@
-var version = [0, 7, 4];
+var version = [0, 7, 5];
 
 // Import android.*
 
@@ -115,10 +115,26 @@ function views(selectors, root_views) {
   }
 
   function type_matcher(type) {
+
+    function get_class_hierarchy(clazz) {
+      return [clazz].concat(
+        (clazz === android.view.View)
+          ? []
+          : get_class_hierarchy(clazz.superclass)
+        );
+    }
+
     return function(view) {
-      return type.equalsIgnoreCase( type.indexOf('.') >= 0
-        ? __type(view)
-        : view.getClass().getSimpleName());
+      if (typeof(type) === 'string') {
+        return get_class_hierarchy(view.getClass()).reduce(function(matches_class, cls) {
+          return matches_class ||
+            (type.equalsIgnoreCase( type.indexOf('.') >= 0
+              ? cls.getName()
+              : cls.getSimpleName()));
+        }, false);
+      } else {
+        return view instanceof type;
+      }
     }
   }
 

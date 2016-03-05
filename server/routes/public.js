@@ -7,7 +7,7 @@ exports.add_routes = function(app) {
   });
 
   app.get('/docs', function(req, res) {
-    res.redirect('/docs/BOOP.JS API reference v0.7.4.pdf');
+    res.redirect('/docs/BOOP.JS API reference v0.7.5.pdf');
   });
 
   app.get('/sample-test-report', function(req, res) {

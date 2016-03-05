@@ -100,20 +100,29 @@ public class SelectorTests extends StopwatchTest {
                 is(Undefined.instance));
     }
 
-    @Test public void findViewsByClassName() {
-        assertThat(exec("view({type: 'android.support.v7.widget.AppCompatButton', text: 'start'})"),
-                sameInstance(startStopButton));
-
-        assertThat(exec("view({type: 'android.support.v7.widget.AppCompatButton', text: 'reset'})"),
-                sameInstance(resetButton));
+    @Test public void findViewsByClass() {
+        assertThat(exec("view({type: Packages.android.widget.Button})"),
+                either(sameInstance(startStopButton)).or(sameInstance(resetButton)));
     }
 
-    @Test public void findViewsByClassSimpleName() {
-        assertThat(exec("view({type: 'AppCompatButton', text: 'start'})"),
-                sameInstance(startStopButton));
+    @Test public void findViewByClassName() {
+        assertThat(exec("view({type: 'android.support.v7.widget.AppCompatButton'})"),
+                either(sameInstance(startStopButton)).or(sameInstance(resetButton)));
+    }
 
-        assertThat(exec("view({type: 'AppCompatButton', text: 'reset'})"),
-                sameInstance(resetButton));
+    @Test public void findViewBySuperClassName() {
+        assertThat(exec("view({type: 'android.widget.Button'})"),
+                either(sameInstance(startStopButton)).or(sameInstance(resetButton)));
+    }
+
+    @Test public void findViewBySuperClassSimpleName() {
+        assertThat(exec("view({type: 'Button'})"),
+                either(sameInstance(startStopButton)).or(sameInstance(resetButton)));
+    }
+
+    @Test public void findViewByClassSimpleName() {
+        assertThat(exec("view({type: 'AppCompatButton'})"),
+                either(sameInstance(startStopButton)).or(sameInstance(resetButton)));
     }
 
     @Test public void textViewVisible() {
