@@ -4,6 +4,12 @@ var version = [0, 7, 5];
 
 var android = Packages.android;
 
+// RegExp utilities
+
+RegExp.escape = function(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+};
+
 // Concurrency utilities
 
 function __container() {
@@ -122,8 +128,18 @@ function views(selectors, root_views) {
   }
 
   function text_matcher(text_query) {
+    if (typeof(text_query) === 'string') {
+      return text_matcher(new RegExp('\\b' + RegExp.escape(text_query) + '\\b', 'i'));
+    }
     return function(view) {
-      return text_query.equalsIgnoreCase(__text(view));
+      var text = __text(view);
+      if (!text) {
+        return false;
+      }
+      if (text_query instanceof RegExp) {
+        return !!text.match(text_query);
+      }
+      throw new Error('Invalid text selector: ' + text_query);
     }
   }
 

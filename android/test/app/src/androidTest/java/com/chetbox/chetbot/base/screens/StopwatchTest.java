@@ -25,6 +25,7 @@ public abstract class StopwatchTest extends BaseTest {
     protected TextView millisecondsText;
     protected ProgressBar progress;
     protected LinearLayout buttonsContainer;
+    protected TextView stopwatchDefinition;
 
     @Override
     public void setUp() {
@@ -37,6 +38,7 @@ public abstract class StopwatchTest extends BaseTest {
         millisecondsText = (TextView) findViewById(R.id.milliseconds);
         progress = (ProgressBar) findViewById(R.id.progress);
         buttonsContainer = (LinearLayout) findViewById(R.id.buttons);
+        stopwatchDefinition = (TextView) findViewById(R.id.definition);
 
         // Handy references to views in the layout
         exec("var _startStopButton_ = view({id: 'start_stop'});");
@@ -45,6 +47,7 @@ public abstract class StopwatchTest extends BaseTest {
         exec("var _secondsText_ = view({id: 'seconds'});");
         exec("var _millisecondsText_ = view({id: 'milliseconds'});");
         exec("var _buttonContainer_ = view({id: 'buttons'});");
+        exec("var _stopwatchDefinition_ = view({id: 'definition'});");
     }
 
 }
