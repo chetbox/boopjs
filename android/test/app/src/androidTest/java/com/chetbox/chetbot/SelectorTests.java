@@ -285,4 +285,43 @@ public class SelectorTests extends StopwatchTest {
                                     "com.chetbox.chetbot.test:id/start_stop",
                                     "com.chetbox.chetbot.test:id/reset"));
     }
+
+
+    @Test public void allText() {
+        assertThat(exec("all_text()"),
+                hasItems(   "00",
+                            "00",
+                            "000",
+                            "Start",
+                            "Reset",
+                            "MINS",
+                            "SECS",
+                            "MILLIS"));
+    }
+
+    @Test public void allTextSubviews() {
+        assertThat(exec("all_text(_buttonContainer_)"),
+                containsInAnyOrder( "Start",
+                                    "Reset"));
+    }
+
+    @Test public void allTypes() {
+        assertThat(exec("all_types()"),
+                hasItems(   "android.widget.Button",
+                            "android.widget.TextView",
+                            "android.view.View",
+                            "android.view.ViewGroup",
+                            "android.widget.LinearLayout"));
+    }
+
+    @Test public void allTypesSubviews() {
+        assertThat(exec("all_types(_buttonContainer_)"),
+                containsInAnyOrder( "android.support.v7.widget.AppCompatButton",
+                                    "android.widget.Button",
+                                    "android.widget.TextView",
+                                    "android.view.View",
+                                    "android.view.ViewGroup",
+                                    "android.widget.LinearLayout"));
+    }
+
 }

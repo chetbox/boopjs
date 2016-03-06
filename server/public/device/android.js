@@ -80,6 +80,14 @@ function __type(view) {
   return view.getClass().getName();
 }
 
+function __type_hierarchy(class) {
+  return [class].concat(
+    (class === android.view.View)
+      ? []
+      : __type_hierarchy(class.superclass)
+    );
+}
+
 function __location(view) {
   var xy = java.lang.reflect.Array.newInstance(java.lang.Integer.TYPE, 2);
   view.getLocationOnScreen(xy);
@@ -121,17 +129,9 @@ function views(selectors, root_views) {
 
   function type_matcher(type) {
 
-    function get_class_hierarchy(clazz) {
-      return [clazz].concat(
-        (clazz === android.view.View)
-          ? []
-          : get_class_hierarchy(clazz.superclass)
-        );
-    }
-
     return function(view) {
       if (typeof(type) === 'string') {
-        return get_class_hierarchy(view.getClass()).reduce(function(matches_class, cls) {
+        return __type_hierarchy(view.getClass()).reduce(function(matches_class, cls) {
           return matches_class ||
             (type.equalsIgnoreCase( type.indexOf('.') >= 0
               ? cls.getName()
@@ -313,8 +313,36 @@ function all_ids(selector) {
       if (id) ids.push(id);
       return false; // keep searching
     },
-    selector ? views(selector) : undefined);
+    selector ? views(selector) : undefined
+  );
   return ids;
+}
+
+function all_text(selector) {
+  var strings = [];
+  views(
+    function(v) {
+      var str = __text(v);
+      if (str) strings.push(str);
+      return false; // keep searching
+    },
+    selector ? views(selector) : undefined
+  );
+  return strings;
+}
+
+function all_types(selector) {
+  var types = new java.util.HashSet();
+  views(
+    function(v) {
+      types.addAll(__type_hierarchy(v.getClass()).map(function(class) {
+        return class.getName();
+      }));
+      return false; // keep searching
+    },
+    selector ? views(selector) : undefined
+  );
+  return types;
 }
 
 // View array filters
