@@ -128,9 +128,6 @@ function views(selectors, root_views) {
   }
 
   function text_matcher(text_query) {
-    if (typeof(text_query) === 'string') {
-      return text_matcher(new RegExp('\\b' + RegExp.escape(text_query) + '\\b', 'i'));
-    }
     return function(view) {
       var text = __text(view);
       if (!text) {
@@ -139,8 +136,18 @@ function views(selectors, root_views) {
       if (text_query instanceof RegExp) {
         return !!text.match(text_query);
       }
+      if (typeof(text_query) === 'string') {
+        return text.equalsIgnoreCase(text_query);
+      }
       throw new Error('Invalid text selector: ' + text_query);
     }
+  }
+
+  function has_text_matcher(has_text_query) {
+    if (typeof(has_text_query) !== 'string') {
+      throw new Error('has_text expects a string');
+    }
+    return text_matcher(new RegExp('\\b' + RegExp.escape(has_text_query) + '\\b', 'i'));
   }
 
   function type_matcher(type) {
@@ -200,15 +207,18 @@ function views(selectors, root_views) {
         if (selector instanceof android.view.View) {
           return function(v) { return v === selector; };
         } else {
-          if (!selector.text && !selector.type && !selector.id) {
-            throw '"text", "type" or "id" must be specified';
+          if (!selector.text && !selector.has_text && !selector.type && !selector.id) {
+            throw '"text", "has_text", "type" or "id" must be specified';
           }
           var match_any = function() { return true; },
               match_visible = visible_matcher(screen_size()),
-              match_text = selector.text ? text_matcher(selector.text) : match_any,
-              match_type = selector.type ? type_matcher(selector.type) : match_any,
-              match_id   = selector.id   ? id_matcher(selector.id)     : match_any;
-          return function(v) { return match_visible(v) && match_text(v) && match_type(v) && match_id(v) };
+              match_text      = selector.text     ? text_matcher(selector.text)         : match_any,
+              match_has_text  = selector.has_text ? has_text_matcher(selector.has_text) : match_any,
+              match_type      = selector.type     ? type_matcher(selector.type)         : match_any,
+              match_id        = selector.id       ? id_matcher(selector.id)             : match_any;
+          return function(v) {
+            return match_visible(v) && match_text(v) && match_has_text(v) && match_type(v) && match_id(v);
+          };
         }
       default:
         throw 'View selector must be a string, object, function or View';

@@ -142,7 +142,9 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
     }
 
     public void close() {
-        mServerConnection.close();
+        if (mServerConnection != null) {
+            mServerConnection.close();
+        }
     }
 
     private class ServerConnectionImpl extends WebSocketClient {
