@@ -5,6 +5,7 @@ import com.google.common.collect.Iterables;
 
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
+import org.hamcrest.core.CombinableMatcher;
 
 public class GenericMatchers {
 
@@ -50,6 +51,10 @@ public class GenericMatchers {
 
     public static <T extends Comparable> Matcher<Object> greaterThan(T value) {
         return (Matcher<Object>) Matchers.greaterThan(value);
+    }
+
+    public static CombinableMatcher.CombinableEitherMatcher<Object> either(Matcher matcher) {
+        return (CombinableMatcher.CombinableEitherMatcher<Object>) Matchers.either(matcher);
     }
 
     private static Matcher<Object> genericMatcher(final Matcher<?> matcher) {

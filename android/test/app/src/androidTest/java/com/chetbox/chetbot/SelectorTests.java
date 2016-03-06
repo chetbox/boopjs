@@ -3,19 +3,16 @@ package com.chetbox.chetbot;
 import android.graphics.Bitmap;
 import android.view.View;
 
-import com.chetbox.chetbot.android.util.Activities;
 import com.chetbox.chetbot.base.screens.StopwatchTest;
 
 import org.junit.Test;
 import org.mozilla.javascript.Undefined;
 
-import java.util.Collection;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import static com.chetbox.chetbot.util.GenericMatchers.*;
-import static com.chetbox.chetbot.util.Lists.*;
 
 public class SelectorTests extends StopwatchTest {
 
@@ -77,7 +74,23 @@ public class SelectorTests extends StopwatchTest {
 
     @Test public void findViewByText_notFound() {
         assertThat(exec("text({text: 'nonsense'})"),
-                is(false));
+                is(Undefined.instance));
+    }
+
+    @Test public void findViewByTextWithWholeWordSubstring() {
+        assertThat(exec("view({text: 'special watch'})"),
+                sameInstance(stopwatchDefinition));
+
+        assertThat(exec("view({text: 'wat'})"),
+                is(Undefined.instance));
+    }
+
+    @Test public void findViewByTextRegex() {
+        assertThat(exec("view({text: /st[artop]*/i})"),
+                sameInstance(startStopButton));
+
+        assertThat(exec("view({text: /tart/i})"),
+                sameInstance(startStopButton));
     }
 
     @Test public void findViewByShortId() {
@@ -100,20 +113,29 @@ public class SelectorTests extends StopwatchTest {
                 is(Undefined.instance));
     }
 
-    @Test public void findViewsByClassName() {
-        assertThat(exec("view({type: 'android.support.v7.widget.AppCompatButton', text: 'start'})"),
-                sameInstance(startStopButton));
-
-        assertThat(exec("view({type: 'android.support.v7.widget.AppCompatButton', text: 'reset'})"),
-                sameInstance(resetButton));
+    @Test public void findViewsByClass() {
+        assertThat(exec("view({type: Packages.android.widget.Button})"),
+                either(sameInstance(startStopButton)).or(sameInstance(resetButton)));
     }
 
-    @Test public void findViewsByClassSimpleName() {
-        assertThat(exec("view({type: 'AppCompatButton', text: 'start'})"),
-                sameInstance(startStopButton));
+    @Test public void findViewByClassName() {
+        assertThat(exec("view({type: 'android.support.v7.widget.AppCompatButton'})"),
+                either(sameInstance(startStopButton)).or(sameInstance(resetButton)));
+    }
 
-        assertThat(exec("view({type: 'AppCompatButton', text: 'reset'})"),
-                sameInstance(resetButton));
+    @Test public void findViewBySuperClassName() {
+        assertThat(exec("view({type: 'android.widget.Button'})"),
+                either(sameInstance(startStopButton)).or(sameInstance(resetButton)));
+    }
+
+    @Test public void findViewBySuperClassSimpleName() {
+        assertThat(exec("view({type: 'Button'})"),
+                either(sameInstance(startStopButton)).or(sameInstance(resetButton)));
+    }
+
+    @Test public void findViewByClassSimpleName() {
+        assertThat(exec("view({type: 'AppCompatButton'})"),
+                either(sameInstance(startStopButton)).or(sameInstance(resetButton)));
     }
 
     @Test public void textViewVisible() {
@@ -143,7 +165,7 @@ public class SelectorTests extends StopwatchTest {
 
     @Test public void viewText_notTextView() {
         assertThat(exec("text({type: 'RelativeLayout'})"),
-                is(false));
+                is(Undefined.instance));
     }
 
     @Test public void countViewsWithClassName() {
@@ -279,4 +301,43 @@ public class SelectorTests extends StopwatchTest {
                                     "com.chetbox.chetbot.test:id/start_stop",
                                     "com.chetbox.chetbot.test:id/reset"));
     }
+
+
+    @Test public void allText() {
+        assertThat(exec("all_text()"),
+                hasItems(   "00",
+                            "00",
+                            "000",
+                            "Start",
+                            "Reset",
+                            "MINS",
+                            "SECS",
+                            "MILLIS"));
+    }
+
+    @Test public void allTextSubviews() {
+        assertThat(exec("all_text(_buttonContainer_)"),
+                containsInAnyOrder( "Start",
+                                    "Reset"));
+    }
+
+    @Test public void allTypes() {
+        assertThat(exec("all_types()"),
+                hasItems(   "android.widget.Button",
+                            "android.widget.TextView",
+                            "android.view.View",
+                            "android.view.ViewGroup",
+                            "android.widget.LinearLayout"));
+    }
+
+    @Test public void allTypesSubviews() {
+        assertThat(exec("all_types(_buttonContainer_)"),
+                containsInAnyOrder( "android.support.v7.widget.AppCompatButton",
+                                    "android.widget.Button",
+                                    "android.widget.TextView",
+                                    "android.view.View",
+                                    "android.view.ViewGroup",
+                                    "android.widget.LinearLayout"));
+    }
+
 }

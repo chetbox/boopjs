@@ -26,34 +26,64 @@ describe('XML utils', function() {
     return fs.readFileSync(file, 'utf-8');
   }
 
-  it('parses XML', function() {
-    assert.deepEqual(
-      xml.parseXML('<manifest first="one"></manifest>'),
-      {manifest: {'$': {'first': 'one'}}}
-    );
+  describe('parsing', function() {
+
+    it('parses XML', function() {
+      assert.deepEqual(
+        xml.parseXML('<manifest first="one"></manifest>'),
+        {manifest: {'$': {'first': 'one'}}}
+      );
+    });
+
   });
 
-  it('gets application/@android:name AndroidManifest.xml definition', function() {
-    assert.equal(
-      xml.get_manifest_application_class(parseXML(read(fixture('StopwatchManifestCustomApplication.xml')))),
-      'com.domain.CustomApplication'
-    );
+  describe('package_name', function() {
+
+    it('gets package name from XML', function() {
+      assert.equal(
+        xml.package_name(parseXML(read(fixture('StopwatchManifestDefaultApplication.xml')))),
+        'com.chetbox.chetbot.stopwatch'
+      );
+    });
+
   });
 
-  it('cannot get application/@android:name AndroidManifest.xml definition if not defined', function() {
-    assert.equal(
-      xml.get_manifest_application_class(parseXML(read(fixture('StopwatchManifestDefaultApplication.xml')))),
-      undefined
-    );
+  describe('get_manifest_application_class', function() {
+
+    it('gets application/@android:name AndroidManifest.xml definition', function() {
+      assert.equal(
+        xml.get_manifest_application_class(parseXML(read(fixture('StopwatchManifestCustomApplication.xml')))),
+        'com.domain.CustomApplication'
+      );
+    });
+
+    it('gets application/@android:name AndroidManifest.xml from shorthand definition', function() {
+      assert.equal(
+        xml.get_manifest_application_class(parseXML(read(fixture('StopwatchManifestCustomApplicationShorthand.xml')))),
+        'com.chetbox.chetbot.stopwatch.CustomApplication'
+      );
+    });
+
+    it('cannot get application/@android:name AndroidManifest.xml definition if not defined', function() {
+      assert.equal(
+        xml.get_manifest_application_class(parseXML(read(fixture('StopwatchManifestDefaultApplication.xml')))),
+        undefined
+      );
+    });
+
   });
 
-  it('sets an application/@android:name AndroidManifest.xml definition', function() {
-    var manifest = parseXML(read(fixture('StopwatchManifestDefaultApplication.xml')));
-    xml.set_manifest_application_class(manifest, 'com.domain.CustomApplication');
-    assert.deepEqual(
-      manifest,
-      parseXML(read(fixture('StopwatchManifestCustomApplication.xml')))
-    );
+  describe('set_manifest_application_class', function() {
+
+    it('sets an application/@android:name AndroidManifest.xml definition', function() {
+      var manifest = parseXML(read(fixture('StopwatchManifestDefaultApplication.xml')));
+      xml.set_manifest_application_class(manifest, 'com.domain.CustomApplication');
+      assert.deepEqual(
+        manifest,
+        parseXML(read(fixture('StopwatchManifestCustomApplication.xml')))
+      );
+    });
+
   });
 
   describe('add_permission', function() {

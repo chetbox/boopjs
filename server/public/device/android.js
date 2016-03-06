@@ -1,8 +1,14 @@
-var version = [0, 7, 4];
+var version = [0, 7, 5];
 
 // Import android.*
 
 var android = Packages.android;
+
+// RegExp utilities
+
+RegExp.escape = function(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+};
 
 // Concurrency utilities
 
@@ -58,12 +64,17 @@ function screen_size() {
 // View selectors
 
 function __text(view) {
-  return (view instanceof android.widget.TextView)
-      && (!android.text.TextUtils.isEmpty(view.getText())
-          ? view.getText().toString()
-          : (!android.text.TextUtils.isEmpty(view.getHint())
-              ? view.getHint().toString()
-              : null));
+  function to_string(char_seq) {
+    if (char_seq) return char_seq.toString();
+  }
+  if (view instanceof android.widget.TextView) {
+    return !android.text.TextUtils.isEmpty(view.getText())
+      ? to_string(view.getText())
+      : to_string(view.getHint());
+  }
+  if (view instanceof android.support.design.widget.TextInputLayout) {
+    return view.getHint().toString();
+  }
 }
 
 function __id(view) {
@@ -73,6 +84,14 @@ function __id(view) {
 
 function __type(view) {
   return view.getClass().getName();
+}
+
+function __type_hierarchy(class) {
+  return [class].concat(
+    (class === android.view.View)
+      ? []
+      : __type_hierarchy(class.superclass)
+    );
 }
 
 function __location(view) {
@@ -109,16 +128,34 @@ function views(selectors, root_views) {
   }
 
   function text_matcher(text_query) {
+    if (typeof(text_query) === 'string') {
+      return text_matcher(new RegExp('\\b' + RegExp.escape(text_query) + '\\b', 'i'));
+    }
     return function(view) {
-      return text_query.equalsIgnoreCase(__text(view));
+      var text = __text(view);
+      if (!text) {
+        return false;
+      }
+      if (text_query instanceof RegExp) {
+        return !!text.match(text_query);
+      }
+      throw new Error('Invalid text selector: ' + text_query);
     }
   }
 
   function type_matcher(type) {
+
     return function(view) {
-      return type.equalsIgnoreCase( type.indexOf('.') >= 0
-        ? __type(view)
-        : view.getClass().getSimpleName());
+      if (typeof(type) === 'string') {
+        return __type_hierarchy(view.getClass()).reduce(function(matches_class, cls) {
+          return matches_class ||
+            (type.equalsIgnoreCase( type.indexOf('.') >= 0
+              ? cls.getName()
+              : cls.getSimpleName()));
+        }, false);
+      } else {
+        return view instanceof type;
+      }
     }
   }
 
@@ -292,8 +329,36 @@ function all_ids(selector) {
       if (id) ids.push(id);
       return false; // keep searching
     },
-    selector ? views(selector) : undefined);
+    selector ? views(selector) : undefined
+  );
   return ids;
+}
+
+function all_text(selector) {
+  var strings = [];
+  views(
+    function(v) {
+      var str = __text(v);
+      if (str) strings.push(str);
+      return false; // keep searching
+    },
+    selector ? views(selector) : undefined
+  );
+  return strings;
+}
+
+function all_types(selector) {
+  var types = new java.util.HashSet();
+  views(
+    function(v) {
+      types.addAll(__type_hierarchy(v.getClass()).map(function(class) {
+        return class.getName();
+      }));
+      return false; // keep searching
+    },
+    selector ? views(selector) : undefined
+  );
+  return types;
 }
 
 // View array filters

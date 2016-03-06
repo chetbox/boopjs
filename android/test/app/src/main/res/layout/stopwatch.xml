@@ -85,7 +85,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/statusBar"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="16dp"
         android:layout_below="@+id/buttons"
         android:layout_centerHorizontal="true">
 
@@ -97,5 +97,15 @@
             android:layout_height="wrap_content" />
 
     </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_below="@+id/statusBar"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_centerHorizontal="true"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="stopwatch - noun\nA special watch with buttons that start, stop, and then zero the hands, used to time races."
+        android:id="@+id/definition"/>
 
 </RelativeLayout>
