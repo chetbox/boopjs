@@ -5,7 +5,7 @@
 
   <h2>Keyboard Mode</h2>
 
-  <paper-radio-group selected="{{#keybinding_mode}}{{.}}{{else}}Default{{/keybinding_mode}}">
+  <paper-radio-group selected="{{#keyboard_mode}}{{.}}{{else}}Default{{/keyboard_mode}}">
     <paper-radio-button name="Default">Default (Ace)</paper-radio-button>
     <br/>
     <paper-radio-button name="VIM">VIM</paper-radio-button>
@@ -15,19 +15,37 @@
 
   <div style="margin-top: 2em; text-align: right;">
     <paper-button onclick="close_dialog(this);"><iron-icon icon="clear"></iron-icon>Cancel</paper-button>
-    <paper-button onclick="set_keyboard_mode(this); close_dialog(this);" class="primary"><iron-icon icon="hardware:keyboard"></iron-icon>Save</paper-button>
+    <paper-button onclick="on_select_keyboard_mode(this); close_dialog(this);" class="primary"><iron-icon icon="hardware:keyboard"></iron-icon>Save</paper-button>
   </div>
 </paper-dialog>
 
 <script>
-  function set_keyboard_mode(button) {
-    var mode = $(button).closest('paper-dialog').find('paper-radio-group').get(0).selected;
+  var default_keyboard_handler = editor.getKeyboardHandler();
+
+  function set_keyboard_mode(mode) {
     var handler = {
-      Default: editor.getKeyboardHandler(),
+      Default: default_keyboard_handler,
       VIM: 'ace/keyboard/vim',
       Emacs: 'ace/keyboard/emacs'
     }[mode];
     editor.setKeyboardHandler(handler);
     editor.focus();
   }
+
+  function on_select_keyboard_mode(button) {
+    var mode = $(button).closest('paper-dialog').find('paper-radio-group').get(0).selected;
+    set_keyboard_mode(mode);
+
+    $.ajax('/api/v1/user/{{id}}/keyboard-mode', {
+      method: 'PUT',
+      data: { mode: mode },
+      error: function(xhr, _, statusText) {
+        console.error(xhr.responseText, statusText);
+      }
+    });
+  }
+
+  {{#keyboard_mode}}
+    set_keyboard_mode('{{.}}');
+  {{/keyboard_mode}}
 </script>
