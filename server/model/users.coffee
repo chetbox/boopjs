@@ -59,3 +59,10 @@ exports.revoke_access_to_app = (id, app_ids...) ->
     UpdateExpression: 'DELETE apps :apps_to_remove'
     ExpressionAttributeValues:
       ':apps_to_remove': db.create_set app_ids
+
+exports.set_keyboard_mode = (id, mode) ->
+  return db.update
+    Key: { id: id }
+    UpdateExpression: 'SET keyboard_mode = :mode'
+    ExpressionAttributeValues:
+      ':mode': mode
