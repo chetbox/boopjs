@@ -28,6 +28,7 @@ exports.emails_for_users = (user_ids) ->
     )
 
 exports.set_email_enabled = (id, address, enabled) ->
+  debug 'set_email_enabled', id, address, enabled
   if enabled
     return db.update
       Key: { id: id }
@@ -46,6 +47,7 @@ exports.set_email_enabled = (id, address, enabled) ->
         ':disabled': true
 
 exports.grant_access_to_app = (id, app_ids...) ->
+  debug 'grant_access_to_app', id, app_ids
   return db.update
     Key: { id: id }
     UpdateExpression: 'ADD apps :new_apps'
@@ -54,6 +56,7 @@ exports.grant_access_to_app = (id, app_ids...) ->
     ConditionExpression: 'attribute_exists(id)'
 
 exports.revoke_access_to_app = (id, app_ids...) ->
+  debug 'revoke_access_to_app', id, app_ids
   return db.update
     Key: { id: id }
     UpdateExpression: 'DELETE apps :apps_to_remove'
@@ -61,6 +64,7 @@ exports.revoke_access_to_app = (id, app_ids...) ->
       ':apps_to_remove': db.create_set app_ids
 
 exports.set_keyboard_mode = (id, mode) ->
+  debug 'set_keyboard_mode', id, mode
   return db.update
     Key: { id: id }
     UpdateExpression: 'SET keyboard_mode = :mode'
