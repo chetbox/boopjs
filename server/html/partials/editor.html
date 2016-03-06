@@ -169,6 +169,9 @@ window.addEventListener('message', function(event) {
     enableLiveAutocompletion: true,
     enableSnippets: false
   });
+  editor.getSession().setTabSize(2);
+  editor.getSession().setUseSoftTabs(true);
+  editor.setShowPrintMargin(false);
 </script>
 
 {{#autosave}}
@@ -185,11 +188,13 @@ window.addEventListener('message', function(event) {
 
   function show_repl() {
     $('body').addClass('show-repl');
+    setTimeout(function() { editor.resize(); }, 200);
     repl.focus();
   }
 
   function hide_repl() {
     $('body').removeClass('show-repl');
+    setTimeout(function() { editor.resize(); }, 200);
     editor.focus();
   }
 
