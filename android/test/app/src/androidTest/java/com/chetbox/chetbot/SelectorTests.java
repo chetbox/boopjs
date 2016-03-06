@@ -77,11 +77,8 @@ public class SelectorTests extends StopwatchTest {
                 is(Undefined.instance));
     }
 
-    @Test public void findViewByTextWithWholeWordSubstring() {
+    @Test public void findViewByTextWithSubstringFails() {
         assertThat(exec("view({text: 'special watch'})"),
-                sameInstance(stopwatchDefinition));
-
-        assertThat(exec("view({text: 'wat'})"),
                 is(Undefined.instance));
     }
 
@@ -91,6 +88,14 @@ public class SelectorTests extends StopwatchTest {
 
         assertThat(exec("view({text: /tart/i})"),
                 sameInstance(startStopButton));
+    }
+
+    @Test public void findViewThatHasTextWithWholeWordSubstring() {
+        assertThat(exec("view({has_text: 'special watch'})"),
+                sameInstance(stopwatchDefinition));
+
+        assertThat(exec("view({has_text: 'wat'})"),
+                is(Undefined.instance));
     }
 
     @Test public void findViewByShortId() {
