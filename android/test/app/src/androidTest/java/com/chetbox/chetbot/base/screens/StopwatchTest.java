@@ -44,6 +44,7 @@ public abstract class StopwatchTest extends BaseTest {
         exec("var _minutesText_ = view({id: 'minutes'});");
         exec("var _secondsText_ = view({id: 'seconds'});");
         exec("var _millisecondsText_ = view({id: 'milliseconds'});");
+        exec("var _buttonContainer_ = view({id: 'buttons'});");
     }
 
 }
