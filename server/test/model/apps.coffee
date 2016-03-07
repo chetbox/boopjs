@@ -17,18 +17,23 @@ assert_status = (id, expected) ->
     , {}
     assert.deepEqual status, expected
 
+sort = (arr) ->
+  sorted = arr.slice()
+  sorted.sort()
+  sorted
+
 describe 'model/apps', ->
   require('./in_memory_db').setup_mocha()
   app = undefined
 
   describe 'create and get', ->
 
-    it 'creates an app and gets it', ->
-      model.create_empty('user_id_create_and_get')
+    it 'creates an app with a users, and retrieve it', ->
+      model.create_empty 'user_id_create_and_get'
       .then (app) ->
         model.get app.id
       .then (app) ->
-        assert.deepEqual ['user_id_create_and_get'], app.admins
+        assert.deepEqual app.admins.values, ['user_id_create_and_get']
         assert.equal app.platform, 'android'
 
   describe 'update latest results', ->
@@ -263,3 +268,27 @@ describe 'model/apps', ->
         model.get app.id
       .then (app) ->
         assert.equal app.os_version, '6.0'
+
+  describe 'grant_access', ->
+    app = undefined
+
+    beforeEach 'create app', ->
+      model.create_empty 'user_grant_access'
+      .then (_app) ->
+        app = _app
+
+    it 'adds a user if none exist', ->
+      model.grant_access app.id, 'one'
+      .then ->
+        model.get app.id
+      .then (app) ->
+        assert.deepEqual sort(app.admins.values), ['one', 'user_grant_access']
+
+    it 'adds a user if one exists', ->
+      model.grant_access app.id, 'one'
+      .then ->
+        model.grant_access app.id, 'two'
+      .then ->
+        model.get app.id
+      .then (app) ->
+        assert.deepEqual sort(app.admins.values), ['one', 'two', 'user_grant_access']
