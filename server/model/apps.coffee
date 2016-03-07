@@ -8,7 +8,7 @@ exports.create_empty = (user_id) ->
   new_app_id = shortid.generate()
   item =
     id: new_app_id,
-    admins: [user_id],
+    admins: db.create_set([user_id]),
     platform: 'android'
     os_version: '5.1'
   db.put
@@ -29,6 +29,7 @@ exports.mark_as_not_run = (id, code_id) ->
     UpdateExpression: 'ADD not_run :code_ids DELETE running :code_ids, successful :code_ids, failed :code_ids'
     ExpressionAttributeValues:
       ':code_ids': db.create_set [ code_id ]
+    ConditionExpression: 'attribute_exists(id)'
 
 exports.update_result = (result) ->
   debug 'update_result', result.code_id, result.started_at
@@ -52,6 +53,7 @@ exports.update_result = (result) ->
     ExpressionAttributeValues:
       ':code_ids': db.create_set [ result.code_id ]
     ReturnValues: 'ALL_NEW'
+    ConditionExpression: 'attribute_exists(id)'
   .then (app) ->
     app.Attributes
 
@@ -62,6 +64,7 @@ exports.remove_code = (id, code_id) ->
     UpdateExpression: 'DELETE not_run :code_id, running :code_id, successful :code_id, failed :code_id'
     ExpressionAttributeValues:
       ':code_id': db.create_set [ code_id ]
+    ConditionExpression: 'attribute_exists(id)'
 
 exports.set_pending_report = (id, pending) ->
   debug 'set_pending_report', id, pending
@@ -70,6 +73,7 @@ exports.set_pending_report = (id, pending) ->
     UpdateExpression: 'SET pending_report = :pending'
     ExpressionAttributeValues:
       ':pending': !!pending
+    ConditionExpression: 'attribute_exists(id)'
 
 exports.get_pending_report = (id) ->
   debug 'get_pending_report', id
@@ -96,6 +100,7 @@ exports.mark_as_processed = (id) ->
   db.update
     Key: { id: id }
     UpdateExpression: 'REMOVE processing_status'
+    ConditionExpression: 'attribute_exists(id)'
 
 exports.set_processing_error = (id, err) ->
   debug 'set_processing_error', id, err
@@ -117,3 +122,13 @@ exports.set_os_version = (id, version) ->
     UpdateExpression: 'SET os_version = :version'
     ExpressionAttributeValues:
       ':version': version
+    ConditionExpression: 'attribute_exists(id)'
+
+exports.grant_access = (id, user_ids...) ->
+  debug 'grant_access', id, user_ids
+  db.update
+    Key: { id: id }
+    UpdateExpression: 'ADD admins :new_user_ids'
+    ExpressionAttributeValues:
+      ':new_user_ids': db.create_set(user_ids)
+    ConditionExpression: 'attribute_exists(id)'
