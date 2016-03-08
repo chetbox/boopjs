@@ -137,6 +137,10 @@ function setup_repl(server, device_id, app_id, id, callbacks) {
       name: 'Page down (disabled)',
       bindKey: 'PageDown',
       exec: function() {}
+    }, {
+      name: 'Hide REPL',
+      bindKey: 'Esc',
+      exec: hide_repl
     }
   ]);
 
