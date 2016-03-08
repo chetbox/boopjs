@@ -256,24 +256,22 @@ window.addEventListener('message', function(event) {
   $(document).keydown(function(e) {
     if (e.which === 'S'.charCodeAt(0) && (e.ctrlKey || e.metaKey)) {
       save(editor);
-      return false;
+      e.preventDefault();
     }
     if (e.which === 'I'.charCodeAt(0) && (e.ctrlKey || e.metaKey)) {
       toggle_repl();
-      return false;
+      e.preventDefault();
     }
     if (e.which === 'R'.charCodeAt(0) && e.ctrlKey) {
       eval( $('#controls a.run:visible').attr('href') );
-      return false;
+      e.preventDefault();
     }
     if (e.which == 27 /* ESC */) {
       var $back = $('#controls a.back');
-      if ($back.is(':hidden')) {
-        hide_repl();
-      } else {
+      if ($back.is(':visible')) {
         eval( $back.attr('href') );
+        e.preventDefault();
       }
-      return false;
     }
     if (e.which === 13 && (e.ctrlKey || e.metaKey)) { /* Return */
       if (!window.repl) return;
@@ -284,7 +282,7 @@ window.addEventListener('message', function(event) {
       show_repl();
       repl.run(script);
       editor.focus();
-      return false;
+      e.preventDefault();
     }
   });
 </script>
