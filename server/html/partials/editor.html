@@ -58,9 +58,7 @@
       left: 0;
       right: 0;
       transition: bottom .2s ease-out;
-      {{#user}}
       bottom: 24px; /* make room for #statusbar */
-      {{/user}}
     }
 
     .show-repl .content-panel {
@@ -86,10 +84,6 @@
     #controls {
       padding: 0 12px;
       height: 64px;
-    }
-
-    body:not(.logged-in) #controls {
-      background: #00BCD4;
     }
 
     #controls > * {
@@ -144,7 +138,6 @@
   </div>
   <div id="editor" class="content-panel">{{#code.content}}{{.}}{{/code.content}}</div>
   {{> test-report}}
-  {{#user}}
   <div id="statusbar">
     <a class="keyboard-mode" onclick="open_dialog('keyboard-mode');" title="Change keyboard mode">
       <paper-icon-button icon="hardware:keyboard"></paper-icon-button>
@@ -154,7 +147,6 @@
     </a>
   </div>
   <div id="repl"></div>
-  {{/user}}
 </div>
 
 <!-- enable run button when device loads -->
@@ -220,11 +212,9 @@ window.addEventListener('message', function(event) {
     }
   }
 
-  {{#user}}
-  repl = setup_repl('{{../server}}', '{{../device.id}}', '{{../app.id}}', 'repl', {
+  repl = setup_repl('{{server}}', '{{device.id}}', '{{app.id}}', 'repl', {
     onClose: toggle_repl
   });
-  {{/user}}
 </script>
 
 <!-- autocomplete -->

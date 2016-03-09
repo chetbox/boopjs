@@ -16,8 +16,7 @@ exports.add_routes = function(app) {
           id: device_id,
           model: 'nexus5',
           os_version: '6.0',
-          orientation: 'portrait',
-          wait_for_user_to_start: true,
+          orientation: 'portrait'
         },
         server: host.address,
         server_url: (host.protocol === 'https' ? 'wss' : 'ws') + '://' + host.address + '/api/device?id=' + device_id,
@@ -28,6 +27,7 @@ exports.add_routes = function(app) {
         },
         autosave: false,
         code: {
+          name: 'Sign in, send message',
           content: demo_code
         }
       });
