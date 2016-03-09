@@ -22,7 +22,6 @@
       box-shadow: 0 2px 5px rgba(0,0,0,0.5);;
     }
 
-    /* TODO: branding! */
     #header h1 {
       position: relative;
       left: 380px;
@@ -42,24 +41,35 @@
   </head>
   <body class="fullbleed {{#user}}logged-in{{/user}}">
     <paper-header-panel class="boop-brand-color">
-      {{#user}}
       <paper-toolbar>
-        <a href="/app/{{../code.app_id}}" alt="Apps">
+        <a
+          {{#if user}}
+            href="/app/{{code.app_id}}" alt="Apps"
+          {{else}}
+            href="javascript:close()" alt="Close"
+          {{/if}}>
           <paper-icon-button icon="arrow-back"></paper-icon-button>
         </a>
 
         <div class="title">
-          <span class="name">{{../code.name}}</span>
-          {{> rename-button ../code}}
+          <span class="name">{{code.name}}</span>
+          {{#if user}}
+            {{> rename-button code}}
+          {{/if}}
         </div>
 
-        {{> save-indicator}}
+        {{#if user}}
+          {{> save-indicator}}
+        {{/if}}
         {{> documentation-button}}
         {{> feedback-button}}
-        {{> admin-button}}
-        {{> account-button}}
+        {{#user}}
+          {{#if admin}}
+            {{> admin-button}}
+          {{/if}}
+          {{> account-button}}
+        {{/user}}
       </paper-toolbar>
-      {{/user}}
 
       <div class="content">
         <div id="device-container">

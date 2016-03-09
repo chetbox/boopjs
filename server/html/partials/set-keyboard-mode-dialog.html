@@ -36,13 +36,17 @@
     var mode = $(button).closest('paper-dialog').find('paper-radio-group').get(0).selected;
     set_keyboard_mode(mode);
 
-    $.ajax('/api/v1/user/{{id}}/keyboard-mode', {
-      method: 'PUT',
-      data: { mode: mode },
-      error: function(xhr, _, statusText) {
-        console.error(xhr.responseText, statusText);
-      }
-    });
+    if ('{{id}}') {
+      $.ajax('/api/v1/user/{{id}}/keyboard-mode', {
+        method: 'PUT',
+        data: { mode: mode },
+        error: function(xhr, _, statusText) {
+          console.error(xhr.responseText, statusText);
+        }
+      });
+    } else {
+      console.log('Not saving keyboard mode (not logged in)');
+    }
   }
 
   {{#keyboard_mode}}
