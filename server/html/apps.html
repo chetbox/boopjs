@@ -121,6 +121,7 @@
         background: #eee;
       }
     </style>
+    <script src="/components/jquery/dist/jquery.min.js"></script>
   </head>
   <body class="fullbleed">
     <paper-header-panel class="boop-brand-color">
@@ -157,17 +158,16 @@
         </ul>
       </div>
     </paper-header-panel>
+    {{> drop-file}}
   </body>
 
   {{> google-analytics}}
-
-  <script src="/components/jquery/dist/jquery.min.js"></script>
 
   {{> graph-setup}}
 
   <script src="/js/s3_upload.js"></script>
   <script>
-    s3_upload($('#app-upload input[type=file]'), $('#app-upload input[name=app_url]'), {
+    var app_upload = s3_upload($('#app-upload input[type=file]'), $('#app-upload input[name=app_url]'), {
       progress: function(progress) {
         $('#app-upload .status').removeClass('error').text(progress).show();
       },
@@ -178,6 +178,15 @@
         location.href = '/app/' + response.app.id + '/test/' + response.test.id + '/edit';
       },
       google_analytics: ga
+    });
+
+    // Handler for dropping file onto window
+    $(function() {
+      $('body').on('drop', function(e) {
+        e.preventDefault();
+        var files = e.originalEvent.target.files || e.originalEvent.dataTransfer.files;
+        app_upload.upload(files);
+      });
     });
   </script>
 
