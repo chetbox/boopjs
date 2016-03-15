@@ -27,10 +27,6 @@
         background: none;
       }
 
-      main > div.test-reports {
-        padding-bottom: 75px;
-      }
-
       #hero {
         padding: 75px 0 50px 0;
         text-align: center;
@@ -70,6 +66,12 @@
         margin: 0 !important;
       }
 
+      .feature.sign-in {
+        text-align: center;
+        padding-top: 25px;
+        padding-bottom: 75px;
+      }
+
       .code-examples .mdl-card {
         margin: 1em 0;
         min-height: 0;
@@ -101,9 +103,7 @@
         <div id="hero">
           <h1>Android UI tests + continuous integration<br>in minutes</h1>
           <a href="/apps">
-            <button class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent mdl-js-ripple-effect">
-              Get started
-            </button>
+            {{> sign-in-button}}
           </a>
           <div class="steps-to-success mdl-grid">
             <div class="mdl-cell mdl-cell--4-col">
@@ -206,6 +206,9 @@ assert_visible('finished');</code></pre>
 </pre>
           </p>
           <p>See a <a href="/sample-test-report"  target="_blank">sample test report</a> or run a <a href="/demo" target="_blank">demo</a>.</p>
+        </div>
+        <div class="feature sign-in">
+          {{> sign-in-button}}
         </div>
         {{> footer-public}}
       </main>
