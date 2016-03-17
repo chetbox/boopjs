@@ -96,7 +96,7 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler, Provider<
             @Override
             public Object call(Context context, Scriptable scope, Scriptable thisObj, Object[] args) {
                 for (Object arg : args) {
-                    InputEvents.injectEvent((MotionEvent) Rhino.unwrapJavaObject(arg));
+                    InputEvents.injectMotionEvent((MotionEvent) Rhino.unwrapJavaObject(arg));
                 }
                 return Undefined.instance;
             }

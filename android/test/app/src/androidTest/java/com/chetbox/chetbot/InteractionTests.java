@@ -3,7 +3,6 @@ package com.chetbox.chetbot;
 import android.support.v4.view.GravityCompat;
 import android.widget.EditText;
 
-import com.chetbox.chetbot.android.util.Activities;
 import com.chetbox.chetbot.base.screens.StopwatchTest;
 import com.chetbox.chetbot.test.R;
 
@@ -51,6 +50,13 @@ public class InteractionTests extends StopwatchTest {
                 equalToIgnoringCase("stop"));
     }
 
+    @Test public void swipeLeftRight() {
+        assertThat(viewPager.getCurrentItem(), equalTo(0));
+        exec("swipe_left()");
+        assertThat(viewPager.getCurrentItem(), equalTo(1));
+        exec("swipe_right()");
+        assertThat(viewPager.getCurrentItem(), equalTo(0));
+    }
 
     @Test public void waitSeconds() {
         long start = System.currentTimeMillis();
