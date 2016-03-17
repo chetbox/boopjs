@@ -7,6 +7,7 @@
     <string name="stop">Stop</string>
     <string name="reset">Reset</string>
     <string name="lap">Lap</string>
+    <string name="laps_title">Laps</string>
     <string name="minutes">MINS</string>
     <string name="seconds">SECS</string>
     <string name="milliseconds">MILLIS</string>
