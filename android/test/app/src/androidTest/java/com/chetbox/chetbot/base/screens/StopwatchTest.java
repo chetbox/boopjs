@@ -1,6 +1,7 @@
 package com.chetbox.chetbot.base.screens;
 
 import android.content.Intent;
+import android.support.v4.view.ViewPager;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -26,6 +27,7 @@ public abstract class StopwatchTest extends BaseTest {
     protected ProgressBar progress;
     protected LinearLayout buttonsContainer;
     protected TextView stopwatchDefinition;
+    protected ViewPager viewPager;
 
     @Override
     public void setUp() {
@@ -39,6 +41,7 @@ public abstract class StopwatchTest extends BaseTest {
         progress = (ProgressBar) findViewById(R.id.progress);
         buttonsContainer = (LinearLayout) findViewById(R.id.buttons);
         stopwatchDefinition = (TextView) findViewById(R.id.definition);
+        viewPager = (ViewPager) findViewById(R.id.pager);
 
         // Handy references to views in the layout
         exec("var _startStopButton_ = view({id: 'start_stop'});");
