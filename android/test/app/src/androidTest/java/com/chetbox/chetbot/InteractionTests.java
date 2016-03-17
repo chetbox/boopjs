@@ -103,7 +103,8 @@ public class InteractionTests extends StopwatchTest {
                 nullValue());
 
         exec(   "open_drawer();",
-                "tap('Text fields');");
+                "tap('Text fields');",
+                "wait_for({id: 'email'});");
 
         assertThat(findViewById(R.id.email),
                 instanceOf(EditText.class));
