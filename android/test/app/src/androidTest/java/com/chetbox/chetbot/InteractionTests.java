@@ -3,12 +3,13 @@ package com.chetbox.chetbot;
 import android.support.v4.view.GravityCompat;
 import android.widget.EditText;
 
-import com.chetbox.chetbot.android.util.Activities;
 import com.chetbox.chetbot.base.screens.StopwatchTest;
 import com.chetbox.chetbot.test.R;
 
 import org.junit.Test;
 import org.mozilla.javascript.JavaScriptException;
+
+import java.util.concurrent.CountDownLatch;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
@@ -49,6 +50,40 @@ public class InteractionTests extends StopwatchTest {
 
         assertThat(startStopButton.getText().toString(),
                 equalToIgnoringCase("stop"));
+    }
+
+    @Test public void swipeLeftRight() {
+        assertThat(viewPager.getCurrentItem(), equalTo(0));
+        exec("swipe_left()");
+        assertThat(viewPager.getCurrentItem(), equalTo(1));
+        exec("swipe_right()");
+        assertThat(viewPager.getCurrentItem(), equalTo(0));
+    }
+
+    @Test public void swipeUpDown() {
+        final CountDownLatch latch = new CountDownLatch(1);
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                startStopButton.performClick();
+                for (int i = 0; i < 20; i++) {
+                    lapButton.performClick();
+                }
+                viewPager.setCurrentItem(1);
+                latch.countDown();
+            }
+        });
+        try {
+            latch.await();
+            Thread.sleep(250);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        exec(   "swipe_up();",
+                "wait_for('20');",
+                "swipe_down();",
+                "wait_for('1');");
     }
 
 
@@ -97,7 +132,8 @@ public class InteractionTests extends StopwatchTest {
                 nullValue());
 
         exec(   "open_drawer();",
-                "tap('Text fields');");
+                "tap('Text fields');",
+                "wait_for({id: 'email'});");
 
         assertThat(findViewById(R.id.email),
                 instanceOf(EditText.class));

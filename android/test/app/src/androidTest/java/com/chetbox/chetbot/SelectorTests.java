@@ -82,6 +82,14 @@ public class SelectorTests extends StopwatchTest {
                 is(Undefined.instance));
     }
 
+    @Test public void findViewByRegexDefault() {
+        assertThat(exec("view(/st[artop]*/i)"),
+                sameInstance(startStopButton));
+
+        assertThat(exec("view(/tart/i)"),
+                sameInstance(startStopButton));
+    }
+
     @Test public void findViewByTextRegex() {
         assertThat(exec("view({text: /st[artop]*/i})"),
                 sameInstance(startStopButton));
