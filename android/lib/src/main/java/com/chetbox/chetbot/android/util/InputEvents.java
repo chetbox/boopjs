@@ -30,9 +30,9 @@ public class InputEvents {
         }
     }
 
-    public static void injectEvent(MotionEvent event) {
+    public static boolean injectMotionEvent(MotionEvent event) {
         try {
-            sInputManagerEventInjectionStrategy_injectMotionEvent.invoke(sInputManagerEventInjectionStrategy, event);
+            return (Boolean) sInputManagerEventInjectionStrategy_injectMotionEvent.invoke(sInputManagerEventInjectionStrategy, event);
 
         } catch (InvocationTargetException e) {
             throw new RuntimeException(e);

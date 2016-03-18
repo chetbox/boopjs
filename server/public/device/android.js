@@ -1,4 +1,4 @@
-var version = [0, 7, 5];
+var version = [0, 7, 7];
 
 // Import android.*
 
@@ -267,23 +267,44 @@ function text(selector) {
 }
 
 function id(selector) {
-  return __id(view(selector));
+  return __id(wait_for(selector));
 }
 
 function type(selector) {
-  return __type(view(selector));
+  return __type(wait_for(selector));
 }
 
 function location(selector) {
-  return __location(view(selector));
+  if (Array.isArray(selector) &&
+      selector.length === 2 &&
+      typeof(selector[0]) === 'number' &&
+      typeof(selector[1]) === 'number') {
+
+      return selector;
+  }
+  return __location(wait_for(selector));
 }
 
 function size(selector) {
-  return __size(view(selector));
+  if (Array.isArray(selector) &&
+      selector.length === 2 &&
+      typeof(selector[0]) === 'number' &&
+      typeof(selector[1]) === 'number') {
+
+      return selector;
+  }
+  return __size(wait_for(selector));
 }
 
 function center(selector) {
-  return __center(view(selector));
+  if (Array.isArray(selector) &&
+      selector.length === 2 &&
+      typeof(selector[0]) === 'number' &&
+      typeof(selector[1]) === 'number') {
+
+      return selector;
+  }
+  return __center(wait_for(selector));
 }
 
 function leftmost(selector) {
@@ -462,42 +483,104 @@ function assert_visible(selector) {
 
 // Interaction - touch
 
-function tap(location_or_selector, options) {
-  if (Array.isArray(location_or_selector) &&
-      location_or_selector.length === 2 &&
-      typeof(location_or_selector[0]) === 'number' &&
-      typeof(location_or_selector[1]) === 'number') {
+function __touch(location, duration_ms, move_fn) {
+  var timestamp = android.os.SystemClock.uptimeMillis();
+  var offset = move_fn ? move_fn(0.0) : [0, 0];
 
-    var location = location_or_selector;
+  inject_motion_event(
+    android.view.MotionEvent.obtain(
+      timestamp,
+      timestamp,
+      android.view.MotionEvent.ACTION_DOWN,
+      location[0] + offset[0],
+      location[1] + offset[1],
+      0
+    )
+  );
 
+  if (move_fn) {
+    for (var t=0; t<duration_ms; t+=10) {
+      var offset = move_fn(t / duration_ms);
+      inject_motion_event(
+        android.view.MotionEvent.obtain(
+          timestamp,
+          timestamp + t,
+          android.view.MotionEvent.ACTION_MOVE,
+          location[0] + offset[0],
+          location[1] + offset[1],
+          0
+        )
+      );
+    }
+  }
+
+  offset = move_fn ? move_fn(1.0) : [0, 0];
+  inject_motion_event(
+    android.view.MotionEvent.obtain(
+      timestamp,
+      timestamp + duration_ms,
+      android.view.MotionEvent.ACTION_UP,
+      location[0] + offset[0],
+      location[1] + offset[1],
+      0
+    )
+  );
+}
+
+function tap(selector, options) {
     if (!options) options = {};
     if (options.duration === undefined) options.duration = 0.02;
+    __touch(center(selector), options.duration * 1000);
+    java.lang.Thread.sleep(100);
+}
 
-    var timestamp = android.os.SystemClock.uptimeMillis();
-    inject_motion_event(
-      android.view.MotionEvent.obtain(
-        timestamp,
-        timestamp,
-        android.view.MotionEvent.ACTION_DOWN,
-        location[0],
-        location[1],
-        0
-      ),
-      android.view.MotionEvent.obtain(
-        timestamp,
-        timestamp + options.duration * 1000,
-        android.view.MotionEvent.ACTION_UP,
-        location[0],
-        location[1],
-        0
-      )
-    );
-    java.lang.Thread.sleep(250);
-  } else {
-    var selector = location_or_selector,
-        location = __center(wait_for(selector, options));
-    tap(location, options);
-  }
+function __swipe(move_fn_provider, selector, options) {
+  if (!options) options = {};
+  if (options.duration === undefined) options.duration = 0.2;
+  if (options.distance === undefined) options.distance = 2.54; // cm
+
+  var display_metrics = new android.util.DisplayMetrics();
+  activity().getWindowManager().getDefaultDisplay().getMetrics(display_metrics);
+  var distance_pixels = options.distance * display_metrics.xdpi / 2.54;
+
+  __touch(
+    center(selector || content_view()),
+    options.duration * 1000,
+    move_fn_provider(distance_pixels)
+  );
+  java.lang.Thread.sleep(250);
+}
+
+function swipe_right(selector, options) {
+  __swipe(function(dx) {
+    return function(t) {
+      return [dx * Math.pow(t, 3), 0];
+    };
+  }, selector, options);
+}
+
+function swipe_left(selector, options) {
+  __swipe(function(dx) {
+    return function(t) {
+      return [dx * Math.pow(t, 3) * -1, 0];
+    };
+  }, selector, options);
+}
+
+function swipe_up(selector, options) {
+  __swipe(function(dy) {
+    return function(t) {
+      return [0, dy * Math.pow(t, 3) * -1];
+    };
+  }, selector, options);
+}
+
+function swipe_down(selector, options) {
+  __swipe(function(dy) {
+    return function(t) {
+      return [0, dy * Math.pow(t, 3)];
+    };
+  }, selector, options);
 }
 
 // Interaction - h/w keys
