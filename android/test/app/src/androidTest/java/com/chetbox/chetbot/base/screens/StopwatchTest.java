@@ -21,6 +21,7 @@ public abstract class StopwatchTest extends BaseTest {
 
     protected Button resetButton;
     protected Button startStopButton;
+    protected Button lapButton;
     protected TextView minutesText;
     protected TextView secondsText;
     protected TextView millisecondsText;
@@ -35,6 +36,7 @@ public abstract class StopwatchTest extends BaseTest {
 
         resetButton = (Button) findViewById(R.id.reset);
         startStopButton = (Button) findViewById(R.id.start_stop);
+        lapButton = (Button) findViewById(R.id.lap);
         minutesText = (TextView) findViewById(R.id.minutes);
         secondsText = (TextView) findViewById(R.id.seconds);
         millisecondsText = (TextView) findViewById(R.id.milliseconds);

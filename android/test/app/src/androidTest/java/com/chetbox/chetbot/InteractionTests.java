@@ -9,6 +9,8 @@ import com.chetbox.chetbot.test.R;
 import org.junit.Test;
 import org.mozilla.javascript.JavaScriptException;
 
+import java.util.concurrent.CountDownLatch;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.equalTo;
@@ -57,6 +59,33 @@ public class InteractionTests extends StopwatchTest {
         exec("swipe_right()");
         assertThat(viewPager.getCurrentItem(), equalTo(0));
     }
+
+    @Test public void swipeUpDown() {
+        final CountDownLatch latch = new CountDownLatch(1);
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                startStopButton.performClick();
+                for (int i = 0; i < 20; i++) {
+                    lapButton.performClick();
+                }
+                viewPager.setCurrentItem(1);
+                latch.countDown();
+            }
+        });
+        try {
+            latch.await();
+            Thread.sleep(250);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        exec(   "swipe_up();",
+                "wait_for('20');",
+                "swipe_down();",
+                "wait_for('1');");
+    }
+
 
     @Test public void waitSeconds() {
         long start = System.currentTimeMillis();
