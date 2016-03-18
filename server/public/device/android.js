@@ -1,4 +1,4 @@
-var version = [0, 7, 5];
+var version = [0, 7, 7];
 
 // Import android.*
 
