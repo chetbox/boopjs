@@ -204,7 +204,9 @@ function views(selectors, root_views) {
       case 'string':
         return make_selector_fn({text: selector});
       case 'object':
-        if (selector instanceof android.view.View) {
+        if (selector instanceof RegExp) {
+          return make_selector_fn({text: selector});
+        } else if (selector instanceof android.view.View) {
           return function(v) { return v === selector; };
         } else {
           if (!selector.text && !selector.has_text && !selector.type && !selector.id) {
@@ -221,7 +223,7 @@ function views(selectors, root_views) {
           };
         }
       default:
-        throw 'View selector must be a string, object, function or View';
+        throw 'View selector must be a string, RegExp, object, function or View';
     }
   }
 
