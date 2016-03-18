@@ -531,13 +531,13 @@ function tap(selector, options) {
     if (!options) options = {};
     if (options.duration === undefined) options.duration = 0.02;
     __touch(center(selector), options.duration * 1000);
-    java.lang.Thread.sleep(50);
+    java.lang.Thread.sleep(100);
 }
 
 function __swipe(move_fn_provider, selector, options) {
   if (!options) options = {};
-  if (options.duration === undefined) options.duration = 0.33;
-  if (options.distance === undefined) options.distance = 4; // cm
+  if (options.duration === undefined) options.duration = 0.2;
+  if (options.distance === undefined) options.distance = 2.54; // cm
 
   var display_metrics = new android.util.DisplayMetrics();
   activity().getWindowManager().getDefaultDisplay().getMetrics(display_metrics);
@@ -548,13 +548,13 @@ function __swipe(move_fn_provider, selector, options) {
     options.duration * 1000,
     move_fn_provider(distance_pixels)
   );
-  java.lang.Thread.sleep(50);
+  java.lang.Thread.sleep(250);
 }
 
 function swipe_right(selector, options) {
   __swipe(function(dx) {
     return function(t) {
-      return [dx * t, 0];
+      return [dx * Math.pow(t, 3), 0];
     };
   }, selector, options);
 }
@@ -562,7 +562,23 @@ function swipe_right(selector, options) {
 function swipe_left(selector, options) {
   __swipe(function(dx) {
     return function(t) {
-      return [dx * t * -1, 0];
+      return [dx * Math.pow(t, 3) * -1, 0];
+    };
+  }, selector, options);
+}
+
+function swipe_up(selector, options) {
+  __swipe(function(dy) {
+    return function(t) {
+      return [0, dy * Math.pow(t, 3) * -1];
+    };
+  }, selector, options);
+}
+
+function swipe_down(selector, options) {
+  __swipe(function(dy) {
+    return function(t) {
+      return [0, dy * Math.pow(t, 3)];
     };
   }, selector, options);
 }

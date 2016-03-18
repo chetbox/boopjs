@@ -58,7 +58,7 @@ public class StopwatchLapsAdapter extends RecyclerView.Adapter<StopwatchLapsAdap
                 previousTotalTime = (position >= 1 ? mLaps.get(position - 1) : 0),
                 lapTime = totalTime - previousTotalTime;
 
-        holder.mLapNumber.setText(Integer.toString(position));
+        holder.mLapNumber.setText(Integer.toString(position + 1));
         holder.mLapTime.setText(formatTime(lapTime));
         holder.mTotalTime.setText(formatTime(totalTime));
     }
