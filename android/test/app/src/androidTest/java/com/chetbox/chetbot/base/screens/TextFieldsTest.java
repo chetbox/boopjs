@@ -2,6 +2,7 @@ package com.chetbox.chetbot.base.screens;
 
 import android.content.Intent;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.chetbox.chetbot.base.BaseTest;
 import com.chetbox.chetbot.test.Intents;
@@ -19,6 +20,7 @@ public abstract class TextFieldsTest extends BaseTest {
     protected EditText emailField;
     protected EditText numberField;
     protected EditText passwordField;
+    protected TextView popupText;
 
     @Override
     public void setUp() {
@@ -27,6 +29,7 @@ public abstract class TextFieldsTest extends BaseTest {
         emailField = (EditText) findViewById(R.id.email);
         numberField = (EditText) findViewById(R.id.number);
         passwordField = (EditText) findViewById(R.id.password);
+        popupText = (TextView) findViewById(R.id.popup_text);
     }
 
     @Override
