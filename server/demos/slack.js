@@ -16,6 +16,7 @@ screenshot();
 // Open a conversation
 var conversation_name = 'binary-solo';
 tap({has_text: 'Jump to'});
+wait(2);
 type_text(conversation_name);
 wait_for(function() {
   // Search box + search result
