@@ -630,12 +630,17 @@ function press(key) {
 // Interaction - typing
 
 function type_text(text) {
+  wait_for(function() {
+    return activity().getCurrentFocus();
+  });
+
   var keyCharacterMap = android.view.KeyCharacterMap.load(android.view.KeyCharacterMap.VIRTUAL_KEYBOARD),
       events = keyCharacterMap.getEvents(new java.lang.String(text.toString()).toCharArray());
 
   events.forEach(function(event) {
     inject_key_event(event);
   });
+
   java.lang.Thread.sleep(100);
 }
 
