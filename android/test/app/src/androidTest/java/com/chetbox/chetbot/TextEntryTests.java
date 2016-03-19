@@ -41,5 +41,15 @@ public class TextEntryTests extends TextFieldsTest {
                 equalTo("hello world"));
     }
 
+    @Test public void typeInPopup() {
+        exec(   "tap('popup');",
+                "type_text('The end');",
+                "tap('ok');");
+
+        assertThat(popupText.getText().toString(),
+                equalTo("The end"));
+    }
+
+
 }
 
