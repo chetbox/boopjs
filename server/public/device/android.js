@@ -630,14 +630,18 @@ function press(key) {
 // Interaction - typing
 
 function type_text(text) {
-  var key_event = new android.view.KeyEvent(android.os.SystemClock.uptimeMillis(), text.toString(), 0, 0);
-  var done = __latch();
-  run_on_ui_thread(function(activity) {
-    activity.dispatchKeyEvent(key_event);
-    done.signal();
+  wait_for(function() {
+    return activity().getCurrentFocus();
   });
-  done.wait();
-  java.lang.Thread.sleep(250);
+
+  var keyCharacterMap = android.view.KeyCharacterMap.load(android.view.KeyCharacterMap.VIRTUAL_KEYBOARD),
+      events = keyCharacterMap.getEvents(new java.lang.String(text.toString()).toCharArray());
+
+  events.forEach(function(event) {
+    inject_key_event(event);
+  });
+
+  java.lang.Thread.sleep(100);
 }
 
 function hide_keyboard() {
