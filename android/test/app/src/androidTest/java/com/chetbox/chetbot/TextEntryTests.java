@@ -43,6 +43,7 @@ public class TextEntryTests extends TextFieldsTest {
 
     @Test public void typeInPopup() {
         exec(   "tap('popup');",
+                "tap('popup text');",
                 "type_text('The end');",
                 "tap('ok');");
 
