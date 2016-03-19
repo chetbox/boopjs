@@ -3,6 +3,7 @@ package com.chetbox.chetbot.android;
 import android.app.Activity;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.widget.Toast;
 
@@ -20,7 +21,6 @@ import org.mozilla.javascript.Callable;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
-import org.mozilla.javascript.Undefined;
 
 import java.io.IOException;
 
@@ -96,9 +96,20 @@ public class Chetbot implements ChetbotServerConnection.ScriptHandler, Provider<
             @Override
             public Object call(Context context, Scriptable scope, Scriptable thisObj, Object[] args) {
                 for (Object arg : args) {
-                    InputEvents.injectMotionEvent((MotionEvent) Rhino.unwrapJavaObject(arg));
+                    boolean success = InputEvents.injectMotionEvent((MotionEvent) Rhino.unwrapJavaObject(arg));
+                    if (!success) return false;
                 }
-                return Undefined.instance;
+                return true;
+            }
+        });
+        mJsScope.put("inject_key_event", mJsScope, new Callable() {
+            @Override
+            public Object call(Context context, Scriptable scope, Scriptable thisObj, Object[] args) {
+                for (Object arg : args) {
+                    boolean success = InputEvents.injectKeyEvent((KeyEvent) Rhino.unwrapJavaObject(arg));
+                    if (!success) return false;
+                }
+                return true;
             }
         });
         mJsScope.put("content_view", mJsScope, new Callable() {
