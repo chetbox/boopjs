@@ -118,3 +118,15 @@ describe 'model/users', ->
       model.revoke_access_to_app 'user_does_not_exist', 'app'
       .thenThrow new Error('Expected error')
       .catch -> done()
+
+  describe 'set_keyboard_mode', ->
+
+    it 'sets the keyboard mode', ->
+      model.add
+        id: 'user_set_keyboard_mode'
+      .then ->
+        model.set_keyboard_mode 'user_set_keyboard_mode', 'VIM'
+      .then ->
+        model.get 'user_set_keyboard_mode'
+      .then (user) ->
+        assert.equal user.keyboard_mode, 'VIM'

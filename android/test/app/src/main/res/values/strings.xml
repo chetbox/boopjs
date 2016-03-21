@@ -6,9 +6,12 @@
     <string name="start">Start</string>
     <string name="stop">Stop</string>
     <string name="reset">Reset</string>
+    <string name="lap">Lap</string>
+    <string name="laps_title">Laps</string>
     <string name="minutes">MINS</string>
     <string name="seconds">SECS</string>
     <string name="milliseconds">MILLIS</string>
+    <string name="stopwatch_definition">stopwatch - noun\nA special watch with buttons that start, stop, and then zero the hands, used to time races.</string>
 
     <string name="text_fields">Text fields</string>
 

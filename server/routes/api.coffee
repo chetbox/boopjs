@@ -24,6 +24,15 @@ exports.add_routes = (app) ->
         res.sendStatus 200
       .catch next
 
+  app.put '/api/v1/user/:user_id/keyboard-mode',
+    auth.login_required
+    auth.ensure_logged_in_user('user_id')
+    (req, res, next) ->
+      model.users.set_keyboard_mode req.params.user_id, req.body.mode
+      .then ->
+        res.sendStatus 200
+      .catch next
+
   app.post '/api/v1/s3/sign_upload',
     auth.login_or_access_token_required
     (req, res, next) ->
@@ -55,6 +64,20 @@ exports.add_routes = (app) ->
         res.json
           app: { id: new_app.id }
           test: { id: new_code.id }
+      .catch next
+
+  app.get '/api/v1/app/:app_id/apk',
+    auth.login_required,
+    auth.ensure_user_is_admin,
+    (req, res, next) ->
+      model.apps.get req.params.app_id
+      .then (app) ->
+        s3_url = app.app_url.match /https:\/\/(.*)\.s3\.amazonaws\.com\/(.*)/
+        s3.download s3_url[1], s3_url[2]
+        .then (file) ->
+          res.setHeader 'Content-disposition', "attachment; filename=#{app.identifier}-#{app.version}.boop.apk"
+          res.setHeader 'Content-type', 'application/vnd.android.package-archive'
+          res.send file
       .catch next
 
   app.put '/api/v1/app/:app_id',

@@ -186,7 +186,7 @@
       }
       input[type=file]::before {
         color: #111;
-        content: 'Upload app';
+        content: 'Update app';
         display: inline-block;
         background: #f9f9f9;
         border: 1px solid #999;
@@ -209,6 +209,7 @@
     </style>
 
     <link rel="stylesheet" type="text/css" href="/components/jquery-ui/themes/base/jquery-ui.min.css" />
+    <script src="/components/jquery/dist/jquery.min.js"></script>
   </head>
   <body class="fullbleed">
     <paper-header-panel class="boop-brand-color">
@@ -316,7 +317,7 @@
           </form>
           <h4>or</h4>
           <div class="info">
-            <code><a href="/scripts/boop.py" target="_blank">boop.py</a> --access-token <span class="info access-token" title="Your access token">{{access_tokens.[0]}}</span>" upload {{app.id}} <span class="info path-to-app" title="Replace this with the PATH to your APK">$PATH_TO_APK</span></code>
+            <code>curl -s {{host.protocol}}://{{host.address}}/scripts/boop.py | python - --access-token <span class="info access-token" title="Your access token">{{access_tokens.[0]}}</span> upload {{app.id}} <span class="info path-to-app" title="Replace this with the PATH to your APK">$PATH_TO_APK</span></code>
           </div>
           <h4>or</h4>
           <div class="info">
@@ -330,11 +331,10 @@
         </form>
       </div>
     </paper-header-panel>
+    {{> drop-file}}
   </body>
 
   {{> google-analytics}}
-
-  <script src="/components/jquery/dist/jquery.min.js"></script>
 
   {{> graph-setup}}
 
@@ -381,6 +381,15 @@
     {{#app.processing_status}}
       app_upload.show_processing_status({ app: { id: '{{../app.id}}' }});
     {{/app.processing_status}}
+
+    // Handler for dropping file onto window
+    $(function() {
+      $('body').on('drop', function(e) {
+        e.preventDefault();
+        var files = e.originalEvent.target.files || e.originalEvent.dataTransfer.files;
+        app_upload.upload(files);
+      });
+    });
   </script>
 
   <script src="/js/rename-test.js"></script>
@@ -423,6 +432,7 @@
         alert(e.toString());
       });
     }
+
   </script>
 
   {{#app.running.values}}

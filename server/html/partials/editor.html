@@ -23,9 +23,19 @@
       height: 24px;
       bottom: 0;
       transition: bottom .2s ease-out;
-      text-align: right;
       z-index: 5;
       box-shadow: 0 -5px 5px -5px rgba(0,0,0,0.5), 0 5px 5px -5px rgba(0,0,0,0.5);
+    }
+
+    #statusbar .keyboard-mode paper-icon-button {
+      opacity: 0.67;
+    }
+
+    #statusbar > *:last-child {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
     }
 
     .show-repl #statusbar {
@@ -33,6 +43,7 @@
     }
 
     #statusbar paper-icon-button {
+      font-size: 12px;
       padding: 0;
       margin: 0 0.5em;
       color: rgba(255,255,255,0.67);
@@ -47,9 +58,7 @@
       left: 0;
       right: 0;
       transition: bottom .2s ease-out;
-      {{#user}}
       bottom: 24px; /* make room for #statusbar */
-      {{/user}}
     }
 
     .show-repl .content-panel {
@@ -75,10 +84,6 @@
     #controls {
       padding: 0 12px;
       height: 64px;
-    }
-
-    body:not(.logged-in) #controls {
-      background: #00BCD4;
     }
 
     #controls > * {
@@ -133,14 +138,15 @@
   </div>
   <div id="editor" class="content-panel">{{#code.content}}{{.}}{{/code.content}}</div>
   {{> test-report}}
-  {{#user}}
   <div id="statusbar">
-    <a href="javascript:toggle_repl();">
+    <a class="keyboard-mode" onclick="open_dialog('keyboard-mode');" title="Change keyboard mode">
+      <paper-icon-button icon="hardware:keyboard"></paper-icon-button>
+    </a>
+    <a class="repl" onclick="toggle_repl();">
       <paper-icon-button icon="code"></paper-icon-button>
     </a>
   </div>
   <div id="repl"></div>
-  {{/user}}
 </div>
 
 <!-- enable run button when device loads -->
@@ -169,6 +175,9 @@ window.addEventListener('message', function(event) {
     enableLiveAutocompletion: true,
     enableSnippets: false
   });
+  editor.getSession().setTabSize(2);
+  editor.getSession().setUseSoftTabs(true);
+  editor.setShowPrintMargin(false);
 </script>
 
 {{#autosave}}
@@ -185,11 +194,13 @@ window.addEventListener('message', function(event) {
 
   function show_repl() {
     $('body').addClass('show-repl');
+    setTimeout(function() { editor.resize(); }, 200);
     repl.focus();
   }
 
   function hide_repl() {
     $('body').removeClass('show-repl');
+    setTimeout(function() { editor.resize(); }, 200);
     editor.focus();
   }
 
@@ -201,11 +212,9 @@ window.addEventListener('message', function(event) {
     }
   }
 
-  {{#user}}
-  repl = setup_repl('{{../server}}', '{{../device.id}}', '{{../app.id}}', 'repl', {
+  repl = setup_repl('{{server}}', '{{device.id}}', '{{app.id}}', 'repl', {
     onClose: toggle_repl
   });
-  {{/user}}
 </script>
 
 <!-- autocomplete -->
@@ -214,9 +223,9 @@ window.addEventListener('message', function(event) {
   var builtin_fns = [
     'function', 'for', 'var', 'while', 'do', // JS
     'activity', 'content_view', 'run_on_ui_thread', // Activity
-    'tap', 'press', 'type_text', 'hide_keyboard', 'wait', 'screenshot', 'open_drawer', 'close_drawer', 'in_webview', // interaction
+    'tap', 'press', 'type_text', 'hide_keyboard', 'wait', 'screenshot', 'open_drawer', 'close_drawer', 'in_webview', 'swipe_left', 'swipe_right', 'swipe_up', 'swipe_down', // interaction
     'view', 'views', 'bottommost', 'topmost', 'leftmost', 'rightmost', 'centermost', 'outermost', 'closest_to', 'furthest_from',  // selectors
-    'location', 'size', 'text', 'id', 'class_of', 'visible', 'count', 'all_ids', // inspection
+    'location', 'size', 'text', 'id', 'class_of', 'visible', 'count', 'all_ids', 'all_text', 'all_types', // inspection
     'assert_true', 'assert_false', 'assert_equal', 'assert_visible', // assertions
     'wait', 'wait_for', // wait
     'open_uri' // IPC
@@ -237,24 +246,22 @@ window.addEventListener('message', function(event) {
   $(document).keydown(function(e) {
     if (e.which === 'S'.charCodeAt(0) && (e.ctrlKey || e.metaKey)) {
       save(editor);
-      return false;
+      e.preventDefault();
     }
     if (e.which === 'I'.charCodeAt(0) && (e.ctrlKey || e.metaKey)) {
       toggle_repl();
-      return false;
+      e.preventDefault();
     }
     if (e.which === 'R'.charCodeAt(0) && e.ctrlKey) {
       eval( $('#controls a.run:visible').attr('href') );
-      return false;
+      e.preventDefault();
     }
     if (e.which == 27 /* ESC */) {
       var $back = $('#controls a.back');
-      if ($back.is(':hidden')) {
-        hide_repl();
-      } else {
+      if ($back.is(':visible')) {
         eval( $back.attr('href') );
+        e.preventDefault();
       }
-      return false;
     }
     if (e.which === 13 && (e.ctrlKey || e.metaKey)) { /* Return */
       if (!window.repl) return;
@@ -265,7 +272,7 @@ window.addEventListener('message', function(event) {
       show_repl();
       repl.run(script);
       editor.focus();
-      return false;
+      e.preventDefault();
     }
   });
 </script>
@@ -279,6 +286,8 @@ window.addEventListener('message', function(event) {
     }
   </script>
 {{/unless}}
+
+{{> set-keyboard-mode-dialog user}}
 
 <!-- test runner -->
 <script src="/js/esprima.min.js" charset="utf-8"></script>

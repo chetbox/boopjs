@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingTop="@dimen/stopwatch_laps_vertical_padding"
+                android:paddingBottom="@dimen/stopwatch_laps_vertical_padding">
+
+    <TextView
+        android:id="@+id/lap_number"
+        android:text="0"
+        android:layout_centerVertical="true"
+        android:layout_marginRight="20sp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"/>
+
+    <TextView
+        android:id="@+id/lap_time"
+        android:layout_centerVertical="true"
+        android:layout_toRightOf="@+id/lap_number"
+        android:text="00:00:000"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <TextView
+        android:id="@+id/total_time"
+        android:layout_centerVertical="true"
+        android:layout_alignParentRight="true"
+        android:text="00:00:000"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+</RelativeLayout>

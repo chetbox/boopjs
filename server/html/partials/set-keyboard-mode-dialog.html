@@ -1,0 +1,55 @@
+<paper-dialog class="keyboard-mode"
+    entry-animation="fade-in-animation"
+    exit-animation="fade-out-animation"
+    withBackdrop="true">
+
+  <h2>Keyboard Mode</h2>
+
+  <paper-radio-group selected="{{#keyboard_mode}}{{.}}{{else}}Default{{/keyboard_mode}}">
+    <paper-radio-button name="Default">Default (Ace)</paper-radio-button>
+    <br/>
+    <paper-radio-button name="VIM">VIM</paper-radio-button>
+    <br/>
+    <paper-radio-button name="Emacs">Emacs</paper-radio-button>
+  </paper-radio-group>
+
+  <div style="margin-top: 2em; text-align: right;">
+    <paper-button onclick="close_dialog(this);"><iron-icon icon="clear"></iron-icon>Cancel</paper-button>
+    <paper-button onclick="on_select_keyboard_mode(this); close_dialog(this);" class="primary"><iron-icon icon="hardware:keyboard"></iron-icon>Save</paper-button>
+  </div>
+</paper-dialog>
+
+<script>
+  var default_keyboard_handler = editor.getKeyboardHandler();
+
+  function set_keyboard_mode(mode) {
+    var handler = {
+      Default: default_keyboard_handler,
+      VIM: 'ace/keyboard/vim',
+      Emacs: 'ace/keyboard/emacs'
+    }[mode];
+    editor.setKeyboardHandler(handler);
+    editor.focus();
+  }
+
+  function on_select_keyboard_mode(button) {
+    var mode = $(button).closest('paper-dialog').find('paper-radio-group').get(0).selected;
+    set_keyboard_mode(mode);
+
+    if ('{{id}}') {
+      $.ajax('/api/v1/user/{{id}}/keyboard-mode', {
+        method: 'PUT',
+        data: { mode: mode },
+        error: function(xhr, _, statusText) {
+          console.error(xhr.responseText, statusText);
+        }
+      });
+    } else {
+      console.log('Not saving keyboard mode (not logged in)');
+    }
+  }
+
+  {{#keyboard_mode}}
+    set_keyboard_mode('{{.}}');
+  {{/keyboard_mode}}
+</script>

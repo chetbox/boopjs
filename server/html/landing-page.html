@@ -27,10 +27,6 @@
         background: none;
       }
 
-      main > div.test-reports {
-        padding-bottom: 75px;
-      }
-
       #hero {
         padding: 75px 0 50px 0;
         text-align: center;
@@ -70,9 +66,33 @@
         margin: 0 !important;
       }
 
+      .feature.sign-in {
+        text-align: center;
+        padding-top: 25px;
+        padding-bottom: 75px;
+      }
+
       .code-examples .mdl-card {
         margin: 1em 0;
         min-height: 0;
+      }
+
+      #slack-chat-btn {
+        z-index: 2;
+        cursor: pointer;
+        position: fixed;
+        right: 1.5em;
+        bottom: 1em;
+        background-color: white;
+      }
+
+      #slack-chat-btn i {
+        font-size: 0.9em;
+        opacity: 0.85;
+      }
+
+      .slackchat {
+        font-family: 'Roboto';
       }
     </style>
   </head>
@@ -83,9 +103,7 @@
         <div id="hero">
           <h1>Android UI tests + continuous integration<br>in minutes</h1>
           <a href="/apps">
-            <button class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent mdl-js-ripple-effect">
-              Get started
-            </button>
+            {{> sign-in-button}}
           </a>
           <div class="steps-to-success mdl-grid">
             <div class="mdl-cell mdl-cell--4-col">
@@ -97,9 +115,9 @@ type_text('my_username')
 tap('sign in')
 assert_visible('home')
 </pre>
-                <a style="display: block; text-align: center; padding-top: 140px;" href="/demo" target="_blank">
+                <a style="display: block; text-align: center; padding-top: 140px;" href="javascript:open('/demo')" target="_blank">
                   <button class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-js-ripple-effect">
-                    Try our IDE
+                    Watch Demo
                   </button>
                 </a>
               </div>
@@ -189,9 +207,15 @@ assert_visible('finished');</code></pre>
           </p>
           <p>See a <a href="/sample-test-report"  target="_blank">sample test report</a> or run a <a href="/demo" target="_blank">demo</a>.</p>
         </div>
+        <div class="feature sign-in">
+          {{> sign-in-button}}
+        </div>
         {{> footer-public}}
       </main>
     </div>
+    <button id="slack-chat-btn" class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-js-ripple-effect brand-color" title="Have a question?">
+      <i class="material-icons">feedback</i>
+    </button>
   </body>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.1.0/highlight.min.js"></script>
   <script>hljs.initHighlighting();</script>
@@ -199,6 +223,9 @@ assert_visible('finished');</code></pre>
   {{> google-analytics}}
 
   <script src="/components/jquery/dist/jquery.min.js"></script>
+
+  {{> slack-chat querySelector='#slack-chat-btn'}}
+
   {{> egg}}
 
 </html>

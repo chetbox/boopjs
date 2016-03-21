@@ -1,0 +1,65 @@
+<link href="/third-party/slack-chat/css/slack-chat.css" rel="stylesheet" />
+<script type="text/javascript" src="/components/js-cookie/src/js.cookie.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.9.0/moment.min.js"></script>
+<script type="text/javascript" src="/third-party/slack-chat/js/slack-chat.min.js"></script>
+<style>
+  .slackchat {
+    color: #444;
+  }
+
+  .slackchat button.close {
+    -webkit-appearance: none;
+    padding: 0;
+    cursor: pointer;
+    background: 0 0;
+    border: 0;
+    float: right;
+    font-size: 24px;
+    line-height: 1;
+    opacity: 0.2;
+  }
+
+  .slackchat .presence .presence-icon {
+    font-size: 36px;
+  }
+
+  .slackchat .slack-post-message {
+    background: #4e265a;
+    opacity: 1.0;
+    transition: opacity 0.2s ease-out;
+  }
+  .slackchat .slack-post-message:hover {
+    background: #4e265a;
+    opacity: 0.9;
+  }
+
+  .slackchat .slack-new-message {
+    width: 80%;
+  }
+  .slackchat .slack-new-message:focus {
+    border: none;
+    box-shadow: 0 0 2px #aaa;
+    outline: none;
+  }
+</style>
+<script type="text/javascript">
+  var cookie_key ='Slack-Chat name',
+      username = '{{username}}' || Cookies.get(cookie_key) || '{{random_name}}',
+      user_id = '{{id}}' || username,
+      user_url = '{{id}}' ? '/account/{{id}}' : undefined;
+  Cookies.set(cookie_key, username, { expires: 365 });
+
+  $('{{querySelector}}').slackChat({
+    apiToken: 'xoxp-9932424052-9932677106-23911690193-452c70c624',
+    channelId: 'C0PSPC0LB',
+    user: username,
+    userLink: user_url,
+    userImg: '{{avatarUrl}}',
+    userId: user_id,
+    defaultUserImg: '/images/unknown-user.jpg',
+    sysImg: '/images/logo.svg',
+    sysUser: 'Support',
+    chatBoxHeader: 'Have a question? Fire away.',
+    botUser: 'SlackChatBot'
+  });
+</script>

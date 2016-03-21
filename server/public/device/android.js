@@ -1,8 +1,14 @@
-var version = [0, 7, 4];
+var version = [0, 7, 7];
 
 // Import android.*
 
 var android = Packages.android;
+
+// RegExp utilities
+
+RegExp.escape = function(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+};
 
 // Concurrency utilities
 
@@ -58,12 +64,17 @@ function screen_size() {
 // View selectors
 
 function __text(view) {
-  return (view instanceof android.widget.TextView)
-      && (!android.text.TextUtils.isEmpty(view.getText())
-          ? view.getText().toString()
-          : (!android.text.TextUtils.isEmpty(view.getHint())
-              ? view.getHint().toString()
-              : null));
+  function to_string(char_seq) {
+    if (char_seq) return char_seq.toString();
+  }
+  if (view instanceof android.widget.TextView) {
+    return !android.text.TextUtils.isEmpty(view.getText())
+      ? to_string(view.getText())
+      : to_string(view.getHint());
+  }
+  if (view instanceof android.support.design.widget.TextInputLayout) {
+    return view.getHint().toString();
+  }
 }
 
 function __id(view) {
@@ -73,6 +84,14 @@ function __id(view) {
 
 function __type(view) {
   return view.getClass().getName();
+}
+
+function __type_hierarchy(class) {
+  return [class].concat(
+    (class === android.view.View)
+      ? []
+      : __type_hierarchy(class.superclass)
+    );
 }
 
 function __location(view) {
@@ -110,15 +129,40 @@ function views(selectors, root_views) {
 
   function text_matcher(text_query) {
     return function(view) {
-      return text_query.equalsIgnoreCase(__text(view));
+      var text = __text(view);
+      if (!text) {
+        return false;
+      }
+      if (text_query instanceof RegExp) {
+        return !!text.match(text_query);
+      }
+      if (typeof(text_query) === 'string') {
+        return text.equalsIgnoreCase(text_query);
+      }
+      throw new Error('Invalid text selector: ' + text_query);
     }
   }
 
+  function has_text_matcher(has_text_query) {
+    if (typeof(has_text_query) !== 'string') {
+      throw new Error('has_text expects a string');
+    }
+    return text_matcher(new RegExp('\\b' + RegExp.escape(has_text_query) + '\\b', 'i'));
+  }
+
   function type_matcher(type) {
+
     return function(view) {
-      return type.equalsIgnoreCase( type.indexOf('.') >= 0
-        ? __type(view)
-        : view.getClass().getSimpleName());
+      if (typeof(type) === 'string') {
+        return __type_hierarchy(view.getClass()).reduce(function(matches_class, cls) {
+          return matches_class ||
+            (type.equalsIgnoreCase( type.indexOf('.') >= 0
+              ? cls.getName()
+              : cls.getSimpleName()));
+        }, false);
+      } else {
+        return view instanceof type;
+      }
     }
   }
 
@@ -160,21 +204,26 @@ function views(selectors, root_views) {
       case 'string':
         return make_selector_fn({text: selector});
       case 'object':
-        if (selector instanceof android.view.View) {
+        if (selector instanceof RegExp) {
+          return make_selector_fn({text: selector});
+        } else if (selector instanceof android.view.View) {
           return function(v) { return v === selector; };
         } else {
-          if (!selector.text && !selector.type && !selector.id) {
-            throw '"text", "type" or "id" must be specified';
+          if (!selector.text && !selector.has_text && !selector.type && !selector.id) {
+            throw '"text", "has_text", "type" or "id" must be specified';
           }
           var match_any = function() { return true; },
               match_visible = visible_matcher(screen_size()),
-              match_text = selector.text ? text_matcher(selector.text) : match_any,
-              match_type = selector.type ? type_matcher(selector.type) : match_any,
-              match_id   = selector.id   ? id_matcher(selector.id)     : match_any;
-          return function(v) { return match_visible(v) && match_text(v) && match_type(v) && match_id(v) };
+              match_text      = selector.text     ? text_matcher(selector.text)         : match_any,
+              match_has_text  = selector.has_text ? has_text_matcher(selector.has_text) : match_any,
+              match_type      = selector.type     ? type_matcher(selector.type)         : match_any,
+              match_id        = selector.id       ? id_matcher(selector.id)             : match_any;
+          return function(v) {
+            return match_visible(v) && match_text(v) && match_has_text(v) && match_type(v) && match_id(v);
+          };
         }
       default:
-        throw 'View selector must be a string, object, function or View';
+        throw 'View selector must be a string, RegExp, object, function or View';
     }
   }
 
@@ -220,23 +269,44 @@ function text(selector) {
 }
 
 function id(selector) {
-  return __id(view(selector));
+  return __id(wait_for(selector));
 }
 
 function type(selector) {
-  return __type(view(selector));
+  return __type(wait_for(selector));
 }
 
 function location(selector) {
-  return __location(view(selector));
+  if (Array.isArray(selector) &&
+      selector.length === 2 &&
+      typeof(selector[0]) === 'number' &&
+      typeof(selector[1]) === 'number') {
+
+      return selector;
+  }
+  return __location(wait_for(selector));
 }
 
 function size(selector) {
-  return __size(view(selector));
+  if (Array.isArray(selector) &&
+      selector.length === 2 &&
+      typeof(selector[0]) === 'number' &&
+      typeof(selector[1]) === 'number') {
+
+      return selector;
+  }
+  return __size(wait_for(selector));
 }
 
 function center(selector) {
-  return __center(view(selector));
+  if (Array.isArray(selector) &&
+      selector.length === 2 &&
+      typeof(selector[0]) === 'number' &&
+      typeof(selector[1]) === 'number') {
+
+      return selector;
+  }
+  return __center(wait_for(selector));
 }
 
 function leftmost(selector) {
@@ -292,8 +362,36 @@ function all_ids(selector) {
       if (id) ids.push(id);
       return false; // keep searching
     },
-    selector ? views(selector) : undefined);
+    selector ? views(selector) : undefined
+  );
   return ids;
+}
+
+function all_text(selector) {
+  var strings = [];
+  views(
+    function(v) {
+      var str = __text(v);
+      if (str) strings.push(str);
+      return false; // keep searching
+    },
+    selector ? views(selector) : undefined
+  );
+  return strings;
+}
+
+function all_types(selector) {
+  var types = new java.util.HashSet();
+  views(
+    function(v) {
+      types.addAll(__type_hierarchy(v.getClass()).map(function(class) {
+        return class.getName();
+      }));
+      return false; // keep searching
+    },
+    selector ? views(selector) : undefined
+  );
+  return types;
 }
 
 // View array filters
@@ -387,42 +485,104 @@ function assert_visible(selector) {
 
 // Interaction - touch
 
-function tap(location_or_selector, options) {
-  if (Array.isArray(location_or_selector) &&
-      location_or_selector.length === 2 &&
-      typeof(location_or_selector[0]) === 'number' &&
-      typeof(location_or_selector[1]) === 'number') {
+function __touch(location, duration_ms, move_fn) {
+  var timestamp = android.os.SystemClock.uptimeMillis();
+  var offset = move_fn ? move_fn(0.0) : [0, 0];
 
-    var location = location_or_selector;
+  inject_motion_event(
+    android.view.MotionEvent.obtain(
+      timestamp,
+      timestamp,
+      android.view.MotionEvent.ACTION_DOWN,
+      location[0] + offset[0],
+      location[1] + offset[1],
+      0
+    )
+  );
 
+  if (move_fn) {
+    for (var t=0; t<duration_ms; t+=10) {
+      var offset = move_fn(t / duration_ms);
+      inject_motion_event(
+        android.view.MotionEvent.obtain(
+          timestamp,
+          timestamp + t,
+          android.view.MotionEvent.ACTION_MOVE,
+          location[0] + offset[0],
+          location[1] + offset[1],
+          0
+        )
+      );
+    }
+  }
+
+  offset = move_fn ? move_fn(1.0) : [0, 0];
+  inject_motion_event(
+    android.view.MotionEvent.obtain(
+      timestamp,
+      timestamp + duration_ms,
+      android.view.MotionEvent.ACTION_UP,
+      location[0] + offset[0],
+      location[1] + offset[1],
+      0
+    )
+  );
+}
+
+function tap(selector, options) {
     if (!options) options = {};
     if (options.duration === undefined) options.duration = 0.02;
+    __touch(center(selector), options.duration * 1000);
+    java.lang.Thread.sleep(100);
+}
 
-    var timestamp = android.os.SystemClock.uptimeMillis();
-    inject_motion_event(
-      android.view.MotionEvent.obtain(
-        timestamp,
-        timestamp,
-        android.view.MotionEvent.ACTION_DOWN,
-        location[0],
-        location[1],
-        0
-      ),
-      android.view.MotionEvent.obtain(
-        timestamp,
-        timestamp + options.duration * 1000,
-        android.view.MotionEvent.ACTION_UP,
-        location[0],
-        location[1],
-        0
-      )
-    );
-    java.lang.Thread.sleep(250);
-  } else {
-    var selector = location_or_selector,
-        location = __center(wait_for(selector, options));
-    tap(location, options);
-  }
+function __swipe(move_fn_provider, selector, options) {
+  if (!options) options = {};
+  if (options.duration === undefined) options.duration = 0.2;
+  if (options.distance === undefined) options.distance = 2.54; // cm
+
+  var display_metrics = new android.util.DisplayMetrics();
+  activity().getWindowManager().getDefaultDisplay().getMetrics(display_metrics);
+  var distance_pixels = options.distance * display_metrics.xdpi / 2.54;
+
+  __touch(
+    center(selector || content_view()),
+    options.duration * 1000,
+    move_fn_provider(distance_pixels)
+  );
+  java.lang.Thread.sleep(250);
+}
+
+function swipe_right(selector, options) {
+  __swipe(function(dx) {
+    return function(t) {
+      return [dx * Math.pow(t, 3), 0];
+    };
+  }, selector, options);
+}
+
+function swipe_left(selector, options) {
+  __swipe(function(dx) {
+    return function(t) {
+      return [dx * Math.pow(t, 3) * -1, 0];
+    };
+  }, selector, options);
+}
+
+function swipe_up(selector, options) {
+  __swipe(function(dy) {
+    return function(t) {
+      return [0, dy * Math.pow(t, 3) * -1];
+    };
+  }, selector, options);
+}
+
+function swipe_down(selector, options) {
+  __swipe(function(dy) {
+    return function(t) {
+      return [0, dy * Math.pow(t, 3)];
+    };
+  }, selector, options);
 }
 
 // Interaction - h/w keys
@@ -470,14 +630,18 @@ function press(key) {
 // Interaction - typing
 
 function type_text(text) {
-  var key_event = new android.view.KeyEvent(android.os.SystemClock.uptimeMillis(), text.toString(), 0, 0);
-  var done = __latch();
-  run_on_ui_thread(function(activity) {
-    activity.dispatchKeyEvent(key_event);
-    done.signal();
+  wait_for(function() {
+    return activity().getCurrentFocus();
   });
-  done.wait();
-  java.lang.Thread.sleep(250);
+
+  var keyCharacterMap = android.view.KeyCharacterMap.load(android.view.KeyCharacterMap.VIRTUAL_KEYBOARD),
+      events = keyCharacterMap.getEvents(new java.lang.String(text.toString()).toCharArray());
+
+  events.forEach(function(event) {
+    inject_key_event(event);
+  });
+
+  java.lang.Thread.sleep(100);
 }
 
 function hide_keyboard() {

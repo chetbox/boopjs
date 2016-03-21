@@ -7,6 +7,7 @@ var body_parser = require('body-parser');
 var http = require('http');
 var https = require('https');
 var fs = require('fs');
+var moniker = require('moniker');
 
 var email = require('./reporting/email');
 
@@ -17,6 +18,7 @@ var port = process.env.PORT || 8001;
 
 // Mustache setup
 
+var name_generator = moniker.generator([moniker.adjective, moniker.noun]);
 var hbs = express_handlebars.create({
     defaultLayout: false,
     extname: '.html',
@@ -40,7 +42,10 @@ var hbs = express_handlebars.create({
           ? opts.fn(this)
           : opts.inverse(this);
       },
-      encodeURIComponent: encodeURIComponent
+      encodeURIComponent: encodeURIComponent,
+      random_name: function() {
+        return name_generator.choose();
+      }
     },
 });
 

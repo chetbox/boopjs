@@ -167,6 +167,13 @@ function setup(app, options) {
   app.use(passport.session());
   app.use(flash());
 
+  app.get('/account',
+    login_required,
+    function(req, res) {
+      res.redirect('/account/' + req.user.id);
+    }
+  );
+
   app.get('/account/:user_id',
     login_required,
     ensure_logged_in_user('user_id'),

@@ -8,7 +8,7 @@ import com.chetbox.chetbot.base.BaseTest;
 import com.chetbox.chetbot.test.Intents;
 import com.chetbox.chetbot.test.R;
 
-public class WebViewTest extends BaseTest {
+public abstract class WebViewTest extends BaseTest {
 
     protected WebView webView;
     protected TextView urlView;
