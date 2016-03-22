@@ -1,19 +1,12 @@
 package com.chetbox.chetbot;
 
-import android.graphics.Bitmap;
-import android.os.SystemClock;
-import android.util.Log;
 import android.view.View;
 
 import com.chetbox.chetbot.base.screens.StopwatchTest;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.mozilla.javascript.NativeObject;
 import org.mozilla.javascript.ScriptableObject;
-import org.mozilla.javascript.Undefined;
-
-import java.util.List;
 
 import static com.chetbox.chetbot.util.GenericMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -51,6 +44,27 @@ public class RecorderTests extends StopwatchTest {
         exec("watch_interactions();");
         Object newNewListener = exec("__get_listener('OnClickListener', _startStopButton_)");
         assertThat(newNewListener, is(newListener));
+    }
+
+    @Test public void watchTaps() {
+        exec(   "start_recorder(function(e) { console.log(e.type, e.target); });",
+                "tap('start');",
+                "wait(2);",
+                "tap('stop');",
+                "wait(2);",
+                "tap('reset');",
+                "wait(2);");
+    }
+
+    @Test public void watchText() {
+        exec(   "start_recorder(function(e) { console.log(e.type, JSON.stringify(e.keys + ''), e.target); });",
+                "open_drawer();",
+                "tap('text fields');",
+                "tap('text');",
+                "type_text('banana cake');",
+                "press('backspace');",
+                "press('backspace');",
+                "wait(2);");
     }
 
 }

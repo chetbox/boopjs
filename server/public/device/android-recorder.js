@@ -15,29 +15,47 @@ function __get_listener(listener_name, view) {
 
 function watch_interactions(interaction_callback) {
   views(function(v) {
-    if (v.isClickable()) {
+    if (v.isClickable() || v.isLongClickable()) {
       var original_listener = __get_listener('OnClickListener', v);
       if (original_listener) {
-        if (!watch_interactions.listener_hashCodes.hashCode()) {
+        if (!watch_interactions.click_listener_hashCodes.contains(v.hashCode())) {
           log('Adding click handler to ' + v);
-          var new_listener = new android.view.View.OnClickListener(function (v) {
+          var new_listener = function (v) {
             original_listener.onClick(v);
             interaction_callback({
               type: 'tap',
               target: v
             });
-          });
+          };
           v.setOnClickListener(new_listener);
-          watch_interactions.listener_hashCodes.add(new_listener.hashCode());
+          watch_interactions.click_listener_hashCodes.add(v.hashCode());
         }
-      } else {
-        log('warning: no click handler found: ' + v);
+      }
+    }
+    if (v instanceof android.widget.EditText) {
+      log('Adding text changed handler to ' + v);
+      if (!watch_interactions.text_listener_hashCodes.contains(v.hashCode())) {
+        var previous_text;
+        v.addTextChangedListener({
+          onTextChanged: function(s, start, before, count) {
+            var keys_typed = (count === 0 && before === 1)
+              ? '\b'
+              : s.toString().substring(start + before, start + count);
+            interaction_callback({
+              type: 'press',
+              target: v,
+              keys: keys_typed
+            });
+          }
+        });
+        watch_interactions.text_listener_hashCodes.add(v.hashCode());
       }
     }
     return false; // Do not match => Continue traversing hierarchy
   });
 }
-watch_interactions.listener_hashCodes = new java.util.HashSet();
+watch_interactions.click_listener_hashCodes = new java.util.HashSet();
+watch_interactions.text_listener_hashCodes = new java.util.HashSet();
 
 function wait_for_interaction() {
   var container = __container();
@@ -45,4 +63,18 @@ function wait_for_interaction() {
     container.set_content(interaction);
   });
   return container.wait_for_content();
+}
+
+function start_recorder(callback) {
+  if (!callback) {
+    throw new Error('Callback not specified');
+  }
+  var layout_changes = 0;
+  var root = content_view();
+  log('Adding GlobalLayoutListener to ' + root);
+  root.getViewTreeObserver().addOnGlobalLayoutListener(function() {
+    layout_changes++;
+    watch_interactions(callback);
+  });
+  watch_interactions(callback);
 }

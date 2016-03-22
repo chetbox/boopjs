@@ -532,8 +532,14 @@ function __touch(location, duration_ms, move_fn) {
 function tap(selector, options) {
     if (!options) options = {};
     if (options.duration === undefined) options.duration = 0.02;
-    __touch(center(selector), options.duration * 1000);
-    java.lang.Thread.sleep(100);
+    var v = wait_for(selector);
+    __touch(center(v), options.duration * 1000);
+    if (v instanceof android.widget.EditText) {
+      // Wait for keyboard
+      java.lang.Thread.sleep(250);
+    } else {
+      java.lang.Thread.sleep(100);
+    }
 }
 
 function __swipe(move_fn_provider, selector, options) {
@@ -630,9 +636,17 @@ function press(key) {
 // Interaction - typing
 
 function type_text(text) {
+  var gained_focus = false;
   wait_for(function() {
-    return activity().getCurrentFocus();
+    var is_focused = !!activity().getCurrentFocus();
+    if (!is_focused) gained_focus = true;
+    return is_focused;
   });
+
+  if (gained_focus) {
+    // Wait for keyboard
+    java.lang.Thread.sleep(250);
+  }
 
   var keyCharacterMap = android.view.KeyCharacterMap.load(android.view.KeyCharacterMap.VIRTUAL_KEYBOARD),
       events = keyCharacterMap.getEvents(new java.lang.String(text.toString()).toCharArray());
