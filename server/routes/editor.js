@@ -9,6 +9,7 @@ exports.add_routes = function(app) {
   var db = require.main.require('./db');
   var test_runner = require.main.require('./test_runner');
   var model = {
+    users: require.main.require('./model/users'),
     results: require.main.require('./model/results'),
     devices: require.main.require('./model/devices'),
     code: require.main.require('./model/code'),
@@ -127,6 +128,74 @@ exports.add_routes = function(app) {
         res.status(200).send('');
       })
       .catch(next);
+    }
+  );
+
+  app.get('/app/:app_id/settings',
+    auth.login_required,
+    middleware.check_user_can_access_app('app_id'),
+    function(req, res, next) {
+      model.apps.get(req.params.app_id)
+      .then(function(app) {
+        return Promise.map(app.admins.values, model.users.get)
+        .then(function(admins) {
+          res.render('app-settings', {
+            user: req.user,
+            app: app,
+            admins: admins
+          });
+        });
+      })
+      .catch(next);
+    }
+  );
+
+  app.get('/app/:app_id/settings/init-script/edit',
+    auth.login_required,
+    middleware.check_user_can_access_app('app_id'),
+    function(req, res, next) {
+      Promise.join(
+        model.apps.get(req.params.app_id),
+        model.devices.create_device({user: req.user})
+      )
+      .spread(function(app, device_id) {
+        res.render('edit', {
+          override_back_button: {
+            endpoint: '/app/' + app.id + '/settings',
+            title: app.name + ' settings'
+          },
+          user: req.user,
+          device: _.extend({}, DEFAULT_DEVICE, {
+            id: device_id,
+            os_version: app.os_version
+          }),
+          server: host.address,
+          server_url: (host.protocol === 'https' ? 'wss' : 'ws') + '://' + host.address + '/api/device?id=' + device_id,
+          api_url: host.protocol + '://' + host.address + '/device/android.js',
+          app: app,
+          autosave: true,
+          code: {
+            name: 'Init script',
+            content: app.init_script,
+            disable: {
+              rename: true
+            }
+          }
+        });
+      })
+      .catch(next);
+    }
+  );
+
+  app.put('/app/:app_id/settings/init-script/edit/content',
+    auth.login_required,
+    middleware.check_user_can_access_app('app_id'),
+    function(req, res, next) {
+      model.apps.save_init_script(req.params.app_id, req.body)
+      .then(function() {
+        res.sendStatus(200);
+      })
+      // TODO: mark all tests as not run
     }
   );
 

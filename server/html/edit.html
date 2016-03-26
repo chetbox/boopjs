@@ -44,9 +44,13 @@
       <paper-toolbar>
         <a
           {{#if user}}
-            href="/app/{{code.app_id}}" alt="Apps"
+            {{#override_back_button}}
+              href="{{endpoint}}" title="{{title}}"
+            {{else}}
+              href="/app/{{code.app_id}}" title="Apps"
+            {{/override_back_button}}
           {{else}}
-            href="javascript:close()" alt="Close"
+            href="javascript:close()" title="Close"
           {{/if}}>
           <paper-icon-button icon="arrow-back"></paper-icon-button>
         </a>
@@ -54,7 +58,9 @@
         <div class="title">
           <span class="name">{{code.name}}</span>
           {{#if user}}
-            {{> rename-button code}}
+            {{#unless code.disable.rename}}
+              {{> rename-button code}}
+            {{/unless}}
           {{/if}}
         </div>
 
