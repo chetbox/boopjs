@@ -97,6 +97,14 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
         }
     }
 
+    private static class Ready {
+        private boolean ready;
+
+        public Ready(boolean ready) {
+            this.ready = ready;
+        }
+    }
+
     private static class Success {
         private boolean success;
 
@@ -167,6 +175,7 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
             if (mRequiresSetup) {
                 mScriptHandler.setup();
                 mRequiresSetup = false;
+                sendAsJson(new Ready(true));
             }
             Log.d(TAG, "HTTP " + handshakeData.getHttpStatus() + ": " + handshakeData.getHttpStatusMessage());
         }
