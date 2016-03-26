@@ -187,15 +187,34 @@ exports.add_routes = function(app) {
     }
   );
 
+  app.get('/app/:app_id/settings/init-script/code',
+    auth.login_required,
+    middleware.check_user_can_access_app('app_id'),
+    function(req, res, next) {
+      model.apps.get(req.params.app_id)
+      .then(function(app) {
+        if (!app) {
+          return res.sendStatus(404);
+        }
+        res.set('Content-Type', 'text/javascript');
+        res.status(200).send(app.init_script);
+      })
+      .catch(next);
+    }
+  );
+
   app.put('/app/:app_id/settings/init-script/edit/content',
     auth.login_required,
     middleware.check_user_can_access_app('app_id'),
     function(req, res, next) {
       model.apps.save_init_script(req.params.app_id, req.body)
       .then(function() {
+        // TODO: mark all tests as not run
+      })
+      .then(function() {
         res.sendStatus(200);
       })
-      // TODO: mark all tests as not run
+      .catch(next);
     }
   );
 
