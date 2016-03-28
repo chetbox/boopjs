@@ -3,7 +3,6 @@ var Promise = require('bluebird');
 var request = Promise.promisifyAll(require('request'));
 var debug = require('debug')('chetbot:' + require('path').relative(process.cwd(), __filename).replace(/\.js$/, ''));
 
-var db = require.main.require('./db');
 var model = {
   apps: require.main.require('./model/apps'),
   code: require.main.require('./model/code'),
@@ -25,7 +24,7 @@ exports.run = function(app_id, code_id) {
 
   debug('run', endpoints.run);
 
-  return db.v2.apps.get({Key: {id: app_id}})
+  return model.apps.get(app_id)
   .then(function(app) {
     if (!app) throw new Error('App ' + app_id + ' does not exist');
 

@@ -187,22 +187,6 @@ exports.add_routes = function(app) {
     }
   );
 
-  app.get('/app/:app_id/settings/init-script/code',
-    auth.login_required,
-    middleware.check_user_can_access_app('app_id'),
-    function(req, res, next) {
-      model.apps.get(req.params.app_id)
-      .then(function(app) {
-        if (!app) {
-          return res.sendStatus(404);
-        }
-        res.set('Content-Type', 'text/javascript');
-        res.status(200).send(app.init_script);
-      })
-      .catch(next);
-    }
-  );
-
   app.put('/app/:app_id/settings/init-script/edit/content',
     auth.login_required,
     middleware.check_user_can_access_app('app_id'),
@@ -239,9 +223,10 @@ exports.add_routes = function(app) {
       Promise.join(
         db.apps().find(req.params.app_id),
         model.code.get(req.params.app_id, req.params.code_id),
-        model.devices.create_device({user: req.user})
+        model.devices.create_device({user: req.user}),
+        model.access_tokens.get_or_create_for_user(req.user.id)
       )
-      .spread(function(app, code, device_id) {
+      .spread(function(app, code, device_id, access_tokens) {
         if (!code || !app) {
           return res.sendStatus(404);
         }
@@ -250,6 +235,10 @@ exports.add_routes = function(app) {
           device: _.extend({}, DEFAULT_DEVICE, {
             id: device_id,
             os_version: code.os_version || app.os_version,
+            init_script_url: (app.init_script
+              ? (host.protocol + '://' + host.address + '/api/v1/app/' + app.id + '/init-script/code?access_token=' + access_tokens[0])
+              : undefined
+            ),
             location: function() {
               return code.location
                 ? lat_lon_str(JSON.parse(code.location))
@@ -358,7 +347,7 @@ exports.add_routes = function(app) {
         model.results.get(req.params.code_id, req.params.started_at),
         model.devices.create_device({user: null})
       )
-      .spread(function(app, code, result, device_id) {
+      .spread(function(app, code, result, device_id, access_tokens) {
         if (!code || !app || !result) {
           return res.sendStatus(404);
         }
@@ -366,6 +355,10 @@ exports.add_routes = function(app) {
           device: _.extend({}, DEFAULT_DEVICE, {
             id: device_id,
             os_version: code.os_version || app.os_version,
+            init_script_url: (app.init_script
+              ? (host.protocol + '://' + host.address + '/api/v1/app/' + app.id + '/init-script/code?access_token=' + 'TODO_GET_USER_ACCESS_TOKEN')
+              : undefined
+            ),
             location: function() {
               return code.location
                 ? lat_lon_str(JSON.parse(code.location))
