@@ -23,7 +23,7 @@ assert_report = (key, expected) ->
 
 describe 'model/results', ->
   require('./in_memory_db').setup_mocha()
-  results = require('../../model/results')
+  results = require '../../model/results'
 
   beforeEach 'create app', ->
     db.apps.put Item: APP
@@ -180,10 +180,14 @@ describe 'model/results', ->
         ]
       .then -> [
         results.update key,
-          line: 1
+          location:
+            id: 'code_successful'
+            line: 1
           result: 'First.'
         results.update key,
-          line: 3
+          location:
+            id: 'code_successful'
+            line: 3
           result: [ 'Th', 'ir', 'd' ]
       ]
       .spread ->
@@ -223,7 +227,9 @@ describe 'model/results', ->
         ]
       .then ->
         results.update key,
-          line: 2
+          location:
+            id: 'code_logging'
+            line: 2
           level: 'debug'
           log: [
             'First'
@@ -231,7 +237,9 @@ describe 'model/results', ->
           ]
       .then ->
         results.update key,
-          line: 2
+          location:
+            id: 'code_logging'
+            line: 2
           level: 'warn'
           log: [
             'Second message'
@@ -239,7 +247,9 @@ describe 'model/results', ->
           ]
       .then ->
         results.update key,
-          line: 2
+          location:
+            id: 'code_logging'
+            line: 2
           result: null
       .then ->
         assert_report key, [
@@ -274,10 +284,14 @@ describe 'model/results', ->
         ]
       .then -> [
         results.update(key,
-          line: 1
+          location:
+            id: 'code_line_error'
+            line: 1
           result: 'First.')
         results.update(key,
-          line: 2
+          location:
+            id: 'code_line_error'
+            line: 2
           error: 'Error on line 2'
           stacktrace: 'Line 2\nError')
       ]
@@ -303,7 +317,9 @@ describe 'model/results', ->
             error:
               description: 'Error on line 2'
               stacktrace: 'Line 2\nError'
-              line: 2
+              location:
+                id: 'code_line_error'
+                line: 2
               source: 'two()'
           }]
           assert_code [{
@@ -312,9 +328,11 @@ describe 'model/results', ->
             latest_result:
               started_at: 123456
               error:
+                location:
+                  id: 'code_line_error'
+                  line: 2
                 description: 'Error on line 2'
                 stacktrace: 'Line 2\nError'
-                line: 2
                 source: 'two()'
           }]
         ]
@@ -332,7 +350,9 @@ describe 'model/results', ->
         results.update key, success: true
       .then ->
         results.update key,
-          line: 1
+          location:
+            id: 'code_update_successful'
+            line: 1
           result: null
           type: 'NULL'
       .then ->
@@ -367,7 +387,9 @@ describe 'model/results', ->
           stacktrace: 'Bad things'
       .then ->
         results.update key,
-          line: 1
+          location:
+            id: 'code_update_failed'
+            line: 1
           result: null
           type: 'NULL'
       .then ->
@@ -452,11 +474,15 @@ describe 'model/results', ->
           ]
         .then ->
           results.update key,
-            line: 1
+            location:
+              id: 'code_update_line_twice_success'
+              line: 1
             result: 'first'
         .then ->
           results.update key,
-            line: 1
+            location:
+              id: 'code_update_line_twice_success'
+              line: 1
             result: 'second'
         .then ->
           done 'Expecting an update error'
@@ -488,12 +514,16 @@ describe 'model/results', ->
           ]
         .then ->
           results.update key,
-            line: 1
+            location:
+              id: 'code_update_line_twice'
+              line: 1
             error: 'first'
             stacktrace: '1111'
         .then ->
           results.update key,
-            line: 1
+            location:
+              id: 'code_update_line_twice'
+              line: 1
             error: 'second'
             stacktrace: '2222'
         .then ->
@@ -510,9 +540,11 @@ describe 'model/results', ->
               { source: 'one()', error: { description: 'first', stacktrace: '1111' } }
             ]
             error:
+              location:
+                id: 'code_update_line_twice'
+                line: 1
               description: 'first'
               stacktrace: '1111'
-              line: 1
               source: 'one()'
           }]
         .then done
