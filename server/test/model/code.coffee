@@ -34,11 +34,16 @@ assert_app_status = (app_id, expected) ->
 describe 'model/code', ->
   require('./in_memory_db').setup_mocha()
   app_id = undefined
+  other_app_id = undefined
 
   beforeEach 'create app', ->
     apps.create_empty 'user_id_0'
     .then (app) ->
       app_id = app.id
+    .then ->
+      apps.create_empty 'user_id_0'
+    .then (app) ->
+      other_app_id = app.id
 
   describe 'create, get, delete', ->
 
@@ -69,7 +74,7 @@ describe 'model/code', ->
       Promise.all [
         model.create app_id
         model.create app_id
-        model.create 'some_other_app'
+        model.create other_app_id
       ]
       .spread (expected_1, expected_2, not_expected) -> [
         [ expected_1, expected_2 ]
