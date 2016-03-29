@@ -132,3 +132,20 @@ exports.grant_access = (id, user_ids...) ->
     ExpressionAttributeValues:
       ':new_user_ids': db.create_set(user_ids)
     ConditionExpression: 'attribute_exists(id)'
+
+exports.save_init_script = (id, script) ->
+  debug 'save_init_script', id, !!script
+  if script
+    if typeof(script) != 'string'
+      throw new Error('script must be a string', "got #{typeof(version)}")
+    db.update
+      Key: { id: id }
+      UpdateExpression: 'SET init_script = :script'
+      ExpressionAttributeValues:
+        ':script': script
+      ConditionExpression: 'attribute_exists(id)'
+  else
+    db.update
+      Key: { id: id }
+      UpdateExpression: 'REMOVE init_script'
+      ConditionExpression: 'attribute_exists(id)'

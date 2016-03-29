@@ -96,36 +96,36 @@ function replace_values_in(obj, from, to) {
 exports.update = function(key, response) {
   debug('update', key, 'with', Object.keys(response));
 
-  if ('line' in response && typeof(response.line) !== 'number') {
-    return Promise.reject('"line" must be an integer');
+  if ('location' in response && typeof(response.location.line) !== 'number') {
+    return Promise.reject(new Error('"line" must be an integer'));
   }
 
   if ('result' in response) { // Statement successful
     return db.update({
       Key: key,
-      UpdateExpression: 'SET report[' + response.line + '].success = :result',
+      UpdateExpression: 'SET report[' + response.location.line + '].success = :result',
       ConditionExpression:
         'attribute_exists(report) ' +
-        'AND attribute_not_exists(report[' + response.line + '].success) ' +
-        'AND attribute_not_exists(report[' + response.line + '].#error)',
+        'AND attribute_not_exists(report[' + response.location.line + '].success) ' +
+        'AND attribute_not_exists(report[' + response.location.line + '].#error)',
         ExpressionAttributeNames: {
           '#error': 'error'
         },
       ExpressionAttributeValues: {
-        ':result': _.omit(response, 'line')
+        ':result': _.omit(response, 'location')
       }
     });
   }
   if ('error' in response) {
-    return (('line' in response)
+    return (('location' in response)
       ? db.update({
           Key: key,
-          UpdateExpression: 'SET report[' + response.line + '].#error = :error',
+          UpdateExpression: 'SET report[' + response.location.line + '].#error = :error',
           ConditionExpression:
             'attribute_not_exists(#error) ' +
             'AND attribute_exists(report) ' +
-            'AND attribute_not_exists(report[' + response.line + '].success) ' +
-            'AND attribute_not_exists(report[' + response.line + '].#error)',
+            'AND attribute_not_exists(report[' + response.location.line + '].success) ' +
+            'AND attribute_not_exists(report[' + response.location.line + '].#error)',
           ExpressionAttributeNames: {
             '#error': 'error'
           },
@@ -150,7 +150,7 @@ exports.update = function(key, response) {
           ':error': _.extend(
             {description: response.error, stacktrace: response.stacktrace},
             line_updated
-              ? {line: response.line, source: line_updated.Attributes.report[response.line].source}
+              ? {location: response.location, source: line_updated.Attributes.report[response.location.line].source}
               : {}
           )
         },
@@ -185,13 +185,13 @@ exports.update = function(key, response) {
     }
   }
   if ('log' in response) {
-    if (typeof(response.line) !== 'number') {
+    if (typeof(response.location.line) !== 'number') {
       return Promise.reject('"line" must be an integer');
     }
     return db.update({
       Key: key,
-      UpdateExpression: 'SET report[' + response.line + '].#logs = list_append(if_not_exists(report[' + response.line + '].#logs, :empty_list), :new_logs)',
-      ConditionExpression: 'attribute_exists(report[' + response.line + '].#source)',
+      UpdateExpression: 'SET report[' + response.location.line + '].#logs = list_append(if_not_exists(report[' + response.location.line + '].#logs, :empty_list), :new_logs)',
+      ConditionExpression: 'attribute_exists(report[' + response.location.line + '].#source)',
       ExpressionAttributeNames: {
         '#source': 'source',
         '#logs': 'logs'

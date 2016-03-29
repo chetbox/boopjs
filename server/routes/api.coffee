@@ -127,6 +127,19 @@ exports.add_routes = (app) ->
           .json { ready: true }
       .catch next
 
+  app.get '/api/v1/app/:app_id/init-script/code',
+    auth.login_or_access_token_required
+    middleware.check_user_can_access_app 'app_id'
+    (req, res, next) ->
+      model.apps.get req.params.app_id
+      .then (app) ->
+        if !app
+          return res.sendStatus 404
+        res.set 'Content-Type', 'text/javascript'
+        res.status 200
+        .send app.init_script
+      .catch next
+
   app.get /\/api\/v1\/app\/([^\/]*?)\/badge\.(svg|png|json)/,
     (req, res, next) ->
       model.apps.get req.params[0]

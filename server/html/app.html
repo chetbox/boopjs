@@ -222,7 +222,6 @@
         <div class="title">
           <a href="/apps" alt="Apps">
             boop.js
-            {{> delete-button}}
           </a>
         </div>
 
@@ -234,7 +233,7 @@
       <div class="content">
         {{#app}}
           <div id="header">
-            {{> app-info}}
+            {{> app-info show_settings=true}}
           </div>
         {{/app}}
         <ul id="code">
@@ -413,12 +412,6 @@
       }).fail(function(xhr, status, e) {
         alert(e.toString());
       });
-    }
-
-    function delete_this() {
-      ga('send', 'event', 'button', 'click', 'delete app');
-
-      return ajax_delete('/app/{{app.id}}', '{{app.name}}', '/apps');
     }
 
     function run(app_id, code_id) {
