@@ -25,6 +25,9 @@ describe 'model/results', ->
   require('./in_memory_db').setup_mocha()
   results = require('../../model/results')
 
+  beforeEach 'create app', ->
+    db.apps.put Item: APP
+
   describe 'report_from_statements', ->
 
     rfs = results.report_from_statements
