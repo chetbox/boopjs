@@ -36,7 +36,7 @@ exports.setup_mocha = ->
           clearInterval check_started
           db.setup()
           .then -> done()
-    ), 100
+    ), 200
 
   after 'stop dynamodb-local', ->
     # See http://azimi.me/2014/12/31/kill-child_process-node-js.html
