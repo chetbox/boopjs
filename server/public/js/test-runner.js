@@ -69,22 +69,37 @@ function run_test(source, server, device_id, app_id, code_id, started_at) {
       line: command.loc.start.line
     };
   });
+  var scripts = [{
+    id: code_id,
+    statements: statements
+  }]
 
   function result_container(message) {
-    return message.line ? testReportEl.find('.line-' + message.line + ' > ol') : testReportEl;
+    $run = testReportEl.last('.run');
+    return message.location
+      ? $run.find('.' + message.location.id + '-line-' + message.location.line + ' > ol')
+      : $run;
   }
 
-  run_script(server, device_id, app_id, code_id, started_at, statements, {
-    beforeStart: function(statements) {
-      testReportEl.empty();
-      statements.forEach(function(stmt) {
-        testReportEl.append(
-          $('<li>')
-            .addClass('line')
-            .addClass('line-' + stmt.line)
-            .text(stmt.source)
-            .append('<ol>')
+  run_script(server, device_id, app_id, code_id, started_at, scripts, {
+    beforeStart: function() {
+      testReportEl.children('.run').hide();
+      $run = $('<li>').addClass('run').appendTo(testReportEl);
+      scripts.forEach(function(script) {
+        $lines = $('<ol>').addClass('lines');
+        $run.append(
+          $('<h3>').text(script.name || script.id),
+          $lines
         );
+        statements.forEach(function(stmt) {
+          $lines.append(
+            $('<li>')
+              .addClass('line')
+              .addClass(script.id + '-line-' + stmt.line)
+              .text(stmt.source)
+              .append('<ol>')
+          );
+        });
       });
     },
     onStart: function() {
