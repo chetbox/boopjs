@@ -59,6 +59,10 @@
     margin-left: 0.25em;
     font-weight: 100;
   }
+
+  paper-icon-button.app-settings {
+    color: #aaa;
+  }
 </style>
 
 <div id="app-info">
@@ -67,6 +71,13 @@
     <span class="graph-data">{{count failed.values}},{{count not_run.values}},{{count running.values}},{{count successful.values}}</span>
   </div>
   <div class="details">
-    <h2 class="app-name" title="{{identifier}}">{{name}} <span class="version">{{version}}</span><br><span class="updated">{{#updated_at}}updated {{date_relative .}}{{/updated_at}}</span></h2>
+    <h2 class="app-name" title="{{identifier}}">
+      {{name}} <span class="version">{{version}}</span><br><span class="updated">{{#updated_at}}updated {{date_relative .}}{{/updated_at}}</span>
+    </h2>
+    {{#show_settings}}
+      <a href="/app/{{id}}/settings" title="Settings">
+        <paper-icon-button icon="settings" class="app-settings"></paper-icon-button>
+      </a>
+    {{/show_settings}}
   </div>
 </div>

@@ -28,7 +28,17 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
 
     public static class Script {
         private Statement[] statements;
-        private String name;
+        private String id;
+    }
+
+    public static class ScriptLocation {
+        private String id;
+        private int line;
+
+        public ScriptLocation(String id, int line) {
+            this.id = id;
+            this.line = line;
+        }
     }
 
     public static class Statement {
@@ -51,36 +61,36 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
     }
 
     private static class Result {
-        private int line;
+        private ScriptLocation location;
         private Object result;
 
-        public Result(int line, Object result) {
-            this.line = line;
+        public Result(ScriptLocation location, Object result) {
+            this.location = location;
             this.result = result;
         }
     }
 
     private static class LogMessage {
 
-        private int line;
+        private ScriptLocation location;
         private Object log;
         private Logs.Level level;
 
-        public LogMessage(int lineNo, Logs.Level level, Object logObject) {
-            this.line = lineNo;
+        public LogMessage(ScriptLocation location, Logs.Level level, Object logObject) {
+            this.location = location;
             this.log = logObject;
             this.level = level;
         }
     }
 
     private static class Error {
-        private int line;
+        private ScriptLocation location;
         private String error;
         private String stacktrace;
         private String type = "execution";
 
-        public Error(int line, Throwable error) {
-            this.line = line;
+        public Error(ScriptLocation location, Throwable error) {
+            this.location = location;
             this.error = error.getMessage();
             this.stacktrace = Throwables.getStackTraceAsString(error);
         }
@@ -129,6 +139,7 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
     private final ScriptHandler mScriptHandler;
 
     private volatile int mCurrentLine = 0;
+    private volatile String mCurrentScript = null;
     private volatile boolean mCurrentScriptSuccess;
 
     private boolean mRequiresSetup = true;
@@ -174,6 +185,7 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
         @Override
         public void onMessage(String messageStr) {
             Script script = Rhino.GSON.fromJson(messageStr, Script.class);
+            mCurrentScript = script.id;
             mCurrentLine = 0;
             mCurrentScriptSuccess = true;
             try {
@@ -184,12 +196,12 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
                         break;
                     }
                     mCurrentLine = stmt.line;
-                    Object result = mScriptHandler.onStatement(stmt, script.name);
-                    sendAsJson(new Result(stmt.line, result));
+                    Object result = mScriptHandler.onStatement(stmt, script.id);
+                    sendAsJson(new Result(new ScriptLocation(script.id, stmt.line), result));
                 }
             } catch (Throwable e) {
                 mCurrentScriptSuccess = false;
-                Error error = new Error(mCurrentLine, e);
+                Error error = new Error(new ScriptLocation(script.id, mCurrentLine), e);
                 Log.e(TAG, "error: " + Rhino.GSON.toJson(error));
                 e.printStackTrace();
                 sendAsJson(error);
@@ -197,6 +209,7 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
                 sendAsJson(new Success(mCurrentScriptSuccess));
                 mScriptHandler.onFinishScript();
                 mCurrentLine = 0;
+                mCurrentScript = null;
             }
         }
 
@@ -209,7 +222,7 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
         }
 
         private void onLogMessage(Logs.Level level, Object data) {
-            sendAsJson(new LogMessage(mCurrentLine, level, data));
+            sendAsJson(new LogMessage(new ScriptLocation(mCurrentScript, mCurrentLine), level, data));
         }
 
         @Override

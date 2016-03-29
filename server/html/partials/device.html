@@ -10,7 +10,7 @@
 </style>
 <iframe
   id="device"
-  src="https://appetize.io/embed/{{app.publicKey}}?device={{device.model}}&amp;osVersion={{device.os_version}}&amp;autoplay={{#device.wait_for_user_to_start}}false{{else}}true{{/device.wait_for_user_to_start}}&amp;orientation={{device.orientation}}&amp;deviceColor=black&amp;xdocMsg=true&amp;params=%7b%22boop.server%22%3a%22{{encodeURIComponent server_url}}%22%2c%22boop.scripts%22%3A%22%5B%5C%22{{encodeURIComponent api_url}}%5C%22%5D%22%7D{{#device.location}}&amp;location={{.}}{{/device.location}}"
+  src="https://appetize.io/embed/{{app.publicKey}}?device={{device.model}}&amp;osVersion={{device.os_version}}&amp;autoplay={{#device.wait_for_user_to_start}}false{{else}}true{{/device.wait_for_user_to_start}}&amp;orientation={{device.orientation}}&amp;deviceColor=black&amp;xdocMsg=true&amp;params=%7b%22boop.server%22%3a%22{{encodeURIComponent server_url}}%22%2c%22boop.scripts%22%3A%22%5B%5C%22{{encodeURIComponent api_url}}%5C%22{{#device.init_script_url}}%2C%5C%22{{encodeURIComponent .}}%5C%22{{/device.init_script_url}}%5D%22%7D{{#device.location}}&amp;location={{encodeURIComponent .}}{{/device.location}}"
   frameborder="0"
   scrolling="no">
 </iframe>
