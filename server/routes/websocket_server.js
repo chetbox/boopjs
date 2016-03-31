@@ -41,7 +41,6 @@ exports.add_routes = function(app, server) {
 
     debug('client: connected', req.query);
 
-    var now = Date.now();
     model.devices.check_device_access(req.query.device, req.user)
     .then(function(device) {
       return [
@@ -71,10 +70,9 @@ exports.add_routes = function(app, server) {
       return [code, app];
     })
     .spread(function(code, app) {
-      if (code) {
-        return req.query.started_at
-          ? model.results.get(code.id, req.query.started_at) // Run on server (already "started" in DB)
-          : model.results.create(code.id, now, app);         // Run by user
+      if (code && req.query.started_at) {
+        // Test run started on server
+        return model.results.get(code.id, req.query.started_at);
       }
     })
     .then(function(result) {
