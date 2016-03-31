@@ -36,11 +36,11 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
     }
 
     public static class ScriptLocation {
-        private String id;
+        private int script;
         private int line;
 
-        public ScriptLocation(String id, int line) {
-            this.id = id;
+        public ScriptLocation(int script, int line) {
+            this.script = script;
             this.line = line;
         }
     }
@@ -142,8 +142,8 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
     private final URI mHost;
     private final ScriptHandler mScriptHandler;
 
-    private volatile int mCurrentLine = 0;
-    private volatile String mCurrentScript = null;
+    private volatile int mCurrentLine = -1;
+    private volatile int mCurrentScript = -1;
     private volatile boolean mCurrentScriptSuccess;
 
     private boolean mRequiresSetup = true;
@@ -190,8 +190,9 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
         public void onMessage(String messageStr) {
             Scripts scriptList = Rhino.GSON.fromJson(messageStr, Scripts.class);
             try {
-                for (Script script : scriptList.scripts) {
-                    mCurrentScript = script.id;
+                for (int i=0; i<scriptList.scripts.length; i++) {
+                    Script script = scriptList.scripts[i];
+                    mCurrentScript = i;
                     mCurrentLine = 0;
                     mCurrentScriptSuccess = true;
                     mScriptHandler.onStartScript();
@@ -202,7 +203,7 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
                         }
                         mCurrentLine = stmt.line;
                         Object result = mScriptHandler.onStatement(stmt, script.id);
-                        sendAsJson(new Result(new ScriptLocation(script.id, stmt.line), result));
+                        sendAsJson(new Result(new ScriptLocation(mCurrentScript, stmt.line), result));
                     }
                 }
             } catch (Throwable e) {
@@ -214,8 +215,8 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
             } finally {
                 sendAsJson(new Success(mCurrentScriptSuccess));
                 mScriptHandler.onFinishScript();
-                mCurrentLine = 0;
-                mCurrentScript = null;
+                mCurrentLine = -1;
+                mCurrentScript = -1;
             }
         }
 
