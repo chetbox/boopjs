@@ -77,7 +77,7 @@ function run_test(source, server, device_id, app_id, code_id, started_at) {
   function result_container(message) {
     $run = testReportEl.last('.run');
     return message.location
-      ? $run.find('.' + message.location.id + '-line-' + message.location.line + ' > ol')
+      ? $run.find('.script-' + message.location.script + '-line-' + message.location.line + ' > ol')
       : $run;
   }
 
@@ -85,7 +85,7 @@ function run_test(source, server, device_id, app_id, code_id, started_at) {
     beforeStart: function() {
       testReportEl.children('.run').hide();
       $run = $('<li>').addClass('run').appendTo(testReportEl);
-      scripts.forEach(function(script) {
+      scripts.forEach(function(script, script_index) {
         $lines = $('<ol>').addClass('lines');
         $run.append(
           $('<h3>').text(script.name || script.id),
@@ -95,7 +95,7 @@ function run_test(source, server, device_id, app_id, code_id, started_at) {
           $lines.append(
             $('<li>')
               .addClass('line')
-              .addClass(script.id + '-line-' + stmt.line)
+              .addClass('script-' + script_index + '-line-' + stmt.line)
               .text(stmt.source)
               .append('<ol>')
           );
