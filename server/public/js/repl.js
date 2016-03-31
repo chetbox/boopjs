@@ -93,7 +93,14 @@ function setup_repl(server, device_id, app_id, id, callbacks) {
     add_to_history(src_to_execute);
 
     // execute code
-    run_script(server, device_id, app_id, null, null, [{line: 1, source: src_to_execute}], {
+    var script = {
+      id: '<REPL>',
+      statements: [{
+        line: 1,
+        source: src_to_execute
+      }]
+    };
+    run_script(server, device_id, app_id, null, null, [script], {
       onResult: show_result('result', 'result', '// '),
       onError: show_result('error', 'error', '// Error: '),
       onLogMessage: show_result('log', function(msg) { return msg.level; }, '// ')
