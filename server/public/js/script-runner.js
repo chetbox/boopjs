@@ -31,9 +31,7 @@ function run_script(server, device_id, app_id, code_id, started_at, scripts, cal
     var message = JSON.parse(event.data);
     if ('ready' in message) {
       callback('onStart');
-      scripts.forEach(function(script) {
-        ws.send(JSON.stringify(script));
-      });
+      ws.send(JSON.stringify({scripts: scripts}));
     } else if ('error' in message) {
       callback('onError', message);
       callback('onFinish', false);

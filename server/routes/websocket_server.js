@@ -97,9 +97,9 @@ exports.add_routes = function(app, server) {
         debug('client: message', messageStr.substring(0, 200));
 
         (ws.result_key
-          ? model.results.set_report( // We're saving results so we'll need a copy of the script
+          ? model.results.set_report( // We're saving results so we'll need a copy of the scripts
               ws.result_key,
-              model.results.report_from_statements(message.statements)
+              model.results.report_from_statements(message.scripts[0].statements)
             )
           : Promise.resolve()
         )
