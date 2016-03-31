@@ -26,6 +26,10 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
         void onFinishScript();
     }
 
+    public static class Scripts {
+        private Script[] scripts;
+    }
+
     public static class Script {
         private Statement[] statements;
         private String id;
@@ -184,24 +188,26 @@ public class ChetbotServerConnection implements Logs.LogMessageHandler {
 
         @Override
         public void onMessage(String messageStr) {
-            Script script = Rhino.GSON.fromJson(messageStr, Script.class);
-            mCurrentScript = script.id;
-            mCurrentLine = 0;
-            mCurrentScriptSuccess = true;
+            Scripts scriptList = Rhino.GSON.fromJson(messageStr, Scripts.class);
             try {
-                mScriptHandler.onStartScript();
-                for (Statement stmt : script.statements) {
-                    if (!mCurrentScriptSuccess) {
-                        // Stop if there was an uncaught error
-                        break;
+                for (Script script : scriptList.scripts) {
+                    mCurrentScript = script.id;
+                    mCurrentLine = 0;
+                    mCurrentScriptSuccess = true;
+                    mScriptHandler.onStartScript();
+                    for (Statement stmt : script.statements) {
+                        if (!mCurrentScriptSuccess) {
+                            // Stop if there was an uncaught error
+                            break;
+                        }
+                        mCurrentLine = stmt.line;
+                        Object result = mScriptHandler.onStatement(stmt, script.id);
+                        sendAsJson(new Result(new ScriptLocation(script.id, stmt.line), result));
                     }
-                    mCurrentLine = stmt.line;
-                    Object result = mScriptHandler.onStatement(stmt, script.id);
-                    sendAsJson(new Result(new ScriptLocation(script.id, stmt.line), result));
                 }
             } catch (Throwable e) {
                 mCurrentScriptSuccess = false;
-                Error error = new Error(new ScriptLocation(script.id, mCurrentLine), e);
+                Error error = new Error(new ScriptLocation(mCurrentScript, mCurrentLine), e);
                 Log.e(TAG, "error: " + Rhino.GSON.toJson(error));
                 e.printStackTrace();
                 sendAsJson(error);
