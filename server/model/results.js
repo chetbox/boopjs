@@ -17,6 +17,15 @@ exports.report_from_statements = function(statements) {
   }, []);
 }
 
+exports.report_from_scripts = function(scripts) {
+  return scripts.map(function(script) {
+    return _.extend(
+      _.pick(script, ['id', 'name']),
+      { report: exports.report_from_statements(script.statements) }
+    );
+  });
+}
+
 exports.key = function(result) {
   return {
     code_id: result.code_id,

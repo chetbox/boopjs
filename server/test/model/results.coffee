@@ -30,14 +30,14 @@ describe 'model/results', ->
 
   describe 'report_from_statements', ->
 
-    rfs = results.report_from_statements
-
     it 'converts no statements to an empty list', ->
       assert.deepEqual results.report_from_statements([]), []
 
     it 'converts one statement to a list of undefined and the item', ->
       assert.deepEqual \
-        rfs([{ line: 1, source: 'one();' }]),
+        results.report_from_statements([
+          { line: 1, source: 'one();' }
+        ]),
         [
           null
           { source: 'one();' }
@@ -45,7 +45,7 @@ describe 'model/results', ->
 
     it 'converts two adjacent statements', ->
       assert.deepEqual \
-        rfs([
+        results.report_from_statements([
           { line: 1, source: 'one();' }
           { line: 2, source: 'two();' }
         ]),
@@ -57,7 +57,7 @@ describe 'model/results', ->
 
     it 'converts non-adjacent statements', ->
       assert.deepEqual \
-        rfs([
+        results.report_from_statements([
           { line: 1, source: 'one();' }
           { line: 4, source: 'four();' }
         ]),
@@ -71,10 +71,41 @@ describe 'model/results', ->
 
     it 'preserves all keys', ->
       assert.deepEqual \
-        rfs([{line: 1, a: 'aa', b: 'bb', c: 'cc', }]),
+        results.report_from_statements([
+          {line: 1, a: 'aa', b: 'bb', c: 'cc'}
+        ]),
         [
           null,
           {a: 'aa', b: 'bb', c: 'cc'}
+        ]
+
+  describe 'report_from_scripts', ->
+
+    it 'converts multiple scripts with statements one report', ->
+      assert.deepEqual \
+        results.report_from_scripts([
+          {
+            id: 'first_script'
+            name: 'First Script'
+            statements: [{line: 1, a: 'a', b: 'b' }]
+          }
+          {
+            id: 'second_script'
+            name: 'Second Script'
+            statements: [{line: 3, c: 'c', d: 'd' }]
+          }
+        ]),
+        [
+          {
+            id: 'first_script'
+            name: 'First Script'
+            report: results.report_from_statements [{line: 1, a: 'a', b: 'b' }]
+          }
+          {
+            id: 'second_script'
+            name: 'Second Script'
+            report: results.report_from_statements [{line: 3, c: 'c', d: 'd' }]
+          }
         ]
 
   describe 'create, get', ->
