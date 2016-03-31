@@ -132,12 +132,15 @@ describe 'model/results', ->
 
   describe 'updating results', ->
 
-    it 'successful empty test', ->
+    it 'saves a successful empty test', ->
       key = undefined
       results.create('code_empty_test', 123456, APP)
       .then (result) ->
         key = results.key result
-        results.set_report key, [ null ]
+        results.set_report key, [
+          id: 'code_empty_test'
+          report: [ null ]
+        ]
       .then ->
         results.update key, success: true
       .then (app_updated) ->
@@ -145,13 +148,16 @@ describe 'model/results', ->
         assert.deepEqual app_updated.successful.values, [ 'code_empty_test' ]
         assert !app_updated.running
         [
-          assert_results [{
+          assert_results [
             code_id: 'code_empty_test'
             started_at: 123456
             app: APP
-            report: [ null ]
+            report: [
+              id: 'code_empty_test'
+              report: [ null ]
+            ]
             success: true
-          }]
+          ]
           assert_code [{
             id: 'code_empty_test'
             app_id: APP.id
@@ -161,12 +167,15 @@ describe 'model/results', ->
           }]
         ]
 
-    it 'unhandled exception', ->
+    it 'saves an unhandled exception', ->
       key = undefined
       results.create('code_unhandled_exception', 123456, APP)
       .then (result) ->
         key = results.key result
-        results.set_report key, [ null ]
+        results.set_report key, [
+          id: 'code_unhandled_exception'
+          report: [ null ]
+        ]
       .then ->
         results.update key,
           device: null
@@ -182,7 +191,10 @@ describe 'model/results', ->
             code_id: 'code_unhandled_exception'
             started_at: 123456
             app: APP
-            report: [ null ]
+            report: [
+              id: 'code_unhandled_exception'
+              report: [ null ]
+            ]
             error:
               description: 'forced crash'
               stacktrace: 'java.lang.RuntimeException'
@@ -204,20 +216,23 @@ describe 'model/results', ->
       .then (result) ->
         key = results.key result
         results.set_report key, [
-          null
-          { source: 'one()' }
-          null
-          { source: 'three()' }
+          id: 'code_successful'
+          report: [
+            null
+            { source: 'one()' }
+            null
+            { source: 'three()' }
+          ]
         ]
       .then -> [
         results.update key,
           location:
-            id: 'code_successful'
+            script: 0
             line: 1
           result: 'First.'
         results.update key,
           location:
-            id: 'code_successful'
+            script: 0
             line: 3
           result: [ 'Th', 'ir', 'd' ]
       ]
@@ -232,16 +247,19 @@ describe 'model/results', ->
           started_at: 123456
           app: APP
           report: [
-            null
-            {
-              source: 'one()'
-              success: result: 'First.'
-            }
-            null
-            {
-              source: 'three()'
-              success: result: ['Th', 'ir', 'd']
-            }
+            id: 'code_successful'
+            report: [
+              null
+              {
+                source: 'one()'
+                success: result: 'First.'
+              }
+              null
+              {
+                source: 'three()'
+                success: result: ['Th', 'ir', 'd']
+              }
+            ]
           ]
           success: true
         }]
@@ -252,14 +270,17 @@ describe 'model/results', ->
       .then (result) ->
         key = results.key result
         results.set_report key, [
-          null
-          null
-          { source: 'a_fn_which_logs()' }
+          id: 'code_logging'
+          report: [
+            null
+            null
+            { source: 'a_fn_which_logs()' }
+          ]
         ]
       .then ->
         results.update key,
           location:
-            id: 'code_logging'
+            script: 0
             line: 2
           level: 'debug'
           log: [
@@ -269,7 +290,7 @@ describe 'model/results', ->
       .then ->
         results.update key,
           location:
-            id: 'code_logging'
+            script: 0
             line: 2
           level: 'warn'
           log: [
@@ -279,27 +300,30 @@ describe 'model/results', ->
       .then ->
         results.update key,
           location:
-            id: 'code_logging'
+            script: 0
             line: 2
           result: null
       .then ->
         assert_report key, [
-          null
-          null
-          {
-            source: 'a_fn_which_logs()'
-            success: result: null
-            logs: [
-              {
-                level: 'debug'
-                message: ['First', 'messsage']
-              }
-              {
-                level: 'warn'
-                message: ['Second message', { empty: null }]
-              }
-            ]
-          }
+          id: 'code_logging'
+          report: [
+            null
+            null
+            {
+              source: 'a_fn_which_logs()'
+              success: result: null
+              logs: [
+                {
+                  level: 'debug'
+                  message: ['First', 'messsage']
+                }
+                {
+                  level: 'warn'
+                  message: ['Second message', { empty: null }]
+                }
+              ]
+            }
+          ]
         ]
 
     it 'error executing line', ->
@@ -308,20 +332,23 @@ describe 'model/results', ->
       .then (result) ->
         key = results.key result
         results.set_report key, [
-          null
-          { source: 'one()' }
-          { source: 'two()' }
-          { source: 'three()' }
+          id: 'code_line_error'
+          report: [
+            null
+            { source: 'one()' }
+            { source: 'two()' }
+            { source: 'three()' }
+          ]
         ]
       .then -> [
         results.update(key,
           location:
-            id: 'code_line_error'
+            script: 0
             line: 1
           result: 'First.')
         results.update(key,
           location:
-            id: 'code_line_error'
+            script: 0
             line: 2
           error: 'Error on line 2'
           stacktrace: 'Line 2\nError')
@@ -340,16 +367,19 @@ describe 'model/results', ->
             started_at: 123456
             app: APP
             report: [
-              null
-              { source: 'one()', success: result: 'First.' }
-              { source: 'two()', error: { description: 'Error on line 2', stacktrace: 'Line 2\nError' } }
-              { source: 'three()' }
+              id: 'code_line_error'
+              report: [
+                null
+                { source: 'one()', success: result: 'First.' }
+                { source: 'two()', error: { description: 'Error on line 2', stacktrace: 'Line 2\nError' } }
+                { source: 'three()' }
+              ]
             ]
             error:
               description: 'Error on line 2'
               stacktrace: 'Line 2\nError'
               location:
-                id: 'code_line_error'
+                script: 0
                 line: 2
               source: 'two()'
           }]
@@ -360,7 +390,7 @@ describe 'model/results', ->
               started_at: 123456
               error:
                 location:
-                  id: 'code_line_error'
+                  script: 0
                   line: 2
                 description: 'Error on line 2'
                 stacktrace: 'Line 2\nError'
@@ -374,15 +404,18 @@ describe 'model/results', ->
       .then (result) ->
         key = results.key result
         results.set_report key, [
-          null
-          { source: 'one()' }
+          id: 'code_update_successful'
+          report: [
+            null
+            { source: 'one()' }
+          ]
         ]
       .then ->
         results.update key, success: true
       .then ->
         results.update key,
           location:
-            id: 'code_update_successful'
+            script: 0
             line: 1
           result: null
           type: 'NULL'
@@ -392,13 +425,16 @@ describe 'model/results', ->
           started_at: 123456
           app: APP
           report: [
-            null
-            {
-              source: 'one()'
-              success:
-                result: null
-                type: 'NULL'
-            }
+            id: 'code_update_successful'
+            report: [
+              null
+              {
+                source: 'one()'
+                success:
+                  result: null
+                  type: 'NULL'
+              }
+            ]
           ]
           success: true
         }]
@@ -409,8 +445,11 @@ describe 'model/results', ->
       .then (result) ->
         key = results.key result
         results.set_report key, [
-          null
-          { source: 'one()' }
+          id: 'code_update_failed'
+          report: [
+            null
+            { source: 'one()' }
+          ]
         ]
       .then ->
         results.update key,
@@ -419,7 +458,7 @@ describe 'model/results', ->
       .then ->
         results.update key,
           location:
-            id: 'code_update_failed'
+            script: 0
             line: 1
           result: null
           type: 'NULL'
@@ -429,13 +468,16 @@ describe 'model/results', ->
           started_at: 123456
           app: APP
           report: [
-            null
-            {
-              source: 'one()'
-              success:
-                result: null
-                type: 'NULL'
-            }
+            id: 'code_update_failed'
+            report: [
+              null
+              {
+                source: 'one()'
+                success:
+                  result: null
+                  type: 'NULL'
+              }
+            ]
           ]
           error:
             description: 'Things went down'
@@ -449,7 +491,10 @@ describe 'model/results', ->
         results.create('code_finish_twice_success', 123456, APP)
         .then (result) ->
           key = results.key result
-          results.set_report key, [ null ]
+          results.set_report key, [
+            id: 'code_finish_twice_success'
+            report: [ null ]
+          ]
         .then ->
           results.update key, success: true
         .then ->
@@ -473,7 +518,10 @@ describe 'model/results', ->
         results.create('code_finish_twice_error', 123456, APP)
         .then (result) ->
           key = results.key result
-          results.set_report key, [ null ]
+          results.set_report key, [
+            id: 'code_finish_twice_error'
+            report: [ null ]
+          ]
         .then ->
           results.update key,
             error: 'Things went wrong'
@@ -500,19 +548,22 @@ describe 'model/results', ->
         .then (result) ->
           key = results.key result
           results.set_report key, [
-            null
-            { source: 'one()' }
+            id: 'code_update_line_twice_success'
+            report: [
+              null
+              { source: 'one()' }
+            ]
           ]
         .then ->
           results.update key,
             location:
-              id: 'code_update_line_twice_success'
+              script: 0
               line: 1
             result: 'first'
         .then ->
           results.update key,
             location:
-              id: 'code_update_line_twice_success'
+              script: 0
               line: 1
             result: 'second'
         .then ->
@@ -525,11 +576,14 @@ describe 'model/results', ->
             started_at: 123456
             app: APP
             report: [
-              null
-              {
-                source: 'one()'
-                success: result: 'first'
-              }
+              id: 'code_update_line_twice_success'
+              report: [
+                null
+                {
+                  source: 'one()'
+                  success: result: 'first'
+                }
+              ]
             ]
           }]
         .then done
@@ -540,20 +594,23 @@ describe 'model/results', ->
         .then (result) ->
           key = results.key result
           results.set_report key, [
-            null
-            { source: 'one()' }
+            id: 'code_update_line_twice'
+            report: [
+              null
+              { source: 'one()' }
+            ]
           ]
         .then ->
           results.update key,
             location:
-              id: 'code_update_line_twice'
+              script: 0
               line: 1
             error: 'first'
             stacktrace: '1111'
         .then ->
           results.update key,
             location:
-              id: 'code_update_line_twice'
+              script: 0
               line: 1
             error: 'second'
             stacktrace: '2222'
@@ -567,12 +624,15 @@ describe 'model/results', ->
             started_at: 123456
             app: APP
             report: [
-              null
-              { source: 'one()', error: { description: 'first', stacktrace: '1111' } }
+              id: 'code_update_line_twice'
+              report: [
+                null
+                { source: 'one()', error: { description: 'first', stacktrace: '1111' } }
+              ]
             ]
             error:
               location:
-                id: 'code_update_line_twice'
+                script: 0
                 line: 1
               description: 'first'
               stacktrace: '1111'
