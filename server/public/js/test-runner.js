@@ -57,22 +57,25 @@ function errorHTML(message) {
     .append( $('<pre>').text(message.stacktrace) );
 }
 
-function run_test(source, server, device_id, app_id, code_id, started_at) {
+function run_test(sources, server, device_id, app_id, code_id, started_at) {
   ga('send', 'event', 'button', 'click', 'run');
 
-  var statements = esprima.parse(
-    source,
-    {loc: true}
-  ).body.map(function(command) {
+  var scripts = sources.map(function(source) {
+    var statements = esprima.parse(
+      source.source,
+      {loc: true}
+    ).body.map(function(command) {
+      return {
+        source: escodegen.generate(command),
+        line: command.loc.start.line
+      };
+    });
     return {
-      source: escodegen.generate(command),
-      line: command.loc.start.line
-    };
+      id: source.id,
+      name: source.name,
+      statements: statements
+    }
   });
-  var scripts = [{
-    id: code_id,
-    statements: statements
-  }]
 
   function result_container(message) {
     $run = testReportEl.last('.run');
@@ -91,7 +94,7 @@ function run_test(source, server, device_id, app_id, code_id, started_at) {
           $('<h3>').text(script.name || script.id),
           $lines
         );
-        statements.forEach(function(stmt) {
+        script.statements.forEach(function(stmt) {
           $lines.append(
             $('<li>')
               .addClass('line')
