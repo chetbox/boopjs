@@ -8,7 +8,7 @@
         background: #dFe8eC;
       }
 
-      #code {
+      #code, #init-script {
         display: none;
       }
 
@@ -25,6 +25,9 @@
   <body>
     <div class="content">
       {{> device}}
+<pre id="init-script">
+{{app.init_script}}
+</pre>
 <pre id="code">
 {{code.content}}
 </pre>
@@ -45,7 +48,23 @@
         if (event.data === 'firstFrameReceived') {
           console.log('Starting');
           setTimeout(function() {
-            run_test($('#code').text(), '{{server}}', '{{device.id}}', '{{app.id}}', '{{code.id}}', '{{started_at}}');
+            run_test(
+              [
+                {{#app.init_script}}
+                  {
+                    id: 'init-script',
+                    name: 'Init script',
+                    source: $('#init-script').text()
+                  },
+                {{/app.init_script}}
+                {
+                  id: '{{code.id}}',
+                  name: '{{code.name}}',
+                  source: $('#code').text()
+                }
+              ],
+              '{{server}}', '{{device.id}}', '{{app.id}}', '{{code.id}}', '{{started_at}}'
+            );
           }, 1000);
         }
       });
