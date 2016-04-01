@@ -152,9 +152,9 @@
               <h3>
                 {{description}}
                 {{^description}}Unknown error{{/description}}
-                {{#line}}
-                  <a href="#line-{{.}}" class="line-no">Line {{.}}</a>
-                {{/line}}
+                {{#location}}
+                  <a href="#script-{{script}}-line-{{line}}" class="line-no">Line {{line}}</a>
+                {{/location}}
               </h3>
               {{#stacktrace}}
                 <pre>{{.}}</pre>
@@ -163,35 +163,38 @@
           {{/error}}
           <ol id="report" start="0">
             {{#report}}
-              {{#.}}
-                <li id="line-{{@index}}" class="line {{#success}} success{{/success}} {{#error}} error{{/error}}">
-                  <span class="line-no">{{@index}}</span>
-                  <pre class="source">{{source}}</pre>
-                  <ol class="logs">
-                    {{#logs}}
-                      <li class="log {{level}}"><pre>{{stringify message}}</pre></li>
-                    {{/logs}}
-                  </ol>
-                  {{#success}}
-                    <span class="success">
-                      {{#if_eq result.type "BITMAP"}}
-                        <a class="bitmap" href="{{result.uri}}" target="_blank">
-                          <img src="{{result.uri}}" />
-                        </a>
-                      {{else}}
-                        <pre>{{{stringify result 2}}}</pre>
-                      {{/if_eq}}
-                    </span>
-                  {{/success}}
-                  {{#error}}
-                    <span class="error"><pre>{{description}}</pre></span>
-                    <span class="stacktrace"><pre>{{stacktrace}}</pre></span>
-                  {{/error}}
-                  {{#unless success}}{{#unless error}}
-                    <span>{{result}}</span>
-                  {{/unless}}{{/unless}}
-                </li>
-              {{/.}}
+              <h2>{{#name}}{{.}}{{else}}{{id}}{{/name}}</h2>
+              {{#report}}
+                {{#.}}
+                  <li id="script-{{@../index}}-line-{{@index}}" class="line {{#success}} success{{/success}} {{#error}} error{{/error}}">
+                    <span class="line-no">{{@index}}</span>
+                    <pre class="source">{{source}}</pre>
+                    <ol class="logs">
+                      {{#logs}}
+                        <li class="log {{level}}"><pre>{{stringify message}}</pre></li>
+                      {{/logs}}
+                    </ol>
+                    {{#success}}
+                      <span class="success">
+                        {{#if_eq result.type "BITMAP"}}
+                          <a class="bitmap" href="{{result.uri}}" target="_blank">
+                            <img src="{{result.uri}}" />
+                          </a>
+                        {{else}}
+                          <pre>{{{stringify result 2}}}</pre>
+                        {{/if_eq}}
+                      </span>
+                    {{/success}}
+                    {{#error}}
+                      <span class="error"><pre>{{description}}</pre></span>
+                      <span class="stacktrace"><pre>{{stacktrace}}</pre></span>
+                    {{/error}}
+                    {{#unless success}}{{#unless error}}
+                      <span>{{result}}</span>
+                    {{/unless}}{{/unless}}
+                  </li>
+                {{/.}}
+              {{/report}}
             {{/report}}
           </ol>
         {{/result}}
