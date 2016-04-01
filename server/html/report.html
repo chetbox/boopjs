@@ -163,7 +163,7 @@
           {{/error}}
           <ol id="report" start="0">
             {{#report}}
-              <h2>{{#name}}{{.}}{{else}}{{id}}{{/name}}</h2>
+              <h2 id="{{id}}">{{#name}}{{.}}{{/name}}</h2>
               {{#report}}
                 {{#.}}
                   <li id="script-{{@../index}}-line-{{@index}}" class="line {{#success}} success{{/success}} {{#error}} error{{/error}}">
