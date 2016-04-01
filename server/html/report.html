@@ -12,6 +12,10 @@
         text-align: center;
       }
 
+      h2 {
+        color: #ccc;
+      }
+
       h3 {
         margin: 0;
       }
@@ -130,6 +134,10 @@
       li.log.info::before  { content: 'I'; }
       li.log.warn::before  { content: 'W'; }
       li.log.error::before { content: 'E'; }
+
+      #report > li li.log pre {
+        margin-right: 0.5em;
+      }
     </style>
   </head>
   <body class="fullbleed {{#result.success}}successful{{/result.success}} {{#result.error}}failed{{/result.error}} {{#unless result.success}}{{#unless result.error}}running{{/unless}}{{/unless}}">
@@ -171,7 +179,7 @@
                     <pre class="source">{{source}}</pre>
                     <ol class="logs">
                       {{#logs}}
-                        <li class="log {{level}}"><pre>{{stringify message}}</pre></li>
+                        <li class="log {{level}}">{{#message}}<pre>{{stringify .}}</pre>{{/message}}</li>
                       {{/logs}}
                     </ol>
                     {{#success}}
