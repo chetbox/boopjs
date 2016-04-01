@@ -132,7 +132,7 @@
     <a class="back" href="javascript:showEditor();" title="Back to editor">
       <paper-icon-button icon="create"></paper-icon-button>
     </a>
-    <a class="run" href="javascript:run_test(editor.getSession().getDocument().getValue(), '{{server}}', '{{device.id}}', '{{app.id}}', '{{code.id}}');" title="Run test">
+    <a class="run" href="javascript:run_test([{id: '{{code.id}}', source: editor.getSession().getDocument().getValue()}], '{{server}}', '{{device.id}}', '{{app.id}}', '{{code.id}}');" title="Run test">
       <paper-icon-button icon="av:play-arrow"></paper-icon-button>
     </a>
   </div>

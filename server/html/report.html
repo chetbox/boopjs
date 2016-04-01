@@ -12,6 +12,10 @@
         text-align: center;
       }
 
+      h2 {
+        color: #ccc;
+      }
+
       h3 {
         margin: 0;
       }
@@ -130,6 +134,10 @@
       li.log.info::before  { content: 'I'; }
       li.log.warn::before  { content: 'W'; }
       li.log.error::before { content: 'E'; }
+
+      #report > li li.log pre {
+        margin-right: 0.5em;
+      }
     </style>
   </head>
   <body class="fullbleed {{#result.success}}successful{{/result.success}} {{#result.error}}failed{{/result.error}} {{#unless result.success}}{{#unless result.error}}running{{/unless}}{{/unless}}">
@@ -140,7 +148,7 @@
           {{> admin-button user}}
           {{> account-button user}}
         </div>
-        <a href="/app/{{result.app.id}}/test/{{result.code_id}}/reports">
+        <a href="/app/{{result.app.id}}">
           <paper-icon-button icon="arrow-back"></paper-icon-button>
         </a>
         {{> report-info .}}
@@ -163,7 +171,7 @@
           {{/error}}
           <ol id="report" start="0">
             {{#report}}
-              <h2>{{#name}}{{.}}{{else}}{{id}}{{/name}}</h2>
+              <h2 id="{{id}}">{{#name}}{{.}}{{/name}}</h2>
               {{#report}}
                 {{#.}}
                   <li id="script-{{@../index}}-line-{{@index}}" class="line {{#success}} success{{/success}} {{#error}} error{{/error}}">
@@ -171,7 +179,7 @@
                     <pre class="source">{{source}}</pre>
                     <ol class="logs">
                       {{#logs}}
-                        <li class="log {{level}}"><pre>{{stringify message}}</pre></li>
+                        <li class="log {{level}}">{{#message}}<pre>{{stringify .}}</pre>{{/message}}</li>
                       {{/logs}}
                     </ol>
                     {{#success}}
