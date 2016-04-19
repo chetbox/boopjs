@@ -11,7 +11,7 @@ RUN apt-get install -y git nodejs && \
 RUN echo "https://xml-apk-parser.googlecode.com/files/APKParser.jar\n\
 https://bitbucket.org/JesusFreke/smali/downloads/smali-2.1.0.jar\n\
 https://bitbucket.org/JesusFreke/smali/downloads/baksmali-2.1.0.jar\n\
-http://connortumbleson.com/apktool/apktool_2.0.3.jar" \
+https://bitbucket.org/iBotPeaches/apktool/downloads/apktool_2.0.3.jar" \
 | wget -i - -P /opt/chetbot/server/apps/android/deps/
 
 # Generate Android keystore

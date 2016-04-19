@@ -292,3 +292,32 @@ describe 'model/apps', ->
         model.get app.id
       .then (app) ->
         assert.deepEqual sort(app.admins.values), ['one', 'two', 'user_grant_access']
+
+  describe 'save_init_script', ->
+    app = undefined
+
+    beforeEach 'create app', ->
+      model.create_empty 'user_save_init_script'
+      .then (_app) ->
+        app = _app
+
+    it 'saves script', ->
+      model.save_init_script app.id, '// Not much to see here\n'
+      .then ->
+        model.get app.id
+      .then (app) ->
+        assert.equal app.init_script, '// Not much to see here\n'
+
+    it 'removes script', ->
+      model.save_init_script app.id, '// Replace me'
+      .then ->
+        model.save_init_script app.id, null
+      .then ->
+        model.get app.id
+      .then (app) ->
+        assert.equal app.init_script, undefined
+
+    it 'cannot save to non-existent app', (done) ->
+      model.save_init_script 'not a valid app', 'something()'
+      .thenThrow new Error('Invalid app error expected')
+      .catch -> done()

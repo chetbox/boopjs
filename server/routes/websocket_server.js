@@ -41,7 +41,6 @@ exports.add_routes = function(app, server) {
 
     debug('client: connected', req.query);
 
-    var now = Date.now();
     model.devices.check_device_access(req.query.device, req.user)
     .then(function(device) {
       return [
@@ -71,10 +70,9 @@ exports.add_routes = function(app, server) {
       return [code, app];
     })
     .spread(function(code, app) {
-      if (code) {
-        return req.query.started_at
-          ? model.results.get(code.id, req.query.started_at) // Run on server (already "started" in DB)
-          : model.results.create(code.id, now, app);         // Run by user
+      if (code && req.query.started_at) {
+        // Test run started on server
+        return model.results.get(code.id, req.query.started_at);
       }
     })
     .then(function(result) {
@@ -99,9 +97,9 @@ exports.add_routes = function(app, server) {
         debug('client: message', messageStr.substring(0, 200));
 
         (ws.result_key
-          ? model.results.set_report( // We're saving results so we'll need a copy of the script
+          ? model.results.set_report( // We're saving results so we'll need a copy of the scripts
               ws.result_key,
-              model.results.report_from_statements(message.statements)
+              model.results.report_from_scripts(message.scripts)
             )
           : Promise.resolve()
         )

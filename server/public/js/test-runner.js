@@ -57,34 +57,52 @@ function errorHTML(message) {
     .append( $('<pre>').text(message.stacktrace) );
 }
 
-function run_test(source, server, device_id, app_id, code_id, started_at) {
+function run_test(sources, server, device_id, app_id, code_id, started_at) {
   ga('send', 'event', 'button', 'click', 'run');
 
-  var statements = esprima.parse(
-    source,
-    {loc: true}
-  ).body.map(function(command) {
+  var scripts = sources.map(function(source) {
+    var statements = esprima.parse(
+      source.source,
+      {loc: true}
+    ).body.map(function(command) {
+      return {
+        source: escodegen.generate(command),
+        line: command.loc.start.line
+      };
+    });
     return {
-      source: escodegen.generate(command),
-      line: command.loc.start.line
-    };
+      id: source.id,
+      name: source.name,
+      statements: statements
+    }
   });
 
   function result_container(message) {
-    return message.line ? testReportEl.find('.line-' + message.line + ' > ol') : testReportEl;
+    $run = testReportEl.last('.run');
+    return message.location
+      ? $run.find('.script-' + message.location.script + '-line-' + message.location.line + ' > ol')
+      : $run;
   }
 
-  run_script(server, device_id, app_id, code_id, started_at, statements, {
-    beforeStart: function(statements) {
-      testReportEl.empty();
-      statements.forEach(function(stmt) {
-        testReportEl.append(
-          $('<li>')
-            .addClass('line')
-            .addClass('line-' + stmt.line)
-            .text(stmt.source)
-            .append('<ol>')
+  run_script(server, device_id, app_id, code_id, started_at, scripts, {
+    beforeStart: function() {
+      testReportEl.children('.run').hide();
+      $run = $('<li>').addClass('run').appendTo(testReportEl);
+      scripts.forEach(function(script, script_index) {
+        $lines = $('<ol>').addClass('lines');
+        $run.append(
+          $('<h3>').text(script.name || script.id),
+          $lines
         );
+        script.statements.forEach(function(stmt) {
+          $lines.append(
+            $('<li>')
+              .addClass('line')
+              .addClass('script-' + script_index + '-line-' + stmt.line)
+              .text(stmt.source)
+              .append('<ol>')
+          );
+        });
       });
     },
     onStart: function() {

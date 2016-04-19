@@ -1,16 +1,11 @@
-function run_script(server, device_id, app_id, code_id, started_at, statements, callbacks) {
+function run_script(server, device_id, app_id, code_id, started_at, scripts, callbacks) {
 
   function callback(event, data) {
     $(document).trigger('test-progress', [event, data]);
     if (callbacks[event]) callbacks[event](data);
   }
 
-  var script = {
-    statements: statements,
-    name: window.location.pathname.replace(/.*\//, '')
-  };
-
-  callback('beforeStart', script.statements);
+  callback('beforeStart', scripts);
 
   var protocol = window.location.protocol.match(/https/) ? 'wss' : 'ws';
   var ws = new WebSocket(
@@ -36,7 +31,7 @@ function run_script(server, device_id, app_id, code_id, started_at, statements, 
     var message = JSON.parse(event.data);
     if ('ready' in message) {
       callback('onStart');
-      ws.send(JSON.stringify(script));
+      ws.send(JSON.stringify({scripts: scripts}));
     } else if ('error' in message) {
       callback('onError', message);
       callback('onFinish', false);

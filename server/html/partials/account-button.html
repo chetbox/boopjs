@@ -1,3 +1,9 @@
-<a class="account" href="/account/{{id}}" alt="{{displayName}}" style="margin: 0 0.33em;">
-  <img src="{{avatarUrl}}"/>
+<a class="account" href="/account/{{id}}" alt="{{displayName}}" style="margin: 0 0.33em; {{#show_name}}vertical-align: bottom; line-height: 1.5em;{{/show_name}}">
+  <img src="{{avatarUrl}}" class="user-avatar" {{#show_name}}style="width: 1.5em; height: 1.5em; border-radius: 0.75em; margin-right: 0.5em; vertical-align: bottom;"{{/show_name}} />
+  {{#if show_name}}
+    {{#displayName}}{{.}}{{else}}{{username}}{{/displayName}}
+    {{#admin}}
+      <span class="is-admin" style="opacity: 0.5;">(admin)</span>
+    {{/admin}}
+  {{/if}}
 </a>

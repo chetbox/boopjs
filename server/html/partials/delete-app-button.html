@@ -1,0 +1,31 @@
+<a href="javascript:delete_app();" title="Delete app">
+  <paper-button raised style="background: #FF5722; color: #fff; vertical-align: bottom;">
+    <iron-icon icon="delete"></iron-icon>
+    Delete
+  </paper-button>
+</a>
+<script>
+  function ajax_delete(url, description, redirect) {
+    if (!confirm('Are you sure you want to delete "' + description + '", its tests and all test results? This cannot be undone.')) {
+      $('paper-button').removeClass('pending'); // hack
+      return;
+    }
+    $.ajax(url, {
+      method: 'DELETE'
+    }).done(function() {
+      if (redirect) {
+        location.href = redirect;
+      } else {
+        location.reload();
+      }
+    }).fail(function(xhr, status, e) {
+      alert(e.toString());
+    });
+  }
+
+  function delete_app() {
+    ga('send', 'event', 'button', 'click', 'delete app');
+
+    return ajax_delete('/app/{{id}}', '{{name}}', '/apps');
+  }
+</script>

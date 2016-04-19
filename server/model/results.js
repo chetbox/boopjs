@@ -17,6 +17,15 @@ exports.report_from_statements = function(statements) {
   }, []);
 }
 
+exports.report_from_scripts = function(scripts) {
+  return scripts.map(function(script) {
+    return _.extend(
+      _.pick(script, ['id', 'name']),
+      { report: exports.report_from_statements(script.statements) }
+    );
+  });
+}
+
 exports.key = function(result) {
   return {
     code_id: result.code_id,
@@ -96,36 +105,42 @@ function replace_values_in(obj, from, to) {
 exports.update = function(key, response) {
   debug('update', key, 'with', Object.keys(response));
 
-  if ('line' in response && typeof(response.line) !== 'number') {
-    return Promise.reject('"line" must be an integer');
+  var report_location = null;
+  if ('location' in response) {
+    if (typeof(response.location.line) !== 'number')
+      return Promise.reject(new Error('"location.line" must be an integer'));
+    if (typeof(response.location.script) !== 'number')
+      return Promise.reject(new Error('"location.script" must be an integer'));
+
+    report_location = 'report[' + response.location.script + '].report[' + response.location.line + ']';
   }
 
   if ('result' in response) { // Statement successful
     return db.update({
       Key: key,
-      UpdateExpression: 'SET report[' + response.line + '].success = :result',
+      UpdateExpression: 'SET ' + report_location + '.success = :result',
       ConditionExpression:
         'attribute_exists(report) ' +
-        'AND attribute_not_exists(report[' + response.line + '].success) ' +
-        'AND attribute_not_exists(report[' + response.line + '].#error)',
+        'AND attribute_not_exists(' + report_location + '.success) ' +
+        'AND attribute_not_exists(' + report_location + '.#error)',
         ExpressionAttributeNames: {
           '#error': 'error'
         },
       ExpressionAttributeValues: {
-        ':result': _.omit(response, 'line')
+        ':result': _.omit(response, 'location')
       }
     });
   }
   if ('error' in response) {
-    return (('line' in response)
+    return (('location' in response)
       ? db.update({
           Key: key,
-          UpdateExpression: 'SET report[' + response.line + '].#error = :error',
+          UpdateExpression: 'SET ' + report_location + '.#error = :error',
           ConditionExpression:
             'attribute_not_exists(#error) ' +
             'AND attribute_exists(report) ' +
-            'AND attribute_not_exists(report[' + response.line + '].success) ' +
-            'AND attribute_not_exists(report[' + response.line + '].#error)',
+            'AND attribute_not_exists(' + report_location + '.success) ' +
+            'AND attribute_not_exists(' + report_location + '.#error)',
           ExpressionAttributeNames: {
             '#error': 'error'
           },
@@ -150,7 +165,7 @@ exports.update = function(key, response) {
           ':error': _.extend(
             {description: response.error, stacktrace: response.stacktrace},
             line_updated
-              ? {line: response.line, source: line_updated.Attributes.report[response.line].source}
+              ? {location: response.location, source: line_updated.Attributes.report[response.location.script].report[response.location.line].source}
               : {}
           )
         },
@@ -185,13 +200,10 @@ exports.update = function(key, response) {
     }
   }
   if ('log' in response) {
-    if (typeof(response.line) !== 'number') {
-      return Promise.reject('"line" must be an integer');
-    }
     return db.update({
       Key: key,
-      UpdateExpression: 'SET report[' + response.line + '].#logs = list_append(if_not_exists(report[' + response.line + '].#logs, :empty_list), :new_logs)',
-      ConditionExpression: 'attribute_exists(report[' + response.line + '].#source)',
+      UpdateExpression: 'SET ' + report_location + '.#logs = list_append(if_not_exists(' + report_location + '.#logs, :empty_list), :new_logs)',
+      ConditionExpression: 'attribute_exists(' + report_location + '.#source)',
       ExpressionAttributeNames: {
         '#source': 'source',
         '#logs': 'logs'
