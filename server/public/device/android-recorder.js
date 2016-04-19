@@ -35,7 +35,6 @@ function watch_interactions(interaction_callback) {
     if (v instanceof android.widget.EditText) {
       log('Adding text changed handler to ' + v);
       if (!watch_interactions.text_listener_hashCodes.contains(v.hashCode())) {
-        var previous_text;
         v.addTextChangedListener({
           onTextChanged: function(s, start, before, count) {
             var keys_typed = (count === 0 && before === 1)
@@ -52,6 +51,44 @@ function watch_interactions(interaction_callback) {
         });
         watch_interactions.text_listener_hashCodes.add(v.hashCode());
       }
+    }
+    if (v instanceof android.support.v4.widget.DrawerLayout) {
+      log('Adding drawer listener to ' + v);
+      if (!watch_interactions.text_listener_hashCodes.contains(v.hashCode())) {
+        var original_listener = v.addDrawerListener /* => new API */
+          ? undefined
+          : __get_listener('Listener', v);
+        var new_listener = {
+          onDrawerClosed: function(drawerContentView) {
+            if (original_listener) original_listener.onDrawerClosed(v);
+            interaction_callback({
+              type: 'drawer',
+              target: v,
+              action: 'close'
+            });
+          },
+          onDrawerOpened: function(drawerContentView) {
+            if (original_listener) original_listener.onDrawerOpened(v);
+            interaction_callback({
+              type: 'drawer',
+              target: v,
+              action: 'open'
+            });
+          },
+          onDrawerSlide: function(drawerContentView, slideOffset) {
+            if (original_listener) original_listener.onDrawerSlide(v);
+          },
+          onDrawerStateChanged: function(state) {
+            if (original_listener) original_listener.onDrawerStateChanged(state);
+          },
+        };
+        if (v.addDrawerListener) {
+          v.addDrawerListener(new_listener);
+        } else {
+          v.setDrawerListener(new_listener);
+        }
+      }
+      watch_interactions.text_listener_hashCodes.add(v.hashCode());
     }
     return false; // Do not match => Continue traversing hierarchy
   });

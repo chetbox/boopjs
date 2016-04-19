@@ -9,7 +9,7 @@ import org.junit.Test;
 import org.mozilla.javascript.NativeObject;
 import org.mozilla.javascript.ScriptableObject;
 
-import java.util.Collection;
+import java.util.List;
 
 import static com.chetbox.chetbot.util.GenericMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -53,7 +53,8 @@ public class RecorderTests extends StopwatchTest {
         recordEvents(this, new RecordEvents() {
             @Override
             public void record() {
-                exec("tap('start');",
+                exec(
+                        "tap('start');",
                         "wait(2);",
                         "tap('stop');",
                         "wait(2);",
@@ -61,27 +62,54 @@ public class RecorderTests extends StopwatchTest {
             }
 
             @Override
-            public void then(Collection<NativeObject> events) {
+            public void then(List<NativeObject> events) {
                 assertThat(taps(events), contains(startStopButton, startStopButton, resetButton));
             }
         });
     }
 
     @Test public void watchForKeyboardInput() {
+        exec(
+                "open_drawer();",
+                "tap('text fields');",
+                "tap('text');");
+
         recordEvents(this, new RecordEvents() {
             @Override
             public void record() {
-                exec(   "open_drawer();",
-                        "tap('text fields');",
-                        "tap('text');",
+                exec(
                         "type_text('banana cake');",
                         "press('backspace');",
                         "press('backspace');");
             }
 
             @Override
-            public void then(Collection<NativeObject> events) {
+            public void then(List<NativeObject> events) {
                 assertThat(keys(events), contains("B", "a", "n", "a", "n", "a", " ", "c", "a", "k", "e", "\b", "\b"));
+            }
+        });
+    }
+
+    @Test public void openAndCloseDrawer() {
+        recordEvents(this, new RecordEvents() {
+            @Override
+            public void record() {
+                exec(
+                        "open_drawer();",
+                        "close_drawer();");
+            }
+
+            @Override
+            public void then(List<NativeObject> events) {
+                assertThat(events.size(), is(2));
+
+                assertThat(events.get(0).get("type"), equalTo("drawer"));
+                assertThat(events.get(0).get("action"), equalTo("open"));
+                assertThat(events.get(0).get("target"), is(drawerLayout));
+
+                assertThat(events.get(1).get("type"), equalTo("drawer"));
+                assertThat(events.get(1).get("action"), equalTo("close"));
+                assertThat(events.get(1).get("target"), is(drawerLayout));
             }
         });
     }

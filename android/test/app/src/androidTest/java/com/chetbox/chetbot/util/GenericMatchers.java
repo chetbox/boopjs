@@ -1,7 +1,5 @@
 package com.chetbox.chetbot.util;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Iterables;
 
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
