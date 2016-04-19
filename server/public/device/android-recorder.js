@@ -40,12 +40,14 @@ function watch_interactions(interaction_callback) {
           onTextChanged: function(s, start, before, count) {
             var keys_typed = (count === 0 && before === 1)
               ? '\b'
-              : s.toString().substring(start + before, start + count);
-            interaction_callback({
-              type: 'press',
-              target: v,
-              keys: keys_typed
-            });
+              : s.toString().substring(start + before, start + count) + '';
+            if (keys_typed) {
+              interaction_callback({
+                type: 'press',
+                target: v,
+                keys: keys_typed
+              });
+            }
           }
         });
         watch_interactions.text_listener_hashCodes.add(v.hashCode());

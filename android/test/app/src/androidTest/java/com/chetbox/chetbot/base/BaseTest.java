@@ -77,7 +77,7 @@ public abstract class BaseTest {
         Chetbot.reset();
     }
 
-    protected <T> T exec(String... stmts) {
+    public <T> T exec(String... stmts) {
         String script = Joiner.on('\n').join(stmts);
         return (T) Rhino.unwrapJavaObject(chetbot.onStatement(new ChetbotServerConnection.Statement(script, ++linesExecuted), name.getMethodName()));
     }

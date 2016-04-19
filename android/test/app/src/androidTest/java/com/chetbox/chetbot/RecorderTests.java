@@ -3,10 +3,13 @@ package com.chetbox.chetbot;
 import android.view.View;
 
 import com.chetbox.chetbot.base.screens.StopwatchTest;
+import static com.chetbox.chetbot.util.RecorderEvents.*;
 
 import org.junit.Test;
 import org.mozilla.javascript.NativeObject;
 import org.mozilla.javascript.ScriptableObject;
+
+import java.util.Collection;
 
 import static com.chetbox.chetbot.util.GenericMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -46,25 +49,41 @@ public class RecorderTests extends StopwatchTest {
         assertThat(newNewListener, is(newListener));
     }
 
-    @Test public void watchTaps() {
-        exec(   "start_recorder(function(e) { console.log(e.type, e.target); });",
-                "tap('start');",
-                "wait(2);",
-                "tap('stop');",
-                "wait(2);",
-                "tap('reset');",
-                "wait(2);");
+    @Test public void watchForTaps() {
+        recordEvents(this, new RecordEvents() {
+            @Override
+            public void record() {
+                exec("tap('start');",
+                        "wait(2);",
+                        "tap('stop');",
+                        "wait(2);",
+                        "tap('reset');");
+            }
+
+            @Override
+            public void then(Collection<NativeObject> events) {
+                assertThat(taps(events), contains(startStopButton, startStopButton, resetButton));
+            }
+        });
     }
 
-    @Test public void watchText() {
-        exec(   "start_recorder(function(e) { console.log(e.type, JSON.stringify(e.keys + ''), e.target); });",
-                "open_drawer();",
-                "tap('text fields');",
-                "tap('text');",
-                "type_text('banana cake');",
-                "press('backspace');",
-                "press('backspace');",
-                "wait(2);");
+    @Test public void watchForKeyboardInput() {
+        recordEvents(this, new RecordEvents() {
+            @Override
+            public void record() {
+                exec(   "open_drawer();",
+                        "tap('text fields');",
+                        "tap('text');",
+                        "type_text('banana cake');",
+                        "press('backspace');",
+                        "press('backspace');");
+            }
+
+            @Override
+            public void then(Collection<NativeObject> events) {
+                assertThat(keys(events), contains("B", "a", "n", "a", "n", "a", " ", "c", "a", "k", "e", "\b", "\b"));
+            }
+        });
     }
 
 }
