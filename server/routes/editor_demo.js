@@ -14,18 +14,22 @@ exports.add_routes = function(app) {
       res.render('edit', {
         device: {
           id: device_id,
+          publicKey: 'jhbfavaxy778ap8nka5ndjq01c',
           model: 'nexus5',
           os_version: '6.0',
-          orientation: 'portrait'
+          orientation: 'portrait',
+          params: {
+            'boop.server': (host.protocol === 'https' ? 'wss' : 'ws') + '://' + host.address + '/api/device?id=' + device_id,
+            'boop.scripts': JSON.stringify([
+              host.protocol + '://' + host.address + '/device/android.js'
+            ])
+          }
         },
         server: host.address,
-        server_url: (host.protocol === 'https' ? 'wss' : 'ws') + '://' + host.address + '/api/device?id=' + device_id,
-        api_url: host.protocol + '://' + host.address + '/device/android.js',
-        app: {
-          icon: '/favicon.ico',
-          publicKey: 'jhbfavaxy778ap8nka5ndjq01c'
-        },
         autosave: false,
+        app: {
+          icon: '/favicon.ico'
+        },
         code: {
           name: 'Sign in, send message',
           content: demo_code

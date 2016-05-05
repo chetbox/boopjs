@@ -166,13 +166,18 @@ exports.add_routes = function(app) {
           user: req.user,
           device: _.extend({}, DEFAULT_DEVICE, {
             id: device_id,
-            os_version: app.os_version
+            publicKey: app.publicKey,
+            os_version: app.os_version,
+            params: {
+              'boop.server': (host.protocol === 'https' ? 'wss' : 'ws') + '://' + host.address + '/api/device?id=' + device_id,
+              'boop.scripts': JSON.stringify([
+                host.protocol + '://' + host.address + '/device/android.js'
+              ])
+            }
           }),
           server: host.address,
-          server_url: (host.protocol === 'https' ? 'wss' : 'ws') + '://' + host.address + '/api/device?id=' + device_id,
-          api_url: host.protocol + '://' + host.address + '/device/android.js',
-          app: app,
           autosave: true,
+          app: app,
           code: {
             name: 'Init script',
             content: app.init_script,
@@ -233,20 +238,25 @@ exports.add_routes = function(app) {
           user: req.user,
           device: _.extend({}, DEFAULT_DEVICE, {
             id: device_id,
+            publicKey: app.publicKey,
             os_version: code.os_version || app.os_version,
-            init_script_url: (app.init_script
-              ? (host.protocol + '://' + host.address + '/api/v1/app/' + app.id + '/init-script/code?access_token=' + access_tokens[0])
-              : undefined
-            ),
             location: function() {
               return code.location
                 ? lat_lon_str(JSON.parse(code.location))
                 : null;
+            },
+            params: {
+              'boop.server': (host.protocol === 'https' ? 'wss' : 'ws') + '://' + host.address + '/api/device?id=' + device_id,
+              'boop.scripts': JSON.stringify(
+                [ host.protocol + '://' + host.address + '/device/android.js' ]
+                .concat(app.init_script
+                  ? [ host.protocol + '://' + host.address + '/api/v1/app/' + app.id + '/init-script/code?access_token=' + access_tokens[0] ]
+                  : []
+                )
+              )
             }
           }),
           server: host.address,
-          server_url: (host.protocol === 'https' ? 'wss' : 'ws') + '://' + host.address + '/api/device?id=' + device_id,
-          api_url: host.protocol + '://' + host.address + '/device/android.js',
           app: app,
           autosave: true,
           code: _.extend({}, code, {
@@ -353,11 +363,15 @@ exports.add_routes = function(app) {
         res.render('run', {
           device: _.extend({}, DEFAULT_DEVICE, {
             id: device_id,
+            publicKey: app.publicKey,
             os_version: code.os_version || app.os_version,
-            init_script_url: (app.init_script
-              ? (host.protocol + '://' + host.address + '/api/v1/app/' + app.id + '/init-script/code?access_token=' + 'TODO_GET_USER_ACCESS_TOKEN')
-              : undefined
-            ),
+            params: {
+              'boop.server': (host.protocol === 'https' ? 'wss' : 'ws') + '://' + host.address + '/api/device?id=' + device_id,
+              'boop.scripts': JSON.stringify([
+                host.protocol + '://' + host.address + '/device/android.js'
+                // Init executed run by run.html
+              ])
+            },
             location: function() {
               return code.location
                 ? lat_lon_str(JSON.parse(code.location))
@@ -365,8 +379,6 @@ exports.add_routes = function(app) {
             }
           }),
           server: host.address,
-          server_url: (host.protocol === 'https' ? 'wss' : 'ws') + '://' + host.address + '/api/device?id=' + device_id,
-          api_url: host.protocol + '://' + host.address + '/device/android.js',
           app: app,
           code: _.extend({}, code, {
             name: code.name,

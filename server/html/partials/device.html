@@ -1,24 +1,25 @@
-<script src="/components/underscore/underscore-min.js" charset="utf-8"></script>
-<style type="text/css">
-  #device {
-    position: absolute;
-    top: 20px;
-    left: 40px;
-    width: 300px;
-    height: 597px;
-  }
-</style>
-<iframe
-  id="device"
-  src="https://appetize.io/embed/{{app.publicKey}}?device={{device.model}}&amp;osVersion={{device.os_version}}&amp;autoplay={{#device.wait_for_user_to_start}}false{{else}}true{{/device.wait_for_user_to_start}}&amp;orientation={{device.orientation}}&amp;deviceColor=black&amp;xdocMsg=true&amp;params=%7b%22boop.server%22%3a%22{{encodeURIComponent server_url}}%22%2c%22boop.scripts%22%3A%22%5B%5C%22{{encodeURIComponent api_url}}%5C%22{{#device.init_script_url}}%2C%5C%22{{encodeURIComponent .}}%5C%22{{/device.init_script_url}}%5D%22%7D{{#device.location}}&amp;location={{encodeURIComponent .}}{{/device.location}}"
-  frameborder="0"
-  scrolling="no">
-</iframe>
+{{#device}}
+  <script src="/components/underscore/underscore-min.js" charset="utf-8"></script>
+  <style type="text/css">
+    #device {
+      position: absolute;
+      top: 20px;
+      left: 40px;
+      width: 300px;
+      height: 597px;
+    }
+  </style>
 
-<script>
-  var device_iframe = document.getElementById('device');
+  <iframe
+    id="device"
+    src="https://appetize.io/embed/{{publicKey}}?device={{model}}&amp;osVersion={{os_version}}&amp;autoplay=true&amp;orientation={{orientation}}&amp;deviceColor=black&amp;xdocMsg=true&amp;params={{encodeJSONURIComponent params}}{{#location}}&amp;location={{encodeURIComponent .}}{{/location}}"
+    frameborder="0"
+    scrolling="no">
+  </iframe>
 
-  {{#unless device.wait_for_user_to_start}}
+  <script>
+    var device_iframe = document.getElementById('device');
+
     // Ensure the device starts
     var ensure_device_loaded = setInterval(function() {
       device_iframe.contentWindow.postMessage('requestSession', '*');
@@ -28,20 +29,21 @@
         clearInterval(ensure_device_loaded);
       }
     });
-  {{/unless}}
 
-  // Expose a way of keeping the device running
-  window.keep_device_running = _.throttle(
-    function() {
-      device_iframe.contentWindow.postMessage('requestSession', '*');
-      device_iframe.contentWindow.postMessage('heartbeat', '*');
-    },
-    5 * 1000,
-    { trailing: false }
-  );
+    // Expose a way of keeping the device running
+    window.keep_device_running = _.throttle(
+      function() {
+        device_iframe.contentWindow.postMessage('requestSession', '*');
+        device_iframe.contentWindow.postMessage('heartbeat', '*');
+      },
+      5 * 1000,
+      { trailing: false }
+    );
 
-  // Appetize.io logging
-  window.addEventListener('message', function(event) {
-    console.log('appetize.io: ' + event.data);
-  });
-</script>
+    // Appetize.io logging
+    window.addEventListener('message', function(event) {
+      console.log('appetize.io: ' + event.data);
+    });
+  </script>
+
+{{/device}}

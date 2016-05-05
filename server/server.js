@@ -43,6 +43,9 @@ var hbs = express_handlebars.create({
           : opts.inverse(this);
       },
       encodeURIComponent: encodeURIComponent,
+      encodeJSONURIComponent: function(data) {
+        return encodeURIComponent(JSON.stringify(data));
+      },
       random_name: function() {
         return name_generator.choose();
       }
