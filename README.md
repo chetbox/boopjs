@@ -1,4 +1,4 @@
-# chetbot
+# boop.js web
 
 ## Setup
 
