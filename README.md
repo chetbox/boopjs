@@ -2,6 +2,11 @@
 
 Source code for boopjs.com - a place for scripting Android apps in the cloud.
 
+###### Example: Testing search in the [JustEat app](https://play.google.com/store/apps/details?id=com.justeat.app.uk)
+<img src="examples/JustEat%20-%20Search.gif?raw=true"/>
+
+[More examples](examples/)
+
 ## Setup
 
 ```shell
