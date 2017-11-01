@@ -1,5 +1,7 @@
 # boop.js web
 
+Source code for boopjs.com - a place for scripting Android apps in the cloud.
+
 ## Setup
 
 ```shell
